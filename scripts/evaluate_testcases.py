@@ -44,11 +44,13 @@ Environment variables (or .env)
 """
 
 import argparse
+import json
 import os
 import re
 import sys
 import time
 import random
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -73,6 +75,7 @@ LLM_BASE_URL   = os.getenv("LLM_BASE_URL",   "https://api.groq.com/openai/v1")
 GITHUB_REPO    = os.getenv("GITHUB_REPO",    "mishal23/virtual-clinic")
 MAX_RETRIES    = int(os.getenv("LLM_MAX_RETRIES",    "5"))
 BACKOFF_BASE   = float(os.getenv("LLM_BACKOFF_BASE", "5"))
+PROMPT_PATH    = os.getenv("PROMPT_PATH", "prompts/generate_testcases.txt")
 
 GITHUB_BASE = f"https://raw.githubusercontent.com/{GITHUB_REPO}/master/server"
 
@@ -179,6 +182,33 @@ def load_srs_from_mongo(sections_filter: list[str] | None = None) -> str:
         return ""
 
 
+
+# ──────────────────────────────────────────────
+# PROMPT TEMPLATE + META HELPERS
+# ──────────────────────────────────────────────
+
+def load_prompt_template(path: str) -> str:
+    candidates = [
+        Path(path),
+        Path(__file__).parent.parent / path,
+        Path(__file__).parent / path,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            print(f"  [prompt] Loaded template from {candidate.resolve()}")
+            return candidate.read_text(encoding="utf-8")
+    raise FileNotFoundError(
+        "Prompt template not found. Tried:\n"
+        + "\n".join(f"  {c}" for c in candidates)
+    )
+
+
+def save_meta(out_dir: Path, filename: str, data: dict) -> None:
+    """Save a metadata JSON file alongside an output file."""
+    meta_file = out_dir / filename
+    meta_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    print(f"  [saved] {meta_file}")
+
 # ──────────────────────────────────────────────
 # STEP 1 — TEST CASES FROM CODE
 # ──────────────────────────────────────────────
@@ -222,6 +252,14 @@ Test Type      : <Functional | Negative | Boundary | Security>
     out_file = out_dir / "step1_code_testcases.txt"
     out_file.write_text(result, encoding="utf-8")
     print(f"  [saved] {out_file}")
+    save_meta(out_dir, "step1_meta.json", {
+        "step":         "step1_code_testcases",
+        "model":        LLM_MODEL,
+        "github_repo":  GITHUB_REPO,
+        "files_fetched": SOURCE_FILES,
+        "prompt_sent":  prompt,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    })
     return result
 
 
@@ -230,51 +268,40 @@ Test Type      : <Functional | Negative | Boundary | Security>
 # ──────────────────────────────────────────────
 
 def run_step2(out_dir: Path, sections_filter: list[str] | None = None) -> str:
-    print("\n[Step 2] Generating test cases from the SRS ...")
+    print("\n[Step 2] Generating test cases from the SRS using generate_testcases.txt ...")
     srs_text = load_srs_from_mongo(sections_filter)
 
     if not srs_text:
         print("  [error] SRS not found in MongoDB. Run ingest_srs.py first.")
         sys.exit(1)
 
-    # Focus on requirement-dense sections to stay within token limits
+    # Load the shared prompt template
+    template = load_prompt_template(PROMPT_PATH)
+
+    # Build SRS content block — skip boilerplate lines
     skip = {"table of contents", "revision history", "national institute",
             "software requirements specification", "figure"}
     lines = [l.strip() for l in srs_text.splitlines()
              if l.strip() and len(l.strip()) > 20
              and not any(s in l.lower() for s in skip)]
-    srs_trimmed = "\n".join(lines[:400])
+    srs_content = "\n".join(lines[:400])
 
-    prompt = f"""You are a senior QA engineer. Below is a Software Requirements
-Specification (SRS) for a healthcare web application called Virtual Clinic.
-
-=== SRS ===
-{srs_trimmed}
-
-Based ONLY on what the SRS specifies, generate a complete test case suite.
-Do not assume anything about implementation. Cover every requirement,
-business rule, and use case stated in the SRS.
-
-For each test case use this format:
-
----
-TC-ID          : TC-SRS-<NNN>
-Title          : <short title>
-Requirement    : <Req-X / BR-X / UC-X>
-Preconditions  :
-  - <precondition>
-Test Steps     :
-  1. <step>
-Expected Result: <verifiable outcome based on the SRS>
-Test Type      : <Functional | Negative | Boundary | Security | Performance>
----
-"""
+    # Fill the template — generate_testcases.txt uses {SRS_CONTENT}
+    prompt = template.replace("{SRS_CONTENT}", srs_content)
 
     print("  [LLM] Generating SRS-based test cases ...")
     result = call_llm(prompt, "Step2")
     out_file = out_dir / "step2_srs_testcases.txt"
     out_file.write_text(result, encoding="utf-8")
     print(f"  [saved] {out_file}")
+    save_meta(out_dir, "step2_meta.json", {
+        "step":             "step2_srs_testcases",
+        "model":            LLM_MODEL,
+        "prompt_template":  PROMPT_PATH,
+        "sections_used":    sections_filter,
+        "prompt_sent":      prompt,
+        "generated_at":     datetime.now(timezone.utc).isoformat(),
+    })
     return result
 
 
@@ -338,6 +365,12 @@ Compare the two suites and produce a structured gap report with these sections:
     out_file = out_dir / "step3_gap_report.txt"
     out_file.write_text(result, encoding="utf-8")
     print(f"  [saved] {out_file}")
+    save_meta(out_dir, "step3_meta.json", {
+        "step":         "step3_gap_report",
+        "model":        LLM_MODEL,
+        "prompt_sent":  prompt,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    })
     print("\n" + "="*60)
     print(result[:3000])
     print("="*60)
