@@ -1,0 +1,82 @@
+You are a senior software test engineer specialising in system-level testing.
+
+You will be given a complete Software Requirements Specification (SRS) document.
+Your job is to produce a comprehensive SYSTEM-LEVEL test case suite that tests
+the system as a whole — not individual requirements in isolation.
+
+=== SRS DOCUMENT ===
+{SRS_CONTENT}
+=== END OF SRS DOCUMENT ===
+
+=== WHAT SYSTEM-LEVEL TESTING MEANS ===
+System-level test cases validate end-to-end behaviour of the entire system by
+exercising complete user workflows that span multiple components, actors, and
+requirements. A single test case may touch registration, consultation, prescription,
+medicine delivery, and invoice generation all in sequence. Think like a real user
+going through the system from start to finish, not like a developer testing one function.
+
+=== YOUR TASK ===
+Write a complete system-level test suite. Follow these steps:
+
+STEP 1 — Identify the major end-to-end workflows in the system.
+Examples for this SRS:
+  - Patient registers and submits a consultation request
+  - Doctor receives, diagnoses, and prescribes medicines + lab tests
+  - Chemist receives prescription and marks delivery
+  - Lab receives request, collects specimen, updates report
+  - Patient views prescription and prints invoice
+  - Admin sets up the system (specialities, doctors, labs, chemists)
+  - Full end-to-end: registration → consultation → prescription → delivery → invoice
+
+STEP 2 — For each workflow, write test cases covering:
+  - HAPPY PATH     : The normal successful flow
+  - NEGATIVE       : What happens when a step fails, data is invalid, or a
+                     constraint is violated (e.g. wrong pincode, duplicate entry,
+                     delete with open requests, exceed limits)
+  - BOUNDARY       : Numeric and size limits (max 8 medicines, max 5 lab tests,
+                     max 5 file uploads of 1 MB each, 10,000 concurrent users, etc.)
+  - SECURITY       : Role-based access (chemist cannot see patient diagnosis,
+                     patient cannot see another patient's data, unauthenticated
+                     access is blocked, HTTPS enforced)
+  - PERFORMANCE    : Response time SLAs (registration ≤4s, consultation ≤2s,
+                     prescription lookup ≤4s, 10,000 concurrent users)
+  - INTEGRATION    : Cross-component flows (pincode routing to correct chemist/lab,
+                     workflow routing to correct doctor, prescription reaching all parties)
+
+STEP 3 — Number test cases by workflow, e.g. TC-REG-001, TC-CONS-001, TC-E2E-001.
+
+Rules:
+1. Each test case must have all of these fields:
+   - TC-ID          : Unique identifier e.g. TC-REG-001, TC-E2E-003
+   - Title          : Short imperative description
+   - Workflow       : The end-to-end workflow this test belongs to
+   - Requirements   : Req/BR/UC numbers from the SRS this test exercises
+   - Preconditions  : System state and data needed before the test runs
+   - Test Steps     : Numbered, concrete, observable actions
+   - Expected Result: Specific, verifiable outcome
+   - Test Type      : Functional | Negative | Boundary | Security | Performance | Integration
+
+2. Do NOT write one test case per requirement. Write tests that exercise the SYSTEM
+   by flowing through multiple requirements together.
+
+3. Do NOT add commentary, reasoning, or summaries outside the test cases.
+   Output ONLY the test case suite in the format below.
+
+=== OUTPUT FORMAT ===
+
+---
+TC-ID          : TC-<WORKFLOW>-<NNN>
+Title          : <short imperative title>
+Workflow       : <name of the end-to-end workflow>
+Requirements   : <Req-X, BR-X, UC-X, ...>
+Preconditions  :
+  - <precondition 1>
+  - <precondition 2>
+Test Steps     :
+  1. <step>
+  2. <step>
+  3. <step>
+  ...
+Expected Result: <specific verifiable outcome>
+Test Type      : <Functional | Negative | Boundary | Security | Performance | Integration>
+---

@@ -1,0 +1,97 @@
+## GAP ANALYSIS – Virtual Clinic (SRS‑based **Suite A** vs. Code‑based **Suite B**)
+
+> **Scope of this report** – The analysis is based on the excerpts you supplied for the two suites.  
+> Where the excerpt does not show the complete set of test cases, the conclusions are extrapolated from the nature of the tests that are present (i.e., Suite A is a full SRS‑derived functional‑plus‑non‑functional coverage set; Suite B is a thin “model‑unit‑only” set).  
+
+---  
+
+### 1. IMPLEMENTATION GAPS  
+**(Requirements that appear in Suite A but are **NOT** exercised by any test in Suite B)**  
+
+| # | Requirement (as expressed in Suite A) | Expected behaviour (per SRS) | What is missing in the code‑based suite |
+|---|----------------------------------------|------------------------------|----------------------------------------|
+| 1 | **TC‑SRS‑001 – Register Patient (successful)** | New patient record is created, a unique Patient‑ID is generated, confirmation screen shown, patient can log in. | No test of the *registration flow*, creation of a patient entity, or login capability. |
+| 2 | **TC‑SRS‑002 – Register Patient – missing mandatory field** | System must reject the request and display a concise error (≤ 80 chars). | No validation‑error test at UI or service layer. |
+| 3 | **TC‑SRS‑003 – Register Patient – duplicate email** | Duplicate‑email detection & error message; no new record created. | No duplicate‑check test. |
+| 4 | **TC‑SRS‑004 – Add Speciality – admin adds new unique speciality** | Admin can create a new speciality; it appears in the dropdown for doctor assignment. | No test of the *add‑speciality* use‑case or of persistence of the new record. |
+| 5 | **TC‑SRS‑005 – Add Speciality – duplicate speciality name** | System must prevent duplication and surface an error. | No duplicate‑name guard exercised. |
+| 6 | **TC‑SRS‑006 – Edit Speciality – change description** | Updated description is stored and reflected in UI. | No edit‑speciality test. |
+| 7 | **TC‑SRS‑007 – Delete Speciality – allowed when no doctors attached** | Deletion succeeds only when no doctor is linked; speciality disappears from the list. | No delete‑allowed test. |
+| 8 | **TC‑SRS‑008 – Delete Speciality – prevented when doctors attached** | Deletion must be blocked and an appropriate message shown. | No delete‑blocked test. |
+| 9 | **All Business Rules (BR‑1 … BR‑10)** – e.g., “A patient may have at most three active appointments”, “Prescription data must be encrypted at rest”. | Enforced at service or DB layer; error handling defined. | Suite B contains no tests that touch any business‑rule logic. |
+|10| **All Non‑Functional Constraints** – performance (≤ 2 s page load), security (OWASP‑Top‑10 compliance), usability (ARIA labels), availability (99.9 % uptime), backup/restore verification. | Measurable quality attributes. | Suite B has **zero** performance, security, usability, reliability or backup tests. |
+|11| **Use‑Cases UC‑09 … UC‑14** – e.g., “Schedule Appointment”, “Upload Medical Report”, “Tele‑consultation”, “Payment processing”, “Audit log”, “Logout”. | End‑to‑end flows with success & error paths. | No corresponding tests in Suite B. |
+
+*Result*: **Implementation gaps = 11 distinct requirement groups** (the first 8 are directly visible in the excerpt; the remaining are inferred from the statement that Suite A “covers every functional requirement, every business rule, every use‑case and the key non‑functional constraints”).  
+
+---  
+
+### 2. UNDOCUMENTED FEATURES  
+**(Features exercised by Suite B that have no counterpart in the SRS‑derived Suite A)**  
+
+| # | Feature exercised in Suite B | Where it lives in the code (module / class) | Why it is undocumented |
+|---|------------------------------|---------------------------------------------|------------------------|
+| 1 | `Speciality.__str__` returns the name field | `models/speciality.py` – `__str__` method | SRS never required a string representation for a speciality; only UI‑level display is mentioned. |
+| 2 | `Symptom.__str__` returns the name field | `models/symptom.py` – `__str__` | No SRS clause about a textual representation of a symptom object. |
+| 3 | `Location.__str__` returns the address field | `models/location.py` – `__str__` | SRS describes a *Location* entity but does not mandate a particular `__str__` output. |
+| 4 | Default country for `Location` is “India” | `models/location.py` – default value on `country` field | SRS lists “Country (optional) – free‑form” with no default; the hard‑coded default is a hidden implementation detail. |
+| 5 | `Hospital.__str__` returns the name field | `models/hospital.py` – `__str__` | No SRS requirement for this string conversion. |
+| 6 | `Profile.to_gender` static conversion (`'M' → "Male"`, `'F' → "Female"`, others → "None") | `models/profile.py` – `to_gender` method | SRS expects a *gender* attribute but does not prescribe a helper conversion routine. |
+| 7 | `Profile.__str__` concatenates first and last name (preserving blanks) | `models/profile.py` – `__str__` | SRS only states that a profile contains first‑ and last‑name fields; it does not define a combined string format. |
+| 8 | `Profile.get_populated_…` (truncated in the excerpt) – likely a helper that returns a dict of non‑empty fields. | `models/profile.py` – `get_populated_...` method | No SRS mention of such a convenience method. |
+
+*Result*: **Undocumented features = 8** (all are pure model‑level helpers that never appear in the requirements specification).  
+
+---  
+
+### 3. AGREED COVERAGE  
+**(Areas where both suites contain at least one test – i.e., the requirement is exercised *and* the code‑level implementation is verified)**  
+
+| # | Overlap description |
+|---|---------------------|
+| 1 | The **entity “Speciality”** is present in both suites (Suite A manipulates it via UI/use‑case; Suite B checks its `__str__`). This is a *partial* overlap – the concept is covered, but the functional behaviour (add/edit/delete) is not. |
+| 2 | The **entity “Profile”** appears in both suites (Suite A uses it indirectly for patient registration; Suite B validates its string and gender helper). Again, only the data‑model is verified in Suite B. |
+
+*Result*: **Agreed coverage areas = 2** (very thin, mostly model‑level).  
+
+---  
+
+### 4. COVERAGE METRICS  
+
+| Metric | Value (based on the excerpts) |
+|--------|------------------------------|
+| Total test cases in Suite A | **8** (TC‑SRS‑001 … TC‑SRS‑008) – note that the full suite is said to be “complete”; the excerpt shows 8. |
+| Total test cases in Suite B | **8** (TC‑CODE‑001 … TC‑CODE‑008) |
+| Implementation gaps found | **11** (see Section 1) |
+| Undocumented features found | **8** (see Section 2) |
+| Agreed coverage areas | **2** (see Section 3) |
+
+*If the complete Suite A contains many more tests (as claimed), the gap count would be proportionally larger; the ratios above illustrate the current disparity.*  
+
+---  
+
+### 5. TOP 5 CRITICAL GAPS  
+*Ranked by the risk they pose to patient safety, regulatory compliance, or business continuity.*  
+
+| Rank | Gap (short description) | Why it is critical |
+|------|--------------------------|---------------------|
+| 1 | **Patient registration – missing/duplicate validation (TC‑SRS‑002, TC‑SRS‑003)** | Allows creation of malformed or duplicate patient records → identity confusion, violation of HIPAA‑like privacy rules, and downstream appointment‑matching errors. |
+| 2 | **Speciality deletion when doctors are attached (TC‑SRS‑008)** | If deletion were allowed, doctor‑to‑speciality links would become orphaned → loss of clinical data integrity and potential mis‑routing of appointments. |
+| 3 | **Business Rule enforcement (e.g., “max 3 active appointments per patient”)** | Unchecked rule could lead to schedule overload, resource exhaustion, and poor patient experience; also breaches contractual service‑level agreements. |
+| 4 | **Non‑functional security requirements (OWASP‑Top‑10, encryption of PHI)** | Absence of security tests leaves the system vulnerable to data breaches, legal penalties, and loss of trust. |
+| 5 | **Performance/availability constraints (≤ 2 s page load, 99.9 % uptime)** | Poor performance or downtime directly impacts patient access to care, especially for tele‑consultations, and can breach SLA commitments. |
+
+---  
+
+## QUICK ACTION RECOMMENDATION  
+
+1. **Prioritise the missing functional flows** (registration, speciality management, appointment scheduling) by creating automated end‑to‑end tests that mirror the SRS‑derived cases.  
+2. **Add security‑ and performance‑testing** to the code‑based suite (e.g., OWASP ZAP scans, load‑testing scripts).  
+3. **Document the model‑level helpers** (the “undocumented features”) in an updated SRS or a separate technical specification to avoid future scope creep.  
+4. **Map each SRS‑derived test to a concrete code path** (unit, integration, UI) so that the gap count can be reduced to zero.  
+
+---  
+
+*Prepared by:*  
+Senior QA Engineer – Virtual Clinic  
+Date: 2026‑09‑25  

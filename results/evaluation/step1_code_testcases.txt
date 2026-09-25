@@ -1,0 +1,254 @@
+---  
+TC-ID          : TC-CODE-001  
+Title          : Verify `Speciality.__str__` returns the name field  
+Target         : Model – Speciality  
+Preconditions  :  
+  - A `Speciality` instance is created with `name="Cardiology"` and any description.  
+Test Steps     :  
+  1. Call `str(speciality_instance)`.  
+Expected Result: The returned string is exactly `"Cardiology"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-002  
+Title          : Verify `Symptom.__str__` returns the name field  
+Target         : Model – Symptom  
+Preconditions  :  
+  - A `Symptom` instance is created with `name="Headache"` and any description.  
+Test Steps     :  
+  1. Call `str(symptom_instance)`.  
+Expected Result: The returned string is exactly `"Headache"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-003  
+Title          : Verify `Location.__str__` returns the address field  
+Target         : Model – Location  
+Preconditions  :  
+  - A `Location` instance is created with `address="123 Main St"` (other fields can be any valid strings).  
+Test Steps     :  
+  1. Call `str(location_instance)`.  
+Expected Result: The returned string is exactly `"123 Main St"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-004  
+Title          : Verify default country for `Location` is “India”  
+Target         : Model – Location  
+Preconditions  :  
+  - A `Location` instance is created **without** specifying the `country` field.  
+Test Steps     :  
+  1. Retrieve `location_instance.country`.  
+Expected Result: The value is `"India"`.  
+Test Type      : Boundary  
+---  
+TC-ID          : TC-CODE-005  
+Title          : Verify `Hospital.__str__` returns the name field  
+Target         : Model – Hospital  
+Preconditions  :  
+  - A `Location` instance exists.  
+  - A `Hospital` instance is created with `name="City Hospital"` and the above location.  
+Test Steps     :  
+  1. Call `str(hospital_instance)`.  
+Expected Result: The returned string is exactly `"City Hospital"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-006  
+Title          : Verify `Profile.to_gender` returns correct gender label  
+Target         : Model – Profile (static method)  
+Preconditions  : None  
+Test Steps     :  
+  1. Call `Profile.to_gender('M')`.  
+  2. Call `Profile.to_gender('F')`.  
+  3. Call `Profile.to_gender('X')`.  
+Expected Result:  
+  - Step 1 returns `"Male"`.  
+  - Step 2 returns `"Female"`.  
+  - Step 3 returns `"None"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-007  
+Title          : Verify `Profile.__str__` concatenates first and last name (including blanks)  
+Target         : Model – Profile  
+Preconditions  :  
+  - A `Profile` instance with `firstname="John"` and `lastname="Doe"` exists.  
+Test Steps     :  
+  1. Call `str(profile_instance)`.  
+Expected Result: The string `"John Doe"` is returned.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-008  
+Title          : Verify `Profile.get_populated_fields` includes only non‑default fields  
+Target         : Model – Profile  
+Preconditions  :  
+  - A `Profile` instance is created with:  
+    * `firstname="Alice"`  
+    * `lastname="Smith"`  
+    * `sex="F"`  
+    * `birthday=date(1990,5,20)`  
+    * `phone="1234567890"`  
+    * `allergies="Peanuts"`  
+    * `prefHospital` set to a valid `Hospital` object  
+    * `primaryCareDoctor` set to a valid `Account` object  
+    * `speciality` set to a valid `Speciality` object  
+Test Steps     :  
+  1. Call `profile_instance.get_populated_fields()`.  
+Expected Result: The returned dictionary contains **all** keys listed above with their exact values.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-009  
+Title          : Verify `Profile.get_populated_fields` omits fields with default/blank values  
+Target         : Model – Profile  
+Preconditions  :  
+  - A `Profile` instance is created with only `firstname="Bob"`; all other fields left as defaults (`None` or default date).  
+Test Steps     :  
+  1. Call `profile_instance.get_populated_fields()`.  
+Expected Result: The returned dictionary contains only the key `'firstname'` with value `"Bob"`; no other keys are present.  
+Test Type      : Negative / Boundary  
+---  
+TC-ID          : TC-CODE-010  
+Title          : Verify `Account.to_name` maps integer role to string name  
+Target         : Model – Account (static method)  
+Preconditions  : None  
+Test Steps     :  
+  1. Call `Account.to_name(20)`.  
+  2. Call `Account.to_name(99)` (non‑existent).  
+Expected Result:  
+  - Step 1 returns `"Doctor"`.  
+  - Step 2 returns `"None"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-011  
+Title          : Verify `Account.to_value` maps string role to integer value (case‑insensitive)  
+Target         : Model – Account (static method)  
+Preconditions  : None  
+Test Steps     :  
+  1. Call `Account.to_value('doctor')`.  
+  2. Call `Account.to_value('ADMIN')`.  
+  3. Call `Account.to_value('unknown_role')`.  
+Expected Result:  
+  - Step 1 returns `20`.  
+  - Step 2 returns `30`.  
+  - Step 3 returns `0`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-012  
+Title          : Verify `Account.__str__` prefixes “Dr.” for doctor role  
+Target         : Model – Account  
+Preconditions  :  
+  - A `Profile` instance with `firstname="Emma"` and `lastname="Brown"` exists.  
+  - A `User` instance exists (can be Django’s built‑in user).  
+  - An `Account` instance is created with `role=Account.ACCOUNT_DOCTOR`, linking the above profile and user.  
+Test Steps     :  
+  1. Call `str(account_instance)`.  
+Expected Result: The string returned is `"Dr. Emma Brown"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-013  
+Title          : Verify `Account.__str__` for non‑doctor roles does not add prefix  
+Target         : Model – Account  
+Preconditions  :  
+  - Same as TC‑012 but `role=Account.ACCOUNT_PATIENT`.  
+Test Steps     :  
+  1. Call `str(account_instance)`.  
+Expected Result: The string returned is `"Emma Brown"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-014  
+Title          : Verify `Action.to_name` returns correct description for known action code  
+Target         : Model – Action (static method)  
+Preconditions  : None  
+Test Steps     :  
+  1. Call `Action.to_name(Action.ACTION_APPOINTMENT)`.  
+Expected Result: Returns `"Appointment"`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-015  
+Title          : Verify `Action.to_name` returns “None” for unknown action code  
+Target         : Model – Action (static method)  
+Preconditions  : None  
+Test Steps     :  
+  1. Call `Action.to_name(999)`.  
+Expected Result: Returns `"None"`.  
+Test Type      : Negative  
+---  
+TC-ID          : TC-CODE-016  
+Title          : Verify `Action.to_value` maps action description to integer (case‑insensitive)  
+Target         : Model – Action (static method)  
+Preconditions  : None  
+Test Steps     :  
+  1. Call `Action.to_value('prescription')`.  
+  2. Call `Action.to_value('MeDiCaL InFo')`.  
+  3. Call `Action.to_value('nonexistent')`.  
+Expected Result:  
+  - Step 1 returns `6`.  
+  - Step 2 returns `8`.  
+  - Step 3 returns `0`.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-017  
+Title          : Verify default values for `Appointment` fields (`status`, `appointment_type`)  
+Target         : Model – Appointment  
+Preconditions  :  
+  - Valid `Account` objects for doctor and patient.  
+  - A `Symptom` and `Hospital` instance exist.  
+  - An `Appointment` is created **without** specifying `status` or `appointment_type`.  
+Test Steps     :  
+  1. Retrieve `appointment_instance.status`.  
+  2. Retrieve `appointment_instance.appointment_type`.  
+Expected Result:  
+  - `status` equals `"Active"`.  
+  - `appointment_type` equals `"Offline"`.  
+Test Type      : Boundary  
+---  
+TC-ID          : TC-CODE-018  
+Title          : Verify `Appointment.get_populated_fields` returns all defined fields  
+Target         : Model – Appointment  
+Preconditions  :  
+  - Fully populated `Appointment` instance (doctor, patient, symptom, description, hospital, appointment_type, startTime, endTime).  
+Test Steps     :  
+  1. Call `appointment_instance.get_populated_fields()`.  
+Expected Result: Dictionary contains keys: `doctor`, `patient`, `symptom`, `description`, `hospital`, `appointment_type`, `startTime`, `endTime` with values matching the instance.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-019  
+Title          : Verify default boolean flags for `Message` (`sender_deleted`, `target_deleted`) are False  
+Target         : Model – Message  
+Preconditions  :  
+  - Two `Account` objects (sender, target) exist.  
+  - A `Message` is created with only required fields (`header`, `body`).  
+Test Steps     :  
+  1. Retrieve `message_instance.sender_deleted`.  
+  2. Retrieve `message_instance.target_deleted`.  
+Expected Result: Both fields are `False`.  
+Test Type      : Boundary  
+---  
+TC-ID          : TC-CODE-020  
+Title          : Verify `Notification` defaults – unread and timestamps handling  
+Target         : Model – Notification  
+Preconditions  :  
+  - An `Account` exists.  
+  - A `Notification` is created with only `account` and `message`.  
+Test Steps     :  
+  1. Verify `notification_instance.read` is `False`.  
+  2. Verify `notification_instance.read_timestamp` is `None`.  
+  3. Verify `notification_instance.sent_timestamp` is automatically set (non‑null).  
+Expected Result: Steps 1‑3 are all true.  
+Test Type      : Functional / Boundary  
+---  
+TC-ID          : TC-CODE-021  
+Title          : Verify `Prescription.get_populated_fields` returns all fields correctly  
+Target         : Model – Prescription  
+Preconditions  :  
+  - Valid `Account` objects for patient and doctor.  
+  - A `Prescription` instance is created with all fields populated (`date`, `medication`, `strength`, `instruction`, `refill`, `active`).  
+Test Steps     :  
+  1. Call `prescription_instance.get_populated_fields()`.  
+Expected Result: Dictionary contains exactly the keys `patient`, `doctor`, `date`, `medication`, `strength`, `instruction`, `refill`, `active` with values matching the instance.  
+Test Type      : Functional  
+---  
+TC-ID          : TC-CODE-022  
+Title          : Verify `MedicalInfo.to_blood` maps blood type code to readable string  
+Target         : Model – MedicalInfo (static method)  
+Preconditions  : None  
+Test Steps     :  
+  1. Call `MedicalInfo.to_blood('A+')`.  
+  2. Call `MedicalInfo.to_blood('O-')`.  
+  3. Call `MedicalInfo.to_blood('X')`.
