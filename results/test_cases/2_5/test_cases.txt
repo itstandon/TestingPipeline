@@ -1,0 +1,158 @@
+---
+TC-ID          : TC-2.5-001
+Title          : Verify Patient Appointment file generated without full scan of Consultation Request entity
+Requirement    : Req-2.5-a
+Preconditions  : 
+  - Consultation Request table contains at least 10,000 records spanning multiple dates.
+  - System index on Appointment Date exists.
+  - Derived entity “Patient Appointment file” is configured.
+Test Steps     :
+  1. Log in as an authorized system user with permission to generate appointment reports.
+  2. Request generation of the “Next Day Appointment” report through the UI/API.
+  3. Capture the executed database query (e.g., via query logger or profiler).
+  4. Verify that the query reads from the Patient Appointment file and not from the raw Consultation Request table.
+Expected Result: Report is produced correctly; query plan shows no full table scan of Consultation Request entity (only indexed access on Patient Appointment file).  
+Test Type      : Functional
+---
+TC-ID          : TC-2.5-002
+Title          : Attempt to retrieve next‑day appointments by directly scanning Consultation Request table
+Requirement    : Req-2.5-a
+Preconditions  : 
+  - Same as TC-2.5-001.
+  - User has “Developer” role that can execute ad‑hoc SQL.
+Test Steps     :
+  1. Log in as the Developer.
+  2. Execute a SELECT statement that joins Consultation Request with Appointment Date filtering for next day, without using the derived entity.
+  3. Observe system monitoring for prohibited operations.
+Expected Result: System blocks the query and returns an error message such as “Direct scan of Consultation Request entity is prohibited; use Patient Appointment file.”  
+Test Type      : Negative
+---
+TC-ID          : TC-2.5-003
+Title          : Generate Next‑Day Appointment report when database holds maximum expected volume (4 M requests)
+Requirement    : Req-2.5-e / Req-2.5-f
+Preconditions  : 
+  - Database contains 4,000,000 Consultation Request records distributed over 3 years.
+  - Patient Appointment file is up‑to‑date.
+  - System performance monitoring tools are active.
+Test Steps     :
+  1. Log in as a reporting user.
+  2. Request the “Next Day Appointment” report.
+  3. Measure the time from request initiation to report completion.
+Expected Result: Report is returned in ≤ 5 seconds (acceptable performance threshold for large volume).  
+Test Type      : Performance
+---
+TC-ID          : TC-2.5-004
+Title          : Verify workflow assigns a Consultation Request to a single doctor of matching speciality
+Requirement    : Req-2.5-b
+Preconditions  : 
+  - Two doctors (Dr. A and Dr. B) exist with the same speciality “Cardiology”.
+  - A new Consultation Request for Cardiology is created and is unassigned.
+Test Steps     :
+  1. Log in as the workflow engine (system).
+  2. Trigger automatic routing of the pending request.
+  3. Observe which doctor receives the assignment.
+  4. Verify that only one doctor’s work‑list shows the request.
+Expected Result: The request is assigned to either Dr. A **or** Dr. B, but not both; the other doctor’s queue remains unchanged.  
+Test Type      : Functional
+---
+TC-ID          : TC-2.5-005
+Title          : Prevent second doctor of same speciality from claiming an already assigned Consultation Request
+Requirement    : Req-2.5-b
+Preconditions  : 
+  - Consultation Request already assigned to Dr. A (Cardiology).
+  - Dr. B (Cardiology) is logged in and views the pending queue.
+Test Steps     :
+  1. Dr. B attempts to “Accept” the same Consultation Request.
+  2. System validates assignment status.
+Expected Result: System rejects the action with message “Request already assigned to another doctor.” The request remains only in Dr. A’s queue.  
+Test Type      : Negative
+---
+TC-ID          : TC-2.5-006
+Title          : Route completed prescription to correct Chemist based on patient and chemist pincode
+Requirement    : Req-2.5-b
+Preconditions  : 
+  - Patient lives in pincode 560001.
+  - Chemist C operates in pincode 560001 and is active in the system.
+  - Consultation Request has been completed by the assigned doctor and prescription is saved.
+Test Steps     :
+  1. System triggers post‑prescription workflow.
+  2. Verify the routing engine selects Chemist C.
+  3. Confirm Chemist C receives the prescription notification.
+Expected Result: Prescription is routed exclusively to Chemist C; no other chemist receives it.  
+Test Type      : Functional
+---
+TC-ID          : TC-2.5-007
+Title          : Block routing to Chemist when pincode does not match patient’s location
+Requirement    : Req-2.5-b
+Preconditions  : 
+  - Patient lives in pincode 560001.
+  - Chemist D operates in pincode 560002 (different).
+  - Prescription is ready for routing.
+Test Steps     :
+  1. Attempt to manually assign the prescription to Chemist D via admin console.
+  2. System validates pincode compatibility.
+Expected Result: System prevents the assignment and displays “Chemist pincode mismatch with patient location.”  
+Test Type      : Negative
+---
+TC-ID          : TC-2.5-008
+Title          : Route completed prescription to correct Lab based on patient and lab pincode
+Requirement    : Req-2.5-b
+Preconditions  : 
+  - Patient lives in pincode 110045.
+  - Lab L operates in pincode 110045 and is listed as a partner lab.
+  - Prescription includes lab test order.
+Test Steps     :
+  1. System initiates lab‑routing step after doctor finalizes prescription.
+  2. Verify Lab L receives the test order notification.
+Expected Result: Lab L receives the order; no other lab receives it.  
+Test Type      : Functional
+---
+TC-ID          : TC-2.5-009
+Title          : Prevent routing to Lab when pincode does not match patient’s location
+Requirement    : Req-2.5-b
+Preconditions  : 
+  - Patient lives in pincode 110045.
+  - Lab M operates in pincode 110046.
+  - Prescription includes lab test order.
+Test Steps     :
+  1. Attempt manual assignment of the lab order to Lab M.
+  2; System checks pincode compatibility.
+Expected Result: Assignment is rejected with message “Lab pincode mismatch with patient location.”  
+Test Type      : Negative
+---
+TC-ID          : TC-2.5-010
+Title          : Generate disease prediction using ML algorithm for valid symptom input
+Requirement    : Req-2.5-c
+Preconditions  : 
+  - ML model is deployed and trained on the latest dataset.
+  - Symptom list: ["fever", "cough", "shortness of breath"].
+  - User has role “Doctor” and access to prediction service.
+Test Steps     :
+  1. Submit the symptom list to the prediction API.
+  2. Capture the returned disease probabilities.
+Expected Result: API returns a ranked list of probable diseases (e.g., COVID‑19, Influenza) with confidence scores; response time ≤ 2 seconds.  
+Test Type      : Functional
+---
+TC-ID          : TC-2.5-011
+Title          : Handle empty symptom list gracefully in ML prediction service
+Requirement    : Req-2.5-c
+Preconditions  : 
+  - Same as TC-2.5-010.
+  - Symptom list is empty.
+Test Steps     :
+  1. Call the prediction API with an empty symptom array.
+Expected Result: API returns a validation error such as “Symptom list cannot be empty.” No crash or undefined behavior.  
+Test Type      : Negative
+---
+TC-ID          : TC-2.5-012
+Title          : Archive patients with no consultation in the last 3 years
+Requirement    : Req-2.5-d
+Preconditions  : 
+  - Patient P1 has last consultation date > 3 years ago.
+  - Admin user is logged in.
+  - Both primary and archive databases are reachable.
+Test Steps     :
+  1. Admin initiates the “Archive Inactive Patients” batch job.
+  2. System identifies P1 and moves the record to the archive database.
+  3. Verify P1 no longer appears in the active patient list.
+Expected

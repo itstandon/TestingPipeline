@@ -1,0 +1,133 @@
+---
+TC-ID          : TC-5.2-001
+Title          : Generate regulatory compliance report (happy path)
+Requirement    : REQ-5.2-001
+Preconditions  :
+- System is configured with current Government of India health‑care regulation rules.
+- Test user has the “Compliance Analyst” role.
+- Sufficient patient and operational data exist in the database.
+Test Steps     :
+  1. Log in to the system as the Compliance Analyst.
+  2. Navigate to the “Compliance” module.
+  3. Select “Generate Full Compliance Report”.
+  4. Click the “Generate” button.
+Expected Result: The system produces a PDF/HTML report that includes all required regulatory sections, data integrity checks, and audit‑log summaries without errors.
+Test Type      : Functional
+---
+TC-ID          : TC-5.2-002
+Title          : Prevent unauthorized export of patient data (negative)
+Requirement    : REQ-5.2-001
+Preconditions  :
+- System is running with role‑based access control enabled.
+- Test user is assigned the “Nurse” role (no export privilege).
+Test Steps     :
+  1. Log in as the Nurse user.
+  2. Attempt to access the “Export Patient Data” function from the “Data Management” screen.
+  2. Confirm the export request.
+Expected Result: The system displays an error message “Insufficient permissions to export patient data” and no data is exported.
+Test Type      : Negative
+---
+TC-ID          : TC-5.2-003
+Title          : Verify audit logs are encrypted at rest (security)
+Requirement    : REQ-5.2-001
+Preconditions  :
+- System audit logging is enabled.
+- Access to the underlying database storage is available for inspection (test environment only).
+Test Steps     :
+  1. Perform a series of actions that generate audit entries (e.g., user login, record update).
+  2. Stop the application services to ensure data is flushed to disk.
+  3. Directly query the audit_log table/files on the storage medium.
+Expected Result: Audit log entries are stored in an encrypted format (e.g., AES‑256); raw plaintext data is not visible.
+Test Type      : Security
+---
+TC-ID          : TC-5.2-004
+Title          : Measure compliance report generation time (performance)
+Requirement    : REQ-5.2-001
+Preconditions  :
+- System populated with maximum realistic volume of regulated data (e.g., 5 million patient records).
+- Test user has “Compliance Analyst” role.
+Test Steps     :
+  1. Log in as the Compliance Analyst.
+  2. Initiate “Generate Full Compliance Report”.
+  3. Start a timer when the “Generate” button is pressed.
+  4. Stop the timer when the report download link becomes active.
+Expected Result: Report generation completes within 5 seconds; timer reads ≤ 5 s.
+Test Type      : Performance
+---
+TC-ID          : TC-5.2-005
+Title          : Ingest new data type for emerging hospital need (happy path)
+Requirement    : REQ-5.2-002
+Preconditions  :
+- System is configured to accept extensible data schemas.
+- A new data file (e.g., “COVID‑19 Vaccination Batch”) conforming to the published schema is available.
+- Test user has “Data Engineer” role.
+Test Steps     :
+  1. Log in as the Data Engineer.
+  2. Navigate to “Data Ingestion” → “Upload New Schema”.
+  3. Upload the new schema definition file.
+  4. Return to “Data Ingestion” and select the newly uploaded schema.
+  5. Upload the “COVID‑19 Vaccination Batch” data file.
+  6. Submit the ingestion request.
+Expected Result: System accepts the new schema, successfully loads all records, and makes the data available for analysis dashboards without errors.
+Test Type      : Functional
+---
+TC-ID          : TC-5.2-006
+Title          : Reject unsupported data format for emerging need (negative)
+Requirement    : REQ-5.2-002
+Preconditions  :
+- System is running with the latest supported schema set.
+- Test user has “Data Engineer” role.
+- An invalid data file (e.g., missing mandatory fields) is prepared.
+Test Steps     :
+  1. Log in as the Data Engineer.
+  2. Attempt to upload the invalid data file using the “Data Ingestion” interface.
+  3. Confirm the upload.
+Expected Result: The system validates the file, detects schema violations, displays an error “Upload failed: mandatory field ‘patient_id’ missing”, and no records are stored.
+Test Type      : Negative
+---
+TC-ID          : TC-5.2-007
+Title          : Enforce role‑based access to emerging‑needs analytics (security)
+Requirement    : REQ-5.2-002
+Preconditions  :
+- Analytics dashboards for “Emerging Needs” are created.
+- Two test users exist: one with “Hospital Administrator” role, another with “Guest” role.
+Test Steps     :
+  1. Log in as Hospital Administrator.
+  2. Access the “Emerging Needs” analytics dashboard.
+  3. Verify the dashboard loads and displays data.
+  4. Log out.
+  5. Log in as Guest.
+  6. Attempt to access the same dashboard URL.
+Expected Result: Administrator sees the dashboard correctly; Guest receives an “Access denied – insufficient privileges” message.
+Test Type      : Security
+---
+TC-ID          : TC-5.2-008
+Title          : Process large‑scale analytics for emerging needs within SLA (performance)
+Requirement    : REQ-5.2-002
+Preconditions  :
+- System contains 1 million new‑type records (e.g., tele‑medicine session logs).
+- Analytics engine is operational.
+- Test user has “Analytics Engineer” role.
+Test Steps     :
+  1. Log in as Analytics Engineer.
+  2. Request generation of the “Emerging Tele‑Medicine Utilization” report.
+  3. Start a timer at request submission.
+  4. Stop the timer when the report download link appears.
+Expected Result: Report generation completes in ≤ 10 seconds; timer reads ≤ 10 s.
+Test Type      : Performance
+---
+TC-ID          : TC-5.2-009
+Title          : Enforce newly mandated regulatory field during data entry (functional)
+Requirement    : REQ-5.2-001
+Preconditions  :
+- Government of India has issued an amendment requiring the field “ConsentObtainedDate” for every patient record.
+- System is updated with the new mandatory field rule.
+- Test user has “Clinician” role.
+Test Steps     :
+  1. Log in as Clinician.
+  2. Open “Create New Patient Record” form.
+  3. Fill all required fields **except** “ConsentObtainedDate”.
+  4. Attempt to save the record.
+Expected Result: System blocks the save operation and displays “Error: ‘ConsentObtainedDate’ is required per regulatory amendment.”
+Test Type      : Negative
+---

@@ -1,0 +1,156 @@
+---
+TC-ID          : TC-1.4-001
+Title          : Submit a doctor‑visit request within the service zone during normal hours
+Requirement    : REQ-1.4-001, REQ-1.4-002, REQ-1.4-006
+Preconditions  :
+  - Patient is registered and authenticated in the system.
+  - Patient’s address is geocoded and lies **inside** the 25 km service zone (e.g., latitude/longitude within zone).
+  - System time is within normal operating hours (any time, since service is 24/7).
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Request Home Doctor Visit”.
+  3. Verify that the address auto‑populates correctly.
+  4. Click “Submit Request”.
+Expected Result: The request is accepted, a confirmation screen displays a request ID, and the system schedules a doctor visit; the request status is “Pending”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.4-002
+Title          : Reject a doctor‑visit request from an address outside the service zone
+Requirement    : REQ-1.4-006
+Preconditions  :
+  - Patient is registered and authenticated.
+  - Patient’s address is geocoded and lies **outside** the 25 km service zone.
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Request Home Doctor Visit”.
+  3. Enter the out‑of‑zone address.
+  4. Click “Submit Request”.
+Expected Result: The system displays an error message “Service not available in your area” and does not create a request record.  
+Test Type      : Negative
+---
+TC-ID          : TC-1.4-003
+Title          : Accept a doctor‑visit request at the exact 25 km boundary of the zone
+Requirement    : REQ-1.4-006
+Preconditions  :
+  - Patient is registered and authenticated.
+  - Patient’s address is geocoded to a point **exactly 25 km** from the hospital centre (boundary).
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Request Home Doctor Visit”.
+  3. Verify the address shows as within the zone (system indicates “Service Available”).
+  4. Submit the request.
+Expected Result: The request is accepted and a confirmation is shown, proving the boundary is inclusive.  
+Test Type      : Boundary
+---
+TC-ID          : TC-1.4-004
+Title          : Reject a doctor‑visit request just beyond the 25 km boundary
+Requirement    : REQ-1.4-006
+Preconditions  :
+  - Patient is registered and authenticated.
+  - Patient’s address is geocoded to a point **25.01 km** from the hospital centre (just outside).
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Request Home Doctor Visit”.
+  3. System should flag the address as “Out of Service Area”.
+  4. Attempt to submit the request.
+Expected Result: The system blocks the submission and shows the same error as TC‑1.4‑002.  
+Test Type      : Boundary
+---
+TC-ID          : TC-1.4-005
+Title          : Verify that the assigned doctor belongs to the high‑quality panel
+Requirement    : REQ-1.4-003
+Preconditions  :
+  - Patient has an accepted doctor‑visit request (from TC‑1.4‑001).
+  - Hospital maintains a master list of panel doctors with a “High‑Quality” flag.
+Test Steps     :
+  1. Log in as the patient and view the request details.
+  2. Note the doctor’s name and ID.
+  3. Cross‑check the doctor’s ID against the panel master list (accessible to admin).
+Expected Result: The doctor’s ID appears in the panel list and the “High‑Quality” flag is set to “Yes”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.4-006
+Title          : Order medicines to be delivered by an authorized chemist within the zone
+Requirement    : REQ-1.4-004, REQ-1.4-006
+Preconditions  :
+  - Patient is authenticated and has a valid prescription uploaded.
+  - Patient’s address is inside the service zone.
+  - At least one authorized chemist exists for the patient’s pincode.
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Order Medicines”.
+  3. Select the prescribed medicines.
+  4. Choose an authorized chemist from the displayed list.
+  5. Confirm the order.
+Expected Result: Order is accepted, a confirmation with delivery ETA is displayed, and the order record references the selected authorized chemist.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.4-007
+Title          : Prevent selection of a non‑authorized chemist for medicine delivery
+Requirement    : REQ-1.4-004
+Preconditions  :
+  - Patient is authenticated.
+  - System contains both authorized and non‑authorized chemists for the same pincode.
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Order Medicines”.
+  3. Attempt to select a chemist that is **not** marked as authorized.
+Expected Result: The non‑authorized chemist is either not listed or, if manually entered, the system shows an error “Selected chemist is not authorized for doorstep delivery”.  
+Test Type      : Negative
+---
+TC-ID          : TC-1.4-008
+Title          : Verify discounted price is applied to medicines delivered at doorstep
+Requirement    : REQ-1.4-004
+Preconditions  :
+  - Patient is enrolled in the “Doorstep Discount” program.
+  - Authorized chemist’s price list includes discount rates for the program.
+  - Patient has selected medicines worth ₹1000 (pre‑discount).
+Test Steps     :
+  1. Log in as the patient.
+  2. Order the medicines (as in TC‑1.4‑006).
+  3. Review the price summary before confirming.
+Expected Result: The total price shown reflects the discounted amount (e.g., 10 % off), and the discount line item is displayed.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.4-009
+Title          : Reject doorstep laboratory service request in an area where collection is not possible
+Requirement    : REQ-1.4-005
+Preconditions  :
+  - Patient is authenticated.
+  - Patient’s address is inside the zone but flagged in the system as “Laboratory Service Unavailable” (e.g., due to remote terrain).
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Request Lab Specimen Collection”.
+  3. Attempt to submit the request.
+Expected Result: System displays “Lab specimen collection not available at your location” and prevents request creation.  
+Test Type      : Negative
+---
+TC-ID          : TC-1.4-010
+Title          : Successfully request doorstep laboratory specimen collection where service is available
+Requirement    : REQ-1.4-005
+Preconditions  :
+  - Patient is authenticated.
+  - Patient’s address is inside the zone and marked as “Lab Service Available”.
+  - Required lab test(s) are defined in the catalog.
+Test Steps     :
+  1. Log in as the patient.
+  2. Navigate to “Request Lab Specimen Collection”.
+  3. Select desired test(s) and schedule a convenient time.
+  4. Submit the request.
+Expected Result: Request is accepted, confirmation with collection date/time is shown, and a lab‑order record is created.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.4-011
+Title          : Verify 24/7 availability – submit a request at midnight
+Requirement    : REQ-1.4-001, REQ-1.4-007
+Preconditions  :
+  - Patient is authenticated.
+  - System clock is set to 00:00 (midnight) on a typical day.
+  - Patient’s address is inside the zone.
+Test Steps     :
+  1. Log in as the patient.
+  2. Submit a “Doctor Home Visit” request (as in TC‑1.4‑001).
+Expected Result: The request is processed normally with the same confirmation flow; no “service unavailable” message appears.  
+Test Type      : Functional
+---
+TC-ID          :

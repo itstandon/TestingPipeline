@@ -1,0 +1,173 @@
+---
+TC-ID          : TC-2.4-001
+Title          : Verify system deployment on Heroku platform
+Requirement    : Req-2.4-001
+Preconditions  :
+  - Source code repository is prepared and passes all unit tests
+  - Heroku CLI is installed and user is logged in
+  - Heroku account has an available app slot
+Test Steps     :
+  1. Execute `heroku create <app-name>` to create a new Heroku app.
+  2. Push the application code to Heroku with `git push heroku main`.
+  3. Run `heroku ps:scale web=1` to start the web dyno.
+  4. Open the app URL provided by Heroku in a browser.
+Expected Result: The application starts without errors, the dyno is running, and the web page loads correctly indicating successful deployment on Heroku.
+Test Type      : Functional
+---
+TC-ID          : TC-2.4-002
+Title          : Verify connection to MySQL Database version 5.7.21
+Requirement    : Req-2.4-002
+Preconditions  :
+  - MySQL server 5.7.21 is installed and running on the configured host
+  - Database schema has been applied
+  - Application configuration points to this MySQL instance (host, port, user, password)
+Test Steps     :
+  1. Launch the application (deployed on Heroku) and navigate to a page that queries the database (e.g., login or dashboard).
+  2. Observe the application’s ability to retrieve data (e.g., list of patients).
+  3. In parallel, connect to the MySQL server using a MySQL client and run `SELECT VERSION();`.
+Expected Result: Application displays data correctly, and the MySQL client returns `5.7.21` confirming the correct version is in use.
+Test Type      : Functional
+---
+TC-ID          : TC-2.4-003
+Title          : Verify website accessibility on Google Chrome (supported browser)
+Requirement    : Req-2.4-003
+Preconditions  :
+  - Latest stable Google Chrome installed on the test machine
+  - System is deployed and reachable via its public URL
+Test Steps     :
+  1. Open Google Chrome.
+  2. Enter the system URL and press Enter.
+  3. Verify that the homepage loads without visual defects.
+  4. Perform a basic operation (e.g., click “Login” and submit valid credentials).
+Expected Result: Homepage loads within 2 seconds, all UI elements render correctly, and the login succeeds, confirming browser compatibility.
+Test Type      : Functional
+---
+TC-ID          : TC-2.4-004
+Title          : Verify website accessibility on Mozilla Firefox (supported browser)
+Requirement    : Req-2.4-003
+Preconditions  :
+  - Latest stable Mozilla Firefox installed on the test machine
+  - System is deployed and reachable via its public URL
+Test Steps     :
+  1. Open Mozilla Firefox.
+  2. Navigate to the system URL.
+  3. Observe page rendering and perform a login with valid credentials.
+Expected Result: The site loads without errors, UI elements display correctly, and login succeeds, confirming compatibility with Firefox.
+Test Type      : Functional
+---
+TC-ID          : TC-2.4-005
+Title          : Verify system operation on Windows PC (supported OS)
+Requirement    : Req-2.4-004
+Preconditions  :
+  - Test workstation runs Microsoft Windows 10 or later
+  - Google Chrome or Mozilla Firefox installed
+  - Network connectivity to the system URL
+Test Steps     :
+  1. Launch the supported browser.
+  2. Access the system URL.
+  3. Perform a typical user workflow (e.g., view patient list).
+Expected Result: All functionalities work as expected; no OS‑specific errors appear.
+Test Type      : Functional
+---
+TC-ID          : TC-2.4-006
+Title          : Verify system operation on Linux PC (supported OS)
+Requirement    : Req-2.4-004
+Preconditions  :
+  - Test workstation runs a modern Linux distribution (e.g., Ubuntu 22.04)
+  - Google Chrome or Mozilla Firefox installed
+  - Network connectivity to the system URL
+Test Steps     :
+  1. Open the browser.
+  2. Navigate to the system URL.
+  3. Execute a standard user transaction (e.g., create a new appointment).
+Expected Result: The transaction completes successfully; no Linux‑specific errors are observed.
+Test Type      : Functional
+---
+TC-ID          : TC-2.4-007
+Title          : Verify system operation on macOS (supported OS)
+Requirement    : Req-2.4-004
+Preconditions  :
+  - Test workstation runs macOS 12 Monterey or later
+  - Google Chrome or Mozilla Firefox installed
+  - Network connectivity to the system URL
+Test Steps     :
+  1. Launch the browser.
+  2. Access the system URL.
+  3. Perform a read‑only operation (e.g., view lab results).
+Expected Result: The page renders correctly and the data is displayed; no macOS‑specific issues appear.
+Test Type      : Functional
+---
+TC-ID          : TC-2.4-008
+Title          : Negative test – attempt deployment on non‑Heroku platform (AWS)
+Requirement    : Req-2.4-001
+Preconditions  :
+  - AWS Elastic Beanstalk environment prepared
+  - Same application code ready for deployment
+Test Steps     :
+  1. Deploy the application to AWS Elastic Beanstalk using the standard deployment procedure.
+  2. Attempt to start the application.
+Expected Result: Deployment fails or produces configuration errors because the system is required to run on Heroku; error logs reference unsupported platform.
+Test Type      : Negative
+---
+TC-ID          : TC-2.4-009
+Title          : Negative test – connect to unsupported MySQL version (5.6)
+Requirement    : Req-2.4-002
+Preconditions  :
+  - MySQL server version 5.6 is running and reachable
+  - Application configuration is pointed to this MySQL 5.6 instance
+Test Steps     :
+  1. Start the application.
+  2. Trigger a database‑dependent feature (e.g., login).
+Expected Result: Application throws a version‑mismatch error or fails to start, indicating that only MySQL 5.7.21 is supported.
+Test Type      : Negative
+---
+TC-ID          : TC-2.4-010
+Title          : Negative test – access system with unsupported browser (Internet Explorer)
+Requirement    : Req-2.4-003
+Preconditions  :
+  - Internet Explorer 11 installed on test machine
+  - System URL is reachable
+Test Steps     :
+  1. Open Internet Explorer.
+  2. Navigate to the system URL.
+  3. Observe loading behavior.
+Expected Result: The site displays a clear incompatibility warning or fails to render functional UI, confirming that only Chrome/Firefox are supported.
+Test Type      : Negative
+---
+TC-ID          : TC-2.4-011
+Title          : Negative test – access system from unsupported OS (Android mobile)
+Requirement    : Req-2.4-004
+Preconditions  :
+  - Android smartphone with Chrome browser installed
+  - System URL accessible over internet
+Test Steps     :
+  1. Open Chrome on the Android device.
+  2. Enter the system URL.
+  3. Attempt to log in.
+Expected Result: The application either redirects to a mobile‑specific page with a notice that the platform is unsupported or displays functional limitations, confirming OS restriction.
+Test Type      : Negative
+---
+TC-ID          : TC-2.4-012
+Title          : Security test – unauthenticated user attempts to access protected page
+Requirement    : Req-2.4-003
+Preconditions  :
+  - Browser (Chrome) opened, no active session/cookie for the system
+  - URL of a protected resource (e.g., /admin/dashboard) known
+Test Steps     :
+  1. Directly navigate to the protected URL.
+  2. Observe the system response.
+Expected Result: System redirects the user to the login page or returns HTTP 302/401, ensuring unauthenticated access is denied.
+Test Type      : Security
+---
+TC-ID          : TC-2.4-013
+Title          : Security test – user with insufficient role attempts admin operation
+Requirement    : Req-2.4-003
+Preconditions  :
+  - Valid user account with “Staff” role (no admin privileges) exists
+  - User is logged in via Chrome
+Test Steps     :
+  1. Attempt to access the admin management page (/admin/users).
+  2. Perform an admin‑only action (e.g., delete a user).
+Expected Result: System displays an “Access Denied” message or returns HTTP 403, confirming proper role‑based authorization.
+Test Type      : Security
+---

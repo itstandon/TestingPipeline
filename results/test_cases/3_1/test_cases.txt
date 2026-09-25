@@ -1,0 +1,136 @@
+---
+TC-ID          : TC-3.1-001
+Title          : Verify system UI loads correctly on a PC/Laptop
+Requirement    : Req-3.1-01 (UI shall work on PC/Laptop)
+Preconditions  : 
+  - Test workstation is a Windows/macOS/Linux PC with a standard monitor (minimum 1024×768 resolution)
+  - Browser is supported (e.g., Chrome, Firefox, Edge) and launched
+  - System server is up and reachable
+Test Steps     :
+  1. Open the browser and navigate to the system’s URL.
+  2. Observe the landing screen.
+Expected Result: The landing screen is rendered completely, all UI elements are visible, and no layout distortion occurs.
+Test Type      : Functional
+---
+TC-ID          : TC-3.1-002
+Title          : Verify UI is not supported on non‑PC devices
+Requirement    : Req-3.1-01
+Preconditions  : 
+  - Test device is a smartphone or tablet with a small screen (< 800×600).
+  - Browser is installed and system URL is accessible.
+Test Steps     :
+  1. Open the browser on the mobile device and navigate to the system’s URL.
+  2. Observe the response.
+Expected Result: The system displays a clear message (e.g., “Supported on PC/Laptop only”) and does not render the full UI.
+Test Type      : Negative
+---
+TC-ID          : TC-3.1-003
+Title          : Verify error message appears at the bottom of the screen
+Requirement    : Req-3.1-02 (Error messages appear at bottom, self‑descriptive)
+Preconditions  : 
+  - User is logged in and on a form screen that can generate a validation error (e.g., Patient Registration).
+  - Input field is left empty to trigger validation.
+Test Steps     :
+  1. Submit the form with the required field empty.
+  2. Observe where the error message is displayed.
+Expected Result: An error message appears at the bottom of the screen, clearly associated with the offending field, and the message text is readable.
+Test Type      : Functional
+---
+TC-ID          : TC-3.1-004
+Title          : Verify error message length does not exceed 80 characters (happy‑path)
+Requirement    : Req-3.1-02
+Preconditions  : 
+  - System is configured with a validation rule whose error text is exactly 80 characters long.
+  - User is on the relevant input screen.
+Test Steps     :
+  1. Trigger the validation error (e.g., enter invalid data).
+  2. Observe the displayed error message.
+Expected Result: The full 80‑character error message is displayed completely at the bottom of the screen; no truncation occurs.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.1-005
+Title          : Verify system handles error message exceeding 80 characters
+Requirement    : Req-3.1-02
+Preconditions  : 
+  - System contains a validation rule with an error message longer than 80 characters (e.g., 95 characters).
+  - User is on the related input screen.
+Test Steps     :
+  1. Trigger the validation error.
+  2. Observe the displayed error message.
+Expected Result: The system either truncates the message to 80 characters with an ellipsis or rejects the over‑long message during configuration and logs an appropriate warning; the UI never shows more than 80 characters.
+Test Type      : Negative
+---
+TC-ID          : TC-3.1-006
+Title          : Verify navigation to Patient Registration via button
+Requirement    : Req-3.1-03 (Buttons used for navigation)
+Preconditions  : 
+  - User is logged in and on the Home screen.
+  - “Patient Registration” button is visible.
+Test Steps     :
+  1. Click the “Patient Registration” button.
+  2. Observe the resulting screen.
+Expected Result: The Patient Registration screen is displayed; URL changes (if applicable) and no intermediate pages appear.
+Test Type      : Functional
+---
+TC-ID          : TC-3.1-007
+Title          : Verify navigation fails when button is disabled
+Requirement    : Req-3.1-03
+Preconditions  : 
+  - System is in a state where the “Consultation Request” button is disabled (e.g., user lacks required role).
+  - User is on the Home screen.
+Test Steps     :
+  1. Attempt to click the disabled “Consultation Request” button.
+  2. Observe the UI response.
+Expected Result: The button does not respond to the click; no navigation occurs; optionally a tooltip explains why it is disabled.
+Test Type      : Negative
+---
+TC-ID          : TC-3.1-008
+Title          : Verify Patient Registration screen uses larger font for elderly users
+Requirement    : Req-3.1-04 (Bigger font size on Patient Registration)
+Preconditions  : 
+  - User is on the Patient Registration screen.
+  - Default font size for standard screens is known (e.g., 12 pt).
+Test Steps     :
+  1. Inspect the CSS/font properties of primary text elements (labels, input fields) using browser developer tools.
+  2. Record the font size values.
+Expected Result: Font size of all primary text elements is greater than the default (e.g., ≥ 16 pt), confirming a larger font is used.
+Test Type      : Functional
+---
+TC-ID          : TC-3.1-009
+Title          : Verify Consultation Request screen uses larger font size
+Requirement    : Req-3.1-04
+Preconditions  : 
+  - User navigates to the Consultation Request screen via its navigation button.
+  - Default font size for standard screens is known.
+Test Steps     :
+  1. Using developer tools, capture the computed font‑size of header and form labels.
+  2. Compare against the default font size.
+Expected Result: The captured font sizes are larger than the default (minimum 150 % of default), satisfying the “bigger font” requirement.
+Test Type      : Functional
+---
+TC-ID          : TC-3.1-010
+Title          : Verify font size does not fall below minimum larger‑font threshold (boundary)
+Requirement    : Req-3.1-04
+Preconditions  : 
+  - System configuration allows adjusting UI scaling.
+  - Minimum acceptable larger‑font size is defined as 150 % of default (e.g., 18 pt if default is 12 pt).
+Test Steps     :
+  1. Set UI scaling to the minimum allowed larger‑font value (150 %).
+  2. Open Patient Registration screen.
+  3. Measure the font size of a label.
+Expected Result: Font size equals the minimum threshold (e.g., 18 pt). Any lower value is rejected by the system.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.1-011
+Title          : Verify UI loads within acceptable response time on PC
+Requirement    : (No explicit performance requirement; generic usability)
+Preconditions  : 
+  - Test PC meets minimum hardware specs (e.g., 2 GHz CPU, 4 GB RAM).
+  - Network latency ≤ 50 ms to the server.
+Test Steps     :
+  1. Start a timer.
+  2. Navigate to the system URL and wait for the Home screen to become fully interactive.
+  3. Stop the timer.
+Expected Result: The Home screen loads and becomes interactive within 2 seconds.
+Test Type      : Performance
+---

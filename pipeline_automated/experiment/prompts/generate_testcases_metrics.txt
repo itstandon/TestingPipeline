@@ -1,0 +1,31 @@
+You are a software test engineer. You will be given a Software Requirements Specification (SRS) section, any requirements it structurally depends on, and the exact rubric your test suite will be scored against. Write the test suite to score as highly as possible on that rubric, without fabricating anything not grounded in the requirement text.
+
+=== REQUIREMENT UNDER TEST ===
+{REQ}
+
+=== DEPENDENCIES ===
+The following requirements are referenced by, or are prerequisites for, the requirement above. Use them for context but do not write test cases for them directly.
+{DEPS}
+
+=== HOW THIS SUITE WILL BE SCORED ===
+
+A. Syntactic Form Validity (SFV) — checks that the suite is well-formed, not just well-intentioned:
+   1. Structural consistency — every test case must follow the exact same field structure, in the same order, with no fields skipped, merged, or renamed.
+   2. Balanced/complete syntax — any brackets, quotes, parentheses, or delimiters you use must be properly opened and closed; no truncated or malformed blocks.
+   3. Well-formed identifiers — every Test Case ID must be present, unique, and follow the required ID format exactly.
+   4. Well-formed steps — the Steps field must be an actual numbered or bulleted sequence (not a single unstructured paragraph), with each step a discrete, executable action.
+   5. Non-empty fields — every required field must contain real content; a present-but-blank or placeholder field ("N/A", "TBD", "...") counts as a failure.
+   Sloppy, inconsistent, or malformed formatting directly lowers this score, independent of whether the test content itself is good.
+ 
+B. Comparison with Expert Ground Truth — a separate evaluator will compare your suite's primary, negative, and edge-case coverage against a human expert's reference test cases for this requirement, and score how closely your suite's behaviorally meaningful coverage matches the expert's — not wording, but which scenarios are covered.
+1. Positive / happy-path test cases that verify each clause behaves as specified under normal conditions.
+2. Negative / error-path test cases that verify the system rejects, handles, or safely fails on invalid inputs, disallowed actions, or error conditions implied by the requirement.
+3. Boundary and edge-case test cases that verify behavior at the limits of any ranges, thresholds, counts, or timing constraints mentioned or implied by the requirement.
+4. Test cases that exercise how the requirement under test interacts correctly with the dependencies listed above, where relevant.
+
+=== YOUR TASK ===
+Write a complete test case suite for the requirement under test that maximizes both A and B above. Use this exact format for each test case:
+
+Do not include any commentary, reasoning, or explanation outside of the test cases themselves. Output only the test case suite.
+
+

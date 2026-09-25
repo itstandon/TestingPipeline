@@ -1,0 +1,147 @@
+---
+TC-ID          : TC-4.1-001
+Title          : Add a new feature with valid priority and verify display
+Requirement    : Req-4.1-01
+Preconditions  :
+  - User is logged in with a role that has “Edit Priority Matrix” permission.
+  - Priority Matrix screen is open and currently contains at least one entry.
+Test Steps     :
+  1. Click the “Add Feature” button.
+  2. Enter “Feature Alpha” in the Feature Name field.
+  3. Select priority “3” from the Priority dropdown.
+  4. Click “Save”.
+  5. Observe the Priority Matrix list.
+Expected Result: “Feature Alpha” appears in the matrix with priority “3”; the entry is persisted after a page refresh.
+Test Type      : Functional
+---
+TC-ID          : TC-4.1-002
+Title          : Edit an existing feature’s priority and verify update
+Requirement    : Req-4.1-02
+Preconditions  :
+  - User is logged in with “Edit Priority Matrix” permission.
+  - The matrix contains an entry “Feature Beta” with priority “2”.
+Test Steps     :
+  1. Locate “Feature Beta” in the matrix and click its “Edit” icon.
+  2. Change the priority value to “5”.
+  3. Click “Update”.
+  4. Refresh the page.
+Expected Result: “Feature Beta” now shows priority “5” and the change is stored in the backend.
+Test Type      : Functional
+---
+TC-ID          : TC-4.1-003
+Title          : Delete a feature from the priority matrix
+Requirement    : Req-4.1-03
+Preconditions  :
+  - User is logged in with “Edit Priority Matrix” permission.
+  - The matrix contains an entry “Feature Gamma”.
+Test Steps     :
+  1. Click the “Delete” icon next to “Feature Gamma”.
+  2. Confirm the deletion in the modal dialog.
+  3. Refresh the matrix view.
+Expected Result: “Feature Gamma” is no longer listed; the deletion is permanent.
+Test Type      : Functional
+---
+TC-ID          : TC-4.1-004
+Title          : Attempt to add a feature with an empty name (negative test)
+Requirement    : Req-4.1-01
+Preconditions  :
+  - User is logged in with “Edit Priority Matrix” permission.
+Test Steps     :
+  1. Click “Add Feature”.
+  2. Leave the Feature Name field blank.
+  3. Select any valid priority (e.g., “2”).
+  4. Click “Save”.
+Expected Result: The system displays a validation error “Feature name is required” and does not create a new entry.
+Test Type      : Negative
+---
+TC-ID          : TC-4.1-005
+Title          : Attempt to add a feature with priority outside allowed range (negative)
+Requirement    : Req-4.1-01
+Preconditions  :
+  - User is logged in with “Edit Priority Matrix” permission.
+Test Steps     :
+  1. Click “Add Feature”.
+  2. Enter “Feature Delta” as the name.
+  3. Manually input priority value “0” (below minimum) or “6” (above maximum) if the UI permits free‑text entry.
+  4. Click “Save”.
+Expected Result: Validation error “Priority must be between 1 and 5” is shown; the entry is not saved.
+Test Type      : Negative
+---
+TC-ID          : TC-4.1-006
+Title          : Prevent duplicate feature names (negative)
+Requirement    : Req-4.1-01
+Preconditions  :
+  - User is logged in with “Edit Priority Matrix” permission.
+  - The matrix already contains an entry named “Feature Epsilon”.
+Test Steps     :
+  1. Click “Add Feature”.
+  2. Enter “Feature Epsilon” as the Feature Name.
+  3. Select any valid priority (e.g., “4”).
+  4. Click “Save”.
+Expected Result: System returns error “Feature name must be unique”; no duplicate row is created.
+Test Type      : Negative
+---
+TC-ID          : TC-4.1-007
+Title          : Add a feature with the minimum allowed priority (boundary)
+Requirement    : Req-4.1-01
+Preconditions  :
+  - User is logged in with “Edit Priority Matrix” permission.
+Test Steps     :
+  1. Click “Add Feature”.
+  2. Enter “Feature Zeta”.
+  3. Select priority “1”.
+  4. Click “Save”.
+Expected Result: “Feature Zeta” appears with priority “1”; the system accepts the lower boundary value.
+Test Type      : Boundary
+---
+TC-ID          : TC-4.1-008
+Title          : Add a feature with the maximum allowed priority (boundary)
+Requirement    : Req-4.1-01
+Preconditions  :
+  - User is logged in with “Edit Priority Matrix” permission.
+Test Steps     :
+  1. Click “Add Feature”.
+  2. Enter “Feature Eta”.
+  3. Select priority “5”.
+  4. Click “Save”.
+Expected Result: “Feature Eta” appears with priority “5”; the system accepts the upper boundary value.
+Test Type      : Boundary
+---
+TC-ID          : TC-4.1-009
+Title          : Load priority matrix with 1000 entries within SLA (performance)
+Requirement    : Req-4.1-04
+Preconditions  :
+  - Test database contains 1000 pre‑populated feature entries with varied priorities.
+  - User is logged in with “View Priority Matrix” permission.
+Test Steps     :
+  1. Navigate to the Priority Matrix screen.
+  2. Measure the time from navigation request to full rendering of all rows.
+Expected Result: The matrix loads and displays all 1000 rows in ≤ 2 seconds.
+Test Type      : Performance
+---
+TC-ID          : TC-4.1-010
+Title          : Unauthorized user attempts to edit the priority matrix (security)
+Requirement    : Req-4.1-02
+Preconditions  :
+  - User is logged in with a role that only has “View Priority Matrix” permission (no edit rights).
+  - Matrix contains at least one entry.
+Test Steps     :
+  1. Attempt to click the “Edit” icon for any entry.
+  2. Attempt to access the direct URL for the edit page (e.g., /matrix/edit/123).
+Expected Result: Edit controls are hidden/disabled; direct URL access redirects to an “Access Denied” page or returns HTTP 403.
+Test Type      : Security
+---
+TC-ID          : TC-4.1-011
+Title          : Verify role‑based view permissions for the priority matrix (security)
+Requirement    : Req-4.1-05
+Preconditions  :
+  - Two user accounts exist:
+      • User A with “View Priority Matrix” role.
+      • User B with “Edit Priority Matrix” role.
+Test Steps     :
+  1. Log in as User A and navigate to the matrix screen.
+  2. Observe available actions.
+  3. Log out, then log in as User B and navigate to the same screen.
+Expected Result: User A can only view entries (no Add/Edit/Delete buttons); User B sees full edit controls.
+Test Type      : Security
+---

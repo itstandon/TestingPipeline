@@ -1,0 +1,228 @@
+---
+TC-ID          : TC-4.1-001
+Title          : Create Doctor user with valid data
+Requirement    : VCSYSS02-1
+Preconditions  :
+- Administrator is logged into the system with valid admin credentials.
+- Administrator is on the “Create User” screen.
+Test Steps     :
+  1. Select role “Doctor” from the role dropdown.
+  2. Enter a unique username (e.g., dr.johnsmith).
+  3. Enter a valid email address (dr.john@example.com).
+  4. Enter a password that meets policy (e.g., Passw0rd!).
+  5. Fill required doctor‑specific fields (License Number: 1234567890, Specialty: Cardiology).
+  6. Click the “Create” button.
+Expected Result: The system displays a success message “User created successfully”, the new doctor appears in the user list, and an audit log entry is recorded.
+Test Type      : Functional
+---
+TC-ID          : TC-4.2-001
+Title          : Create Chemist user with valid data
+Requirement    : VCSYSS02-2
+Preconditions  :
+- Administrator is logged into the system with valid admin credentials.
+- Administrator is on the “Create User” screen.
+Test Steps     :
+  1. Select role “Chemist” from the role dropdown.
+  2. Enter a unique username (e.g., chem.alice).
+  3. Enter a valid email address (alice.chem@example.com).
+  4. Enter a password that meets policy (e.g., Chem!2023).
+  5. Fill required chemist‑specific fields (License Number: 9876543210, Pharmacy Registration: REG12345).
+  6. Click the “Create” button.
+Expected Result: Success message displayed, chemist appears in the user list, and audit log records the creation.
+Test Type      : Functional
+---
+TC-ID          : TC-4.3-001
+Title          : Create Lab user with valid data
+Requirement    : VCSYSS02-3
+Preconditions  :
+- Administrator is logged into the system with valid admin credentials.
+- Administrator is on the “Create User” screen.
+Test Steps     :
+  1. Select role “Lab” from the role dropdown.
+  2. Enter a unique username (e.g., lab.tech01).
+  3. Enter a valid email address (lab.tech01@example.com).
+  4. Enter a password that meets policy (e.g., Lab#2023!).
+  5. Fill required lab‑specific fields (Lab ID: LAB001, Accreditation Number: ACC123456).
+  6. Click the “Create” button.
+Expected Result: Success message shown, lab user listed, audit log entry created.
+Test Type      : Functional
+---
+TC-ID          : TC-4.1-002
+Title          : Attempt to create Doctor user with missing mandatory fields
+Requirement    : VCSYSS02-1
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+Test Steps     :
+  1. Select role “Doctor”.
+  2. Leave the “Username” field empty.
+  3. Fill all other fields with valid data.
+  4. Click “Create”.
+Expected Result: The system blocks the operation and displays an error “Username is required”.
+Test Type      : Negative
+---
+TC-ID          : TC-4.2-002
+Title          : Attempt to create Chemist user with invalid email format
+Requirement    : VCSYSS02-2
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+Test Steps     :
+  1. Select role “Chemist”.
+  2. Enter a unique username.
+  3. Enter email “alice.at.example.com” (missing @).
+  4. Fill remaining fields correctly.
+  5. Click “Create”.
+Expected Result: Validation error displayed “Invalid email format”.
+Test Type      : Negative
+---
+TC-ID          : TC-4.3-002
+Title          : Attempt to create Lab user with password not meeting policy
+Requirement    : VCSYSS02-3
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+Test Steps     :
+  1. Select role “Lab”.
+  2. Enter all required fields with valid data.
+  3. Enter password “abc123” (less than 8 characters, no special character).
+  4. Click “Create”.
+Expected Result: System shows password policy error “Password must be at least 8 characters and include a special character”.
+Test Type      : Negative
+---
+TC-ID          : TC-4-001
+Title          : Prevent creation of user with duplicate username
+Requirement    : VCSYSS02-1, VCSYSS02-2, VCSYSS02-3
+Preconditions  :
+- Administrator has already created a user with username “duplicate.user”.
+- Administrator is on the “Create User” screen.
+Test Steps     :
+  1. Select any role (e.g., Doctor).
+  2. Enter username “duplicate.user”.
+  3. Fill all other fields with valid data.
+  4. Click “Create”.
+Expected Result: System displays error “Username already exists” and does not create a new record.
+Test Type      : Negative
+---
+TC-ID          : TC-4-002
+Title          : Verify maximum allowed username length (30 characters) is accepted
+Requirement    : VCSYSS02-1
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+Test Steps     :
+  1. Select role “Doctor”.
+  2. Enter a username consisting of 30 alphanumeric characters (e.g., a30charusername1234567890ab).
+  3. Fill all other required fields with valid data.
+  4. Click “Create”.
+Expected Result: User is created successfully; system accepts the 30‑character username.
+Test Type      : Boundary
+---
+TC-ID          : TC-4-003
+Title          : Verify username exceeding maximum length (31 characters) is rejected
+Requirement    : VCSYSS02-1
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+Test Steps     :
+  1. Select role “Doctor”.
+  2. Enter a username of 31 characters (e.g., a31charusername1234567890abc).
+  3. Fill remaining fields with valid data.
+  4. Click “Create”.
+Expected Result: Validation error displayed “Username must not exceed 30 characters”.
+Test Type      : Boundary
+---
+TC-ID          : TC-4-004
+Title          : Verify password minimum length (8 characters) is accepted
+Requirement    : VCSYSS02-1
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+Test Steps     :
+  1. Select role “Chemist”.
+  2. Enter all required fields with valid data.
+  3. Enter password “Abcdef1!” (8 characters, meets complexity).
+  4. Click “Create”.
+Expected Result: User creation succeeds.
+Test Type      : Boundary
+---
+TC-ID          : TC-4-005
+Title          : Verify password below minimum length (7 characters) is rejected
+Requirement    : VCSYSS02-2
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+Test Steps     :
+  1. Select role “Chemist”.
+  2. Fill required fields with valid data.
+  3. Enter password “Abc1!23” (7 characters).
+  4. Click “Create”.
+Expected Result: Error “Password must be at least 8 characters”.
+Test Type      : Boundary
+---
+TC-ID          : TC-4-006
+Title          : Ensure only administrators can access the Create User screen
+Requirement    : VCSYSS02-0 (Access Control)
+Preconditions  :
+- A non‑admin user (e.g., Doctor) is logged into the system.
+Test Steps     :
+  1. Attempt to navigate directly to the URL of the “Create User” screen.
+Expected Result: System redirects to an “Access Denied” page or login screen; no UI for user creation is shown.
+Test Type      : Security
+---
+TC-ID          : TC-4-007
+Title          : Verify that user creation is audited
+Requirement    : VCSYSS02-4 (Audit Trail)
+Preconditions  :
+- Administrator is logged in.
+- Audit log is accessible for review.
+Test Steps     :
+  1. Create a new Lab user with valid data.
+  2. Open the audit log viewer.
+  3. Search for entries related to the newly created username.
+Expected Result: An audit entry exists with details: timestamp, admin ID, action “Create User”, role “Lab”, username.
+Test Type      : Security
+---
+TC-ID          : TC-4-008
+Title          : Verify system response time for user creation is within SLA (≤2 seconds)
+Requirement    : VCSYSS02-5 (Performance)
+Preconditions  :
+- Administrator is logged in and on the “Create User” screen.
+- Performance monitoring tool is available.
+Test Steps     :
+  1. Fill all required fields with valid data for a Doctor.
+  2. Start timer.
+  3. Click “Create”.
+  4. Stop timer when success message appears.
+Expected Result: Total time from click to success message is ≤2 seconds.
+Test Type      : Performance
+---
+TC-ID          : TC-4-009
+Title          : Verify that cancelled creation does not persist data
+Requirement    : VCSYSS02-1
+Preconditions  :
+- Administrator is on the “Create User” screen with fields partially filled.
+Test Steps     :
+  1. Click the “Cancel” button.
+  2. Confirm cancellation if prompted.
+  3. Attempt to locate the user in the user list.
+Expected Result: No user record is created; the partially entered data is discarded.
+Test Type      : Functional
+---
+TC-ID          : TC-4-010
+Title          : Verify that the system enforces role‑specific mandatory fields
+Requirement    : VCSYSS02-1, VCSYSS02-2, VCSYSS02-3
+Preconditions  :
+- Administrator is logged in.
+Test Steps     :
+  1. Select role “Doctor”.
+  2. Leave the “License Number” field empty while filling other fields.
+  3. Click “Create”.
+Expected Result: Validation error “Doctor License Number is required”.
+Test Type      : Negative
+---
+TC-ID          : TC-4-011
+Title          : Verify that after successful creation the new user can log in
+Requirement    : VCSYSS02-1
+Preconditions  :
+- Administrator has just created a Doctor user with username “dr.test” and password “Test@1234”.
+- Log out of admin session.
+Test Steps     :
+  1. Navigate to the system login page.
+  2. Enter username “dr.test” and password “Test@1234”.
+  3. Click “Login”.
+Expected Result: Login succeeds; user is directed to the Doctor’s dashboard.
+Test Type      :

@@ -1,0 +1,180 @@
+---
+TC-ID          : TC-1-001
+Title          : Verify MySQL database connection on system startup
+Requirement    : Req-1
+Preconditions  : 
+  - Application server is installed and configured.
+  - MySQL server is running and accessible on host `db.example.com` port `3306`.
+  - Database `system_db` exists with proper schema.
+Test Steps     :
+  1. Start the application server.
+  2. Observe the server logs for database connection messages.
+Expected Result: Application logs contain a message indicating successful connection to MySQL database `system_db` without errors.
+Test Type      : Functional
+---
+TC-ID          : TC-1-002
+Title          : Attempt connection with invalid MySQL credentials
+Requirement    : Req-1
+Preconditions  : 
+  - MySQL server is running.
+  - Configuration file contains incorrect username or password.
+Test Steps     :
+  1. Start the application server.
+  2. Monitor the server logs for database connection attempts.
+Expected Result: Server logs show a connection failure error (e.g., `Access denied for user`) and the application aborts startup gracefully.
+Test Type      : Negative
+---
+TC-ID          : TC-2-001
+Title          : Successful login with valid username and password
+Requirement    : Req-2
+Preconditions  : 
+  - Administrator has created a user account with username `john.doe` and password `P@ssw0rd!`.
+  - User account is active.
+Test Steps     :
+  1. Open the web application login page in a browser.
+  2. Enter username `john.doe` and password `P@ssw0rd!`.
+  3. Click the **Login** button.
+Expected Result: User is redirected to the dashboard page; a session cookie is set; login audit entry is recorded in the database.
+Test Type      : Functional
+---
+TC-ID          : TC-2-002
+Title          : Login failure with incorrect password
+Requirement    : Req-2
+Preconditions  : 
+  - Valid user account `john.doe` exists with password `P@ssw0rd!`.
+Test Steps     :
+  1. Open the login page.
+  2. Enter username `john.doe` and password `WrongPass123`.
+  3. Click **Login**.
+Expected Result: Login is denied; an error message “Invalid username or password” is displayed; no session cookie is created; failed attempt is logged.
+Test Type      : Negative
+---
+TC-ID          : TC-2-003
+Title          : Login attempt with empty username field
+Requirement    : Req-2
+Preconditions  : 
+  - None.
+Test Steps     :
+  1. Navigate to the login page.
+  2. Leave the username field blank, enter any password.
+  3. Click **Login**.
+Expected Result: Login is blocked; client‑side validation displays “Username is required”; server never receives a login request.
+Test Type      : Security
+---
+TC-ID          : TC-3-001
+Title          : Administrator creates a new user account (happy path)
+Requirement    : Req-3
+Preconditions  : 
+  - Administrator is logged into the system with admin role.
+  - User management screen is accessible.
+Test Steps     :
+  1. Click **Add User** button.
+  2. Fill in “Username” = `alice.smith`, “Password” = `Al!c3Pass`, “Role” = `Standard`.
+  3. Click **Save**.
+Expected Result: New user `alice.smith` appears in the user list; a record is inserted into the MySQL `users` table; a confirmation message “User created successfully” is shown.
+Test Type      : Functional
+---
+TC-ID          : TC-3-002
+Title          : Administrator attempts to create a user with duplicate username
+Requirement    : Req-3
+Preconditions  : 
+  - Administrator is logged in.
+  - User `john.doe` already exists.
+Test Steps     :
+  1. Open **Add User** dialog.
+  2. Enter Username `john.doe`, Password `NewPass123`, Role `Standard`.
+  3. Click **Save**.
+Expected Result: System rejects the request and displays error “Username already exists”; no duplicate record is created in the database.
+Test Type      : Negative
+---
+TC-ID          : TC-3-003
+Title          : Create user with maximum allowed username length (boundary)
+Requirement    : Req-3
+Preconditions  : 
+  - Administrator is logged in.
+  - System defines maximum username length = 30 characters.
+Test Steps     :
+  1. Open **Add User** dialog.
+  2. Enter a 30‑character username `user_name_30_characters_long!`, Password `ValidPass1`, Role `Standard`.
+  3. Click **Save**.
+Expected Result: User is created successfully; the 30‑character username is stored unchanged in the database.
+Test Type      : Boundary
+---
+TC-ID          : TC-3-004
+Title          : Attempt to create user with username exceeding maximum length
+Requirement    : Req-3
+Preconditions  : 
+  - Administrator is logged in.
+  - Maximum username length = 30 characters.
+Test Steps     :
+  1. Open **Add User** dialog.
+  2. Enter a 31‑character username `user_name_31_characters_long!!`, Password `ValidPass1`, Role `Standard`.
+  3. Click **Save**.
+Expected Result: System displays validation error “Username must not exceed 30 characters”; user is not created; no database entry is added.
+Test Type      : Boundary
+---
+TC-ID          : TC-4-001
+Title          : Verify HTML page loads with AngularJS directives correctly interpreted
+Requirement    : Req-5
+Preconditions  : 
+  - Web server is running and serving the application.
+  - Browser supports JavaScript.
+Test Steps     :
+  1. Open the application URL `https://app.example.com/dashboard` in Chrome.
+  2. Observe that AngularJS expressions (e.g., `{{username}}`) are replaced with actual data.
+Expected Result: Dashboard renders with dynamic data bound correctly; no AngularJS console errors appear.
+Test Type      : Functional
+---
+TC-ID          : TC-4-002
+Title          : Verify CSS styling and Bootstrap layout on main page
+Requirement    : Req-5
+Preconditions  : 
+  - Browser window is at default 1366×768 resolution.
+Test Steps     :
+  1. Navigate to the home page.
+  2. Inspect visual elements such as navigation bar, buttons, and form fields.
+  3. Use browser developer tools to check that CSS classes `navbar`, `btn-primary`, `container` are applied.
+Expected Result: UI elements match the design specifications (consistent colors, spacing, responsive grid); no layout breakage.
+Test Type      : Functional
+---
+TC-ID          : TC-4-003
+Title          : Ensure jQuery AJAX call retrieves data without full page reload
+Requirement    : Req-5
+Preconditions  : 
+  - User is logged in and viewing a page that contains a jQuery AJAX request.
+Test Steps     :
+  1. Click the **Load More** button that triggers a jQuery `$.ajax` request.
+  2. Observe network panel for the XHR request.
+  3. Verify that additional content appears below the button without a full page refresh.
+Expected Result: AJAX request returns HTTP 200 with JSON payload; new items are appended to the DOM; page URL remains unchanged.
+Test Type      : Functional
+---
+TC-ID          : TC-5-001
+Title          : Execute Django unit test suite using built‑in unittest runner
+Requirement    : Req-7
+Preconditions  : 
+  - Source code repository is checked out.
+  - Python virtual environment with Django installed.
+  - At least one test case exists in `app/tests.py`.
+Test Steps     :
+  1. Activate the virtual environment.
+  2. Run command `python manage.py test`.
+  3. Observe test runner output.
+Expected Result: All defined unit tests are discovered, executed, and a summary (e.g., “OK”) is displayed; exit code is 0 when all pass.
+Test Type      : Functional
+---
+TC-ID          : TC-5-002
+Title          : Verify failing Django unit test is reported as error
+Requirement    : Req-7
+Preconditions  : 
+  - A deliberately failing test exists in `app/tests.py` (e.g., `self.assertEqual(1, 2)`).
+Test Steps     :
+  1. Run `python manage.py test`.
+  2. Review the console output.
+Expected Result: Test runner reports one failed test with traceback; final summary shows “FAILED (failures=1)”; exit code is non‑zero.
+Test Type      : Negative
+---
+TC-ID          : TC-6-001
+Title          : Confirm application is reachable over HTTPS
+Requirement    : Req-8
+Pre

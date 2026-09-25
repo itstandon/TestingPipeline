@@ -1,0 +1,194 @@
+---
+TC-ID          : TC-5.1-001
+Title          : Verify system scales to 10,000 concurrent patient users (happy path)
+Requirement    : Req-5.1-Scaling
+Preconditions  :
+  - Load‑testing framework (e.g., JMeter) is installed and configured.
+  - Production‑like environment is running with all services started.
+  - Monitoring and logging are active.
+Test Steps     :
+  1. Configure the load generator to create 10,000 simultaneous patient sessions.
+  2. Each session performs a realistic workflow: login → view profile → request consultation.
+  3. Run the load for 5 minutes while capturing CPU, memory, network, and response‑time metrics.
+  4. After the run, collect error logs and aggregate response‑time statistics.
+Expected Result: System remains operational, error rate ≤ 0.1 %, average response times stay within the SLAs defined in Req‑5.1‑RT‑*. No service crashes or resource exhaustion observed.
+Test Type      : Performance
+---
+TC-ID          : TC-5.1-002
+Title          : Verify system behavior at exact scaling boundary of 10,000 users
+Requirement    : Req-5.1-Scaling
+Preconditions  :
+  - Same as TC‑5.1‑001.
+Test Steps     :
+  1. Generate exactly 10,000 concurrent sessions as in TC‑5.1‑001.
+  2. Maintain load for 2 minutes.
+  3. Observe any degradation in response time or error rate at the boundary.
+Expected Result: System performance metrics are indistinguishable from those observed at 9,900 users; no new errors appear at the 10,000‑user threshold.
+Test Type      : Boundary
+---
+TC-ID          : TC-5.1-003
+Title          : Verify system degrades gracefully when exceeding scaling limit (negative test)
+Requirement    : Req-5.1-Scaling
+Preconditions  :
+  - Same as TC‑5.1‑001.
+Test Steps     :
+  1. Initiate 12,000 concurrent patient sessions.
+  2. Sustain the load for 3 minutes.
+  3. Record response times, error rates, and resource utilization.
+Expected Result: System records increased error rate (> 5 %) and response times exceed defined SLAs, but the system does not crash; appropriate throttling or overload warnings are logged.
+Test Type      : Negative
+---
+TC-ID          : TC-5.1-004
+Title          : Verify Patient Registration completes within 4 seconds (happy path)
+Requirement    : Req-5.1-RT‑PatientReg
+Preconditions  :
+  - The system is online with normal load (< 500 concurrent users).
+  - Test data for a new patient (valid name, DOB, contact info) is prepared.
+Test Steps     :
+  1. Start a timer.
+  2. Submit the patient registration form with the prepared data via the UI/API.
+  3. Stop the timer when the registration confirmation is displayed.
+Expected Result: Registration confirmation appears ≤ 4 seconds after submission; patient record is persisted in the database.
+Test Type      : Performance
+---
+TC-ID          : TC-5.1-005
+Title          : Verify Patient Registration fails to meet 4‑second SLA under heavy load (negative performance)
+Requirement    : Req-5.1-RT‑PatientReg
+Preconditions  :
+  - System is subjected to 8,000 concurrent users performing mixed activities.
+  - New patient data is ready.
+Test Steps     :
+  1. Start a timer.
+  2. Submit the registration request.
+  3. Stop the timer when response is received.
+Expected Result: Response time exceeds 4 seconds and the system logs a performance warning; registration still succeeds but SLA violation is recorded.
+Test Type      : Negative
+---
+TC-ID          : TC-5.1-006
+Title          : Verify Patient Consultation Request responds within 2 seconds (happy path)
+Requirement    : Req-5.1-RT‑ConsultReq
+Preconditions  :
+  - Authenticated patient session is active.
+  - At least one doctor is available.
+Test Steps     :
+  1. Start a timer.
+  2. Send a consultation request from the patient portal.
+  3. Stop the timer when acknowledgement is shown.
+Expected Result: Acknowledgement is displayed ≤ 2 seconds; request is stored for doctor review.
+Test Type      : Performance
+---
+TC-ID          : TC-5.1-007
+Title          : Verify Consultation Request exceeds 2‑second SLA under load (negative performance)
+Requirement    : Req-5.1-RT‑ConsultReq
+Preconditions  :
+  - System load = 9,000 concurrent users.
+Test Steps     :
+  1. Measure time from request submission to acknowledgement.
+Expected Result: Measured time > 2 seconds; system logs SLA breach but request is still processed.
+Test Type      : Negative
+---
+TC-ID          : TC-5.1-008
+Title          : Verify Chemist Prescription Request completes within 2 seconds (happy path)
+Requirement    : Req-5.1-RT‑ChemistPresc
+Preconditions  :
+  - Authenticated chemist user is logged in.
+  - A valid prescription ID exists.
+Test Steps     :
+  1. Start timer.
+  2. Click “Process Prescription” for the given ID.
+  3. Stop timer when processing result is displayed.
+Expected Result: Processing result appears ≤ 2 seconds; inventory is updated accordingly.
+Test Type      : Performance
+---
+TC-ID          : TC-5.1-009
+Title          : Verify Chemist Prescription Request exceeds 2‑second SLA under peak load (negative)
+Requirement    : Req-5.1-RT‑ChemistPresc
+Preconditions  :
+  - System under 10,000 concurrent sessions (mixed roles).
+Test Steps     :
+  1. Perform the same steps as TC‑5.1‑008 and record response time.
+Expected Result: Response time > 2 seconds; system logs warning but completes the request.
+Test Type      : Negative
+---
+TC-ID          : TC-5.1-010
+Title          : Verify Lab Request completes within 4 seconds (happy path)
+Requirement    : Req-5.1-RT‑LabReq
+Preconditions  :
+  - Authenticated lab technician session.
+  - Patient order with pending lab tests exists.
+Test Steps     :
+  1. Start timer.
+  2. Submit lab request for the patient.
+  3. Stop timer when confirmation is shown.
+Expected Result: Confirmation appears ≤ 4 seconds; request is queued for processing.
+Test Type      : Performance
+---
+TC-ID          : TC-5.1-011
+Title          : Verify Lab Request exceeds 4‑second SLA under load (negative performance)
+Requirement    : Req-5.1-RT‑LabReq
+Preconditions  :
+  - System load = 9,500 concurrent users.
+Test Steps     :
+  1. Measure time from submission to confirmation.
+Expected Result: Measured time > 4 seconds; system records SLA breach while still creating the request.
+Test Type      : Negative
+---
+TC-ID          : TC-5.1-012
+Title          : Verify Patient Prescription & Invoice Look‑up completes within 4 seconds (happy path)
+Requirement    : Req-5.1-RT‑PrescInvLookup
+Preconditions  :
+  - Authenticated patient session.
+  - Patient has at least one prescription and invoice.
+Test Steps     :
+  1. Start timer.
+  2. Navigate to “My Prescriptions & Invoices”.
+  3. Stop timer when list is fully rendered.
+Expected Result: List loads ≤ 4 seconds; data matches database records.
+Test Type      : Performance
+---
+TC-ID          : TC-5.1-013
+Title          : Verify Prescription & Invoice Look‑up exceeds 4‑second SLA under stress (negative)
+Requirement    : Req-5.1-RT‑PrescInvLookup
+Preconditions  :
+  - System under 8,500 concurrent users.
+Test Steps     :
+  1. Perform same lookup as TC‑5.1‑012 and record response time.
+Expected Result: Response time > 4 seconds; system logs SLA violation but still returns correct data.
+Test Type      : Negative
+---
+TC-ID          : TC-5.1-014
+Title          : Verify system availability meets 99.999 % (uptime) over a 30‑day period (functional)
+Requirement    : Req-5.1-Availability
+Preconditions  :
+  - System has been in production for at least 30 days.
+  - Monitoring tool records uptime continuously.
+Test Steps     :
+  1. Retrieve uptime report for the last 30 days.
+  2. Calculate total downtime minutes.
+  3. Verify (downtime ≤ 5 minutes 15 seconds) which corresponds to 99.999 % availability.
+Expected Result: Report shows downtime ≤ 5 min 15 s; any unplanned outage is logged and within the allowed window.
+Test Type      : Functional
+---
+TC-ID          : TC-5.1-015
+Title          : Verify scheduled outage window occurs on every 2nd Sunday for 10 minutes
+Requirement    : Req-5.1-Availability‑Window
+Preconditions  :
+  - System calendar is synchronized to UTC.
+  - Maintenance schedule is configured.
+Test Steps     :
+  1. Identify the next 2nd Sunday date.
+  2. Observe system status during the scheduled 10‑minute window.
+  3. Verify that the system is intentionally taken offline only for that period.
+Expected Result: System enters maintenance mode exactly at the start of the 10‑minute window and resumes normal operation immediately after; no additional downtime is recorded.
+Test Type      : Functional
+---
+TC-ID          : TC-5.1-016
+Title          : Verify nightly full backup creates a recoverable backup file
+Requirement    : Req-5.1-Backup‑Nightly
+Preconditions  :
+  - Backup service is enabled and scheduled at 02:00 AM.
+  - Database contains at least one patient record.
+Test Steps     :
+  1. Wait for the scheduled backup to start.
+  2. After completion, locate the backup file in the backup repository.
+  3. Verify file size > 

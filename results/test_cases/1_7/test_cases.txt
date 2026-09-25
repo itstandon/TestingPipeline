@@ -1,0 +1,250 @@
+---
+TC-ID          : TC-1.7-001
+Title          : Verify that the glossary displays the definition for “Admin”
+Requirement    : Req-1.7-001
+Preconditions  : • System is up and reachable  
+                 • User is logged in with a role that has read access to the glossary (e.g., Doctor, Patient)  
+                 • Glossary module is populated with the definitions listed in Table 1‑Definition
+Test Steps     :
+  1. Navigate to the “Glossary” or “Help → Definitions” page.  
+  2. Locate the entry titled “Admin”.  
+  3. Observe the description displayed for “Admin”.
+Expected Result: The description shown is exactly “Someone who controls and operates the entire system”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-002
+Title          : Verify that the glossary displays the definition for “Doctor”
+Requirement    : Req-1.7-002
+Preconditions  : • System is up and reachable  
+                 • User is logged in with read access to the glossary  
+                 • Glossary contains the definition for “Doctor”
+Test Steps     :
+  1. Open the Glossary page.  
+  2. Search for or scroll to the term “Doctor”.  
+  3. Read the associated description.
+Expected Result: The description displayed is “a person who is qualified to treat people who are ill”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-003
+Title          : Verify that the glossary displays the definition for “Patient”
+Requirement    : Req-1.7-003
+Preconditions  : • System is up and reachable  
+                 • User with read permission is logged in  
+                 • Glossary contains the term “Patient”
+Test Steps     :
+  1. Access the Glossary page.  
+  2. Locate the entry “Patient”.  
+  3. Verify the displayed text.
+Expected Result: The displayed definition is “a person receiving or registered to receive medical treatment”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-004
+Title          : Verify that the glossary displays the definition for “Chemist”
+Requirement    : Req-1.7-004
+Preconditions  : • System is operational  
+                 • Authenticated user with view rights is present  
+                 • Glossary includes “Chemist”
+Test Steps     :
+  1. Navigate to the Glossary.  
+  2. Find the term “Chemist”.  
+  3. Read its description.
+Expected Result: The definition shown is “a shop where medicinal drugs are dispensed and sold, and in which toiletries and other medical goods can be purchased.”  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-005
+Title          : Verify that the glossary displays the definition for “Lab”
+Requirement    : Req-1.7-005
+Preconditions  : • System is up  
+                 • User with appropriate role is logged in  
+                 • Glossary entry “Lab” exists
+Test Steps     :
+  1. Open Glossary page.  
+  2. Locate “Lab”.  
+  3. Observe the description.
+Expected Result: The description matches “Lab is a place where tests are usually done on clinical specimens in order to obtain information about the health of a patient as pertaining to the diagnosis, treatment, and prevention of disease.”  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-006
+Title          : Verify that the glossary displays the definition for “DFD”
+Requirement    : Req-1.7-006
+Preconditions  : • System reachable  
+                 • Authenticated user with view rights  
+                 • Glossary contains “DFD”
+Test Steps     :
+  1. Go to Glossary.  
+  2. Search for “DFD”.  
+  3. Review the definition.
+Expected Result: The definition displayed is “Data Flow Diagram”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-007
+Title          : Verify that the glossary displays the definition for “EIS”
+Requirement    : Req-1.7-007
+Preconditions  : • System up and running  
+                 • User logged in with read access  
+                 • Glossary entry “EIS” present
+Test Steps     :
+  1. Open Glossary page.  
+  2. Locate “EIS”.  
+  3. Read the description.
+Expected Result: The description is “External Interface Specifications”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-008
+Title          : Verify that the glossary displays the definition for “ERD”
+Requirement    : Req-1.7-008
+Preconditions  : • System is operational  
+                 • Authenticated user with view rights  
+                 • Glossary includes “ERD”
+Test Steps     :
+  1. Navigate to Glossary.  
+  2. Find the term “ERD”.  
+  3. Verify the text shown.
+Expected Result: The definition reads “Entity Relationship Diagram”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-009
+Title          : Verify that the glossary displays the definition for “NITK”
+Requirement    : Req-1.7-009
+Preconditions  : • System reachable  
+                 • User logged in with view permission  
+                 • Glossary entry “NITK” exists
+Test Steps     :
+  1. Open Glossary page.  
+  2. Search for “NITK”.  
+  3. Observe the definition.
+Expected Result: The definition is “National Institute of Technology, Surathkal, Karnataka”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-010
+Title          : Verify that the glossary displays the definition for “SRS”
+Requirement    : Req-1.7-010
+Preconditions  : • System is up  
+                 • Authenticated user with read rights  
+                 • Glossary contains “SRS”
+Test Steps     :
+  1. Navigate to Glossary.  
+  2. Locate “SRS”.  
+  3. Read the description.
+Expected Result: The definition displayed is “Software Requirement Specifications”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-011
+Title          : Verify that the glossary displays the definition for “UIS”
+Requirement    : Req-1.7-011
+Preconditions  : • System operational  
+                 • User logged in with view access  
+                 • Glossary entry “UIS” present
+Test Steps     :
+  1. Open Glossary page.  
+  2. Find “UIS”.  
+  3. Verify the definition.
+Expected Result: The definition is “User Interface Specifications”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-012
+Title          : Verify that the glossary displays the definition for “URS”
+Requirement    : Req-1.7-012
+Preconditions  : • System up and reachable  
+                 • Authenticated user with view rights  
+                 • Glossary contains “URS”
+Test Steps     :
+  1. Navigate to Glossary.  
+  2. Search for “URS”.  
+  3. Observe the description.
+Expected Result: The definition shown is “User Requirement Specifications”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-013
+Title          : Verify that the glossary displays the definition for “Padmavathi”
+Requirement    : Req-1.7-013
+Preconditions  : • System reachable  
+                 • User logged in with read permission  
+                 • Glossary includes “Padmavathi”
+Test Steps     :
+  1. Open Glossary page.  
+  2. Locate “Padmavathi”.  
+  3. Verify the text displayed.
+Expected Result: The definition reads “Padmavathi Hospitals, Surathkal, Mangalore, Karnataka”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-014
+Title          : Verify that the glossary displays the definition for “Zone”
+Requirement    : Req-1.7-014
+Preconditions  : • System operational  
+                 • Authenticated user with view rights  
+                 • Glossary entry “Zone” exists
+Test Steps     :
+  1. Navigate to Glossary.  
+  2. Find the term “Zone”.  
+  3. Observe the description.
+Expected Result: The definition displayed is “Set of Specified PinCodes where the Virtual Clinic Functionality would be available”.  
+Test Type      : Functional
+---
+TC-ID          : TC-1.7-015
+Title          : Negative – Search for a non‑existent term in Glossary
+Requirement    : Req-1.7-015
+Preconditions  : • System is up  
+                 • User logged in with view rights  
+                 • Glossary does NOT contain the term “Alien”
+Test Steps     :
+  1. Open Glossary page.  
+  2. Enter “Alien” in the search box and submit.
+Expected Result: System shows a message such as “No matching term found” and does not crash.  
+Test Type      : Negative
+---
+TC-ID          : TC-1.7-016
+Title          : Boundary – Verify handling of maximum term length (255 characters)
+Requirement    : Req-1.7-016
+Preconditions  : • System is up  
+                 • Admin user logged in with permission to add glossary terms  
+                 • Existing glossary entry count < limit
+Test Steps     :
+  1. Navigate to “Add Glossary Term” screen.  
+  2. Enter a term consisting of 255 alphanumeric characters.  
+  3. Enter a valid short definition (e.g., “Test definition”).  
+  4. Submit the form.
+Expected Result: The term is accepted and displayed in the glossary list; no truncation occurs.  
+Test Type      : Boundary
+---
+TC-ID          : TC-1.7-017
+Title          : Boundary – Verify rejection of term exceeding maximum length (256 characters)
+Requirement    : Req-1.7-017
+Preconditions  : • System up  
+                 • Admin user logged in with term‑creation rights
+Test Steps     :
+  1. Open “Add Glossary Term” screen.  
+  2. Input a term of 256 characters.  
+  3. Provide a definition.  
+  4. Submit.
+Expected Result: System displays a validation error such as “Term length must not exceed 255 characters” and does not create the entry.  
+Test Type      : Boundary
+---
+TC-ID          : TC-1.7-018
+Title          : Security – Verify that only authorized roles can edit glossary entries
+Requirement    : Req-1.7-018
+Preconditions  : • System operational  
+                 • Two users exist:  
+                   – Admin (role: Admin) with edit rights  
+                   – Doctor (role: Doctor) with read‑only rights  
+                 • Glossary contains at least one term
+Test Steps     :
+  1. Log in as Doctor.  
+  2. Attempt to access the “Edit” button for any glossary term.  
+  3. Observe the UI.  
+  4. Log out.  
+  5. Log in as Admin.  
+  6. Access the “Edit” button for the same term.
+Expected Result:  
+  – Doctor sees no edit option or receives “Access denied”.  
+  – Admin can open the edit form and modify the term.  
+Test Type      : Security
+---
+TC-ID          : TC-1.7-019
+Title          : Security – Verify that unauthenticated users cannot view the glossary
+Requirement    : Req-1.7-019
+Preconditions  : • System is up  
+                 • No user is currently logged in
+Test Steps     :
+  1. Attempt to navigate directly to the Glossary URL (e.g., /glossary).  
+ 

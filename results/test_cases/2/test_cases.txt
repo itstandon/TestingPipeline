@@ -1,0 +1,232 @@
+---
+TC-ID          : TC-2-001
+Title          : Add a new doctor with valid details
+Requirement    : Req-2.1 (Maintain Doctors)
+Preconditions  : • Tester is logged in as an Administrator role.
+                • Doctor management screen is open.
+Test Steps     :
+  1. Click the “Add Doctor” button.
+  2. Enter a unique Doctor ID, full name, specialty, contact number, and email in the required fields.
+  3. Click “Save”.
+Expected Result: The system stores the new doctor record, displays a confirmation message “Doctor added successfully”, and the doctor appears in the doctors list.
+Test Type      : Functional
+---
+TC-ID          : TC-2-002
+Title          : Edit an existing doctor’s details with valid data
+Requirement    : Req-2.1 (Maintain Doctors)
+Preconditions  : • Tester is logged in as an Administrator.
+                • At least one doctor record exists (Doctor ID D123).
+                • Doctor management screen is open showing the list.
+Test Steps     :
+  1. Locate doctor D123 in the list and click the “Edit” icon.
+  2. Modify the contact number and email fields.
+  3. Click “Update”.
+Expected Result: The system updates the doctor record, shows “Doctor updated successfully”, and the list reflects the changed contact information.
+Test Type      : Functional
+---
+TC-ID          : TC-2-003
+Title          : Delete a doctor record that is not linked to any appointments
+Requirement    : Req-2.1 (Maintain Doctors)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Doctor D999 exists and has no associated appointments.
+                • Doctor management screen is open.
+Test Steps     :
+  1. Click the “Delete” icon next to doctor D999.
+  2. Confirm the deletion in the popup dialog.
+Expected Result: The system removes the doctor record, displays “Doctor deleted successfully”, and the doctor no longer appears in the list.
+Test Type      : Functional
+---
+TC-ID          : TC-2-004
+Title          : Prevent adding a doctor with a duplicate Doctor ID
+Requirement    : Req-2.1 (Maintain Doctors)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Doctor with ID D101 already exists.
+                • Doctor management screen is open.
+Test Steps     :
+  1. Click “Add Doctor”.
+  2. Enter Doctor ID D101 (duplicate) and fill other mandatory fields.
+  3. Click “Save”.
+Expected Result: The system rejects the entry, displays an error “Doctor ID already exists”, and no new record is created.
+Test Type      : Negative
+---
+TC-ID          : TC-2-005
+Title          : Reject doctor creation when mandatory fields are missing
+Requirement    : Req-2.1 (Maintain Doctors)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Doctor management screen is open.
+Test Steps     :
+  1. Click “Add Doctor”.
+  2. Leave the “Full Name” field blank, fill only Doctor ID and specialty.
+  3. Click “Save”.
+Expected Result: The system highlights the missing “Full Name” field, shows validation message “Full Name is required”, and does not create a record.
+Test Type      : Negative
+---
+TC-ID          : TC-2-006
+Title          : Enforce maximum length of Doctor Name (100 characters)
+Requirement    : Req-2.1 (Maintain Doctors)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Doctor management screen is open.
+Test Steps     :
+  1. Click “Add Doctor”.
+  2. Enter a Doctor Name consisting of 101 characters.
+  3. Fill remaining mandatory fields with valid data.
+  4. Click “Save”.
+Expected Result: The system prevents saving, displays “Doctor Name cannot exceed 100 characters”, and the record is not stored.
+Test Type      : Boundary
+---
+TC-ID          : TC-2-007
+Title          : Add a new chemist/lab with valid details
+Requirement    : Req-2.2 (Maintain Chemist & Labs)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Chemist/Lab management screen is open.
+Test Steps     :
+  1. Click “Add Chemist/Lab”.
+  2. Enter a unique Code, Name, Type (Chemist or Lab), address, and contact number.
+  3. Click “Save”.
+Expected Result: The system creates the new chemist/lab entry, shows “Record added successfully”, and it appears in the list.
+Test Type      : Functional
+---
+TC-ID          : TC-2-008
+Title          : Edit existing chemist/lab information
+Requirement    : Req-2.2 (Maintain Chemist & Labs)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Chemist/Lab with Code C456 exists.
+                • Chemist/Lab management screen is open.
+Test Steps     :
+  1. Locate entry C456 and click “Edit”.
+  2. Change the address field.
+  3. Click “Update”.
+Expected Result: The system updates the record, displays “Record updated successfully”, and the new address is shown in the list.
+Test Type      : Functional
+---
+TC-ID          : TC-2-009
+Title          : Delete a chemist/lab that is not referenced by any prescriptions
+Requirement    : Req-2.2 (Maintain Chemist & Labs)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Chemist/Lab with Code L789 exists and has no linked prescriptions.
+                • Chemist/Lab management screen is open.
+Test Steps     :
+  1. Click the “Delete” icon for Code L789.
+  2. Confirm deletion.
+Expected Result: The entry is removed, a confirmation “Record deleted successfully” is shown, and the item disappears from the list.
+Test Type      : Functional
+---
+TC-ID          : TC-2-010
+Title          : Prevent adding a chemist/lab with duplicate Code
+Requirement    : Req-2.2 (Maintain Chemist & Labs)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Chemist/Lab with Code C001 already exists.
+                • Management screen is open.
+Test Steps     :
+  1. Click “Add Chemist/Lab”.
+  2. Enter Code C001 (duplicate) and valid other fields.
+  3. Click “Save”.
+Expected Result: System shows error “Code already exists” and does not create a duplicate entry.
+Test Type      : Negative
+---
+TC-ID          : TC-2-011
+Title          : Enforce maximum length of Chemist/Lab Name (80 characters)
+Requirement    : Req-2.2 (Maintain Chemist & Labs)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Management screen is open.
+Test Steps     :
+  1. Click “Add Chemist/Lab”.
+  2. Enter a Name with 81 characters.
+  3. Fill required fields with valid data.
+  4. Click “Save”.
+Expected Result: Validation error “Name cannot exceed 80 characters” is displayed; record is not saved.
+Test Type      : Boundary
+---
+TC-ID          : TC-2-012
+Title          : Add a new symptom with valid description
+Requirement    : Req-2.3 (Maintain Symptoms)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Symptom management screen is open.
+Test Steps     :
+  1. Click “Add Symptom”.
+  2. Enter a unique Symptom Code and a description (≤200 characters).
+  3. Click “Save”.
+Expected Result: Symptom is stored, confirmation “Symptom added successfully” appears, and the symptom is listed.
+Test Type      : Functional
+---
+TC-ID          : TC-2-013
+Title          : Edit an existing symptom’s description
+Requirement    : Req-2.3 (Maintain Symptoms)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Symptom with Code S100 exists.
+                • Symptom management screen is open.
+Test Steps     :
+  1. Click the “Edit” icon for Symptom S100.
+  2. Modify the description text.
+  3. Click “Update”.
+Expected Result: System updates the symptom, shows “Symptom updated successfully”, and the new description appears in the list.
+Test Type      : Functional
+---
+TC-ID          : TC-2-014
+Title          : Delete a symptom that is not linked to any diagnosis
+Requirement    : Req-2.3 (Maintain Symptoms)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Symptom S999 exists and is not referenced in any diagnosis records.
+                • Symptom management screen is open.
+Test Steps     :
+  1. Click “Delete” for Symptom S999.
+  2. Confirm the deletion prompt.
+Expected Result: Symptom is removed, system displays “Symptom deleted successfully”, and it no longer appears in the list.
+Test Type      : Functional
+---
+TC-ID          : TC-2-015
+Title          : Prevent adding a symptom with duplicate Symptom Code
+Requirement    : Req-2.3 (Maintain Symptoms)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Symptom with Code S001 already exists.
+                • Symptom management screen is open.
+Test Steps     :
+  1. Click “Add Symptom”.
+  2. Enter Symptom Code S001 (duplicate) and a description.
+  3. Click “Save”.
+Expected Result: System returns error “Symptom Code already exists”; no new record is created.
+Test Type      : Negative
+---
+TC-ID          : TC-2-016
+Title          : Enforce maximum length of Symptom Description (200 characters)
+Requirement    : Req-2.3 (Maintain Symptoms)
+Preconditions  : • Tester is logged in as an Administrator.
+                • Symptom management screen is open.
+Test Steps     :
+  1. Click “Add Symptom”.
+  2. Enter a unique Symptom Code.
+  3. Enter a description containing 201 characters.
+  4. Click “Save”.
+Expected Result: Validation message “Description cannot exceed 200 characters” is shown; symptom is not saved.
+Test Type      : Boundary
+---
+TC-ID          : TC-2-017
+Title          : Verify that non‑admin users cannot access Doctor maintenance screen
+Requirement    : Req-2.1 (Maintain Doctors) – Security
+Preconditions  : • Tester is logged in as a standard “User” role (no admin privileges).
+Test Steps     :
+  1. Attempt to navigate to the “Doctor Management” module via the main menu.
+Expected Result: Access is denied, system displays “You do not have permission to view this module”, and the user remains on the current screen.
+Test Type      : Security
+---
+TC-ID          : TC-2-018
+Title          : Verify that non‑admin users cannot add a new chemist/lab
+Requirement    : Req-2.2 (Maintain Chemist & Labs) – Security
+Preconditions  : • Tester is logged in as a “User” role.
+                • Chemist/Lab management screen is reachable via URL but user lacks edit rights.
+Test Steps     :
+  1. Directly open the URL for “Add Chemist/Lab”.
+Expected Result: System redirects to an “Access Denied” page or shows a permission error; the add form is not displayed.
+Test Type      : Security
+---
+TC-ID          : TC-2-019
+Title          : Verify that non‑admin users cannot delete a symptom
+Requirement    : Req-2.3 (Maintain Symptoms) – Security
+Preconditions  : • Tester is logged in as a “User” role.
+                • Symptom S200 exists.
+                • Symptom management screen is open.
+Test Steps     :
+  1. Locate Symptom S200 and attempt to click the “Delete” icon.
+Expected Result: Delete option is either hidden/disabled or a permission error “Insufficient rights” is shown; symptom remains unchanged.
+Test Type      : Security
+---

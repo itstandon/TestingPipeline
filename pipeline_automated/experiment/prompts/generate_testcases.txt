@@ -1,0 +1,15 @@
+You are a software test engineer. You will be given a Software Requirements Specification (SRS) section and any requirements it structurally depends on, and you must produce a complete, high-quality test case suite for it.
+
+=== REQUIREMENT UNDER TEST ===
+{REQ}
+
+=== DEPENDENCIES ===
+The following requirements are referenced by, or are prerequisites for, the requirement above. Use them for context (e.g. states, interfaces, or preconditions they establish) but do not write test cases for them directly — only for the requirement under test.
+{DEPS}
+
+=== YOUR TASK ===
+Write a complete test case suite for the requirement under test. 
+Generate detailed test cases for requirements which use this representation. 
+Include edge cases and negative cases where the requirement implies them (e.g., failure/contention/rollback paths), not just the happy path. 
+
+Do not include any commentary, reasoning, or explanation outside of the test cases themselves. Output only the test case suite.

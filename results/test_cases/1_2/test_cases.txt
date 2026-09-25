@@ -1,0 +1,109 @@
+---
+TC-ID          : TC-1.2-001
+Title          : Verify document uses Arial font size 11 for all text
+Requirement    : Req-1.2-1
+Preconditions  : 
+  - SRS authoring/validation tool is installed and accessible.
+  - The SRS document (section 1.2) is loaded in the tool.
+Test Steps     :
+  1. Open the SRS document in the tool.
+  2. Select a sample of regular (non‑heading) text from section 1.2.
+  3. Inspect the font properties displayed by the tool.
+Expected Result: The selected text shows font family “Arial” and font size “11 pt”.
+Test Type      : Functional
+---
+TC-ID          : TC-1.2-002
+Title          : Verify important keywords are displayed in bold
+Requirement    : Req-1.2-2
+Preconditions  : 
+  - SRS authoring/validation tool is installed.
+  - The SRS document (section 1.2) is loaded.
+Test Steps     :
+  1. Open the SRS document.
+  2. Locate all words/phrases that are defined as “important keywords” (e.g., “priority”, “functionality”).
+  3. For each located keyword, inspect its text style.
+Expected Result: Each identified important keyword is rendered with bold styling; no important keyword appears in regular weight.
+Test Type      : Functional
+---
+TC-ID          : TC-1.2-003
+Title          : Verify each requirement has a unique priority identifier
+Requirement    : Req-1.2-3
+Preconditions  : 
+  - SRS document containing multiple requirements is available.
+  - Validation script/tool that extracts priority values is functional.
+Test Steps     :
+  1. Run the priority‑extraction script on the SRS document.
+  2. Collect the list of priority identifiers assigned to each requirement.
+  3. Check the list for duplicate values.
+Expected Result: All priority identifiers are distinct; the script reports “No duplicates found.”
+Test Type      : Functional
+---
+TC-ID          : TC-1.2-004
+Title          : Verify all functionalities are treated as equally important
+Requirement    : Req-1.2-4
+Preconditions  : 
+  - System under test (e.g., development backlog manager) imports the SRS.
+  - The backlog manager displays priorities but does not apply weighting to scheduling.
+Test Steps     :
+  1. Import the SRS into the backlog manager.
+  2. Observe the ordering/display of functional items.
+  3. Request the scheduling algorithm to generate a sprint plan.
+Expected Result: The generated plan does not deprioritize any functionality based on its priority value; all items are considered equally for inclusion.
+Test Type      : Functional
+---
+TC-ID          : TC-1.2-005
+Title          : Negative test – Detect duplicate priority values
+Requirement    : Req-1.2-3
+Preconditions  : 
+  - SRS document where two different requirements have been manually assigned the same priority.
+  - Validation tool capable of checking priority uniqueness.
+Test Steps     :
+  1. Run the priority‑validation tool on the modified SRS.
+  2. Review the validation report.
+Expected Result: The tool flags an error indicating “Duplicate priority detected” and lists the offending requirements.
+Test Type      : Negative
+---
+TC-ID          : TC-1.2-006
+Title          : Negative test – Non‑bold text should not be recognized as highlighted
+Requirement    : Req-1.2-2
+Preconditions  : 
+  - SRS document where an important keyword is mistakenly left in regular (non‑bold) style.
+  - Highlight‑verification script.
+Test Steps     :
+  1. Execute the highlight‑verification script on the document.
+  2. Observe the script’s output for the mis‑styled keyword.
+Expected Result: The script reports a warning/error that the keyword “<keyword>” is not bolded as required.
+Test Type      : Negative
+---
+TC-ID          : TC-1.2-007
+Title          : Negative test – Document using a font other than Arial fails validation
+Requirement    : Req-1.2-1
+Preconditions  : 
+  - SRS document where body text font has been changed to “Times New Roman” size 11.
+  - Font‑validation utility.
+Test Steps     :
+  1. Run the font‑validation utility on the altered document.
+  2. Review the validation results.
+Expected Result: The utility reports a failure stating “Invalid font: Times New Roman; required: Arial.”
+Test Type      : Negative
+---
+TC-ID          : TC-1.2-008
+Title          : Security test – Only authorized editors can modify document conventions
+Requirement    : Req-1.2-1, Req-1.2-2, Req-1.2-3, Req-1.2-4
+Preconditions  : 
+  - SRS management system with role‑based access control.
+  - Two user accounts: 
+      • user_editor (role: Editor) 
+      • user_viewer (role: Viewer)
+Test Steps     :
+  1. Log in as user_viewer.
+  2. Attempt to change the font of a paragraph to “Courier New”.
+  3. Attempt to apply bold styling to a non‑important word.
+  4. Log out.
+  5. Log in as user_editor.
+  6. Perform the same modifications.
+Expected Result: 
+  - Step 2 & 3: System denies the actions, displaying “Insufficient permissions” for user_viewer.
+  - Step 6: System allows the modifications for user_editor (provided they comply with conventions; otherwise validation errors appear).
+Test Type      : Security
+---

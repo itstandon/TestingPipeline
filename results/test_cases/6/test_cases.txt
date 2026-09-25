@@ -1,0 +1,177 @@
+---
+TC-ID          : TC-6-001
+Title          : Add a new Speciality with valid data
+Requirement    : 6
+Preconditions  : • Administrator is logged in with valid credentials.
+Test Steps     :
+  1. Navigate to “Add Speciality” screen (VCMSP02).
+  2. Enter a unique Speciality Id, Speciality Name, and Speciality Description.
+  3. Click **Save**.
+Expected Result: The system stores the new Speciality, displays a success message, and the Speciality appears in the Speciality list.
+Test Type      : Functional
+---
+TC-ID          : TC-6-002
+Title          : Attempt to add Speciality with missing mandatory fields
+Requirement    : 6
+Preconditions  : • Administrator is logged in.
+Test Steps     :
+  1. Open “Add Speciality” screen.
+  2. Leave Speciality Name blank, fill other fields.
+  3. Click **Save**.
+Expected Result: The system prevents saving and displays a validation error indicating that Speciality Name is required.
+Test Type      : Negative
+---
+TC-ID          : TC-7-001
+Title          : Edit an existing Speciality successfully
+Requirement    : 7
+Preconditions  : • Administrator is logged in.
+                 • A Speciality with Id “SP001” exists.
+Test Steps     :
+  1. Open “Edit/Update Speciality” screen (VCMSP03).
+  2. Enter “SP001” in the query field and press **Search**.
+  3. Modify Speciality Name and Description.
+  4. Click **Update**.
+Expected Result: The changes are saved, a success message is shown, and the updated details are reflected when the Speciality is re‑queried.
+Test Type      : Functional
+---
+TC-ID          : TC-7-002
+Title          : Query non‑existent Speciality Id
+Requirement    : 7
+Preconditions  : • Administrator is logged in.
+Test Steps     :
+  1. Open “Edit/Update Speciality” screen.
+  2. Enter an invalid Id “XYZ999” and press **Search**.
+Expected Result: An exception error message “Speciality does not exist” is displayed.
+Test Type      : Negative
+---
+TC-ID          : TC-8-001
+Title          : Access Administrators Menu – Doctors maintenance option
+Requirement    : 8
+Preconditions  : • Administrator logged in.
+Test Steps     :
+  1. From the main menu select **Maintain Doctors**.
+Expected Result: System displays options “Add Doctors” and “Edit/Update Doctors”.
+Test Type      : Functional
+---
+TC-ID          : TC-8-002
+Title          : Verify non‑Administrator cannot access Doctors maintenance menu
+Requirement    : 8
+Preconditions  : • Doctor user logged in.
+Test Steps     :
+  1. Attempt to navigate to Administrators Menu → Maintain Doctors.
+Expected Result: Access is denied; system shows “Unauthorized access” message.
+Test Type      : Security
+---
+TC-ID          : TC-9-001
+Title          : Add a new Doctor with valid data
+Requirement    : 9
+Preconditions  : • Administrator logged in.
+Test Steps     :
+  1. Open “Add Doctor” screen (VCMDR01).
+  2. Fill Doctor Name, Age (35), Sex (Male), Qualification, Experience (5 years).
+  3. Click **Save**.
+Expected Result: System generates a unique Doctor Id, stores the record, and displays a success confirmation.
+Test Type      : Functional
+---
+TC-ID          : TC-9-002
+Title          : Attempt to add Doctor with invalid age
+Requirement    : 9
+Preconditions  : • Administrator logged in.
+Test Steps     :
+  1. Open “Add Doctor” screen.
+  2. Enter Age as “-2”.
+  3. Click **Save**.
+Expected Result: Validation error “Age must be a positive number” is shown; record is not created.
+Test Type      : Negative
+---
+TC-ID          : TC-10-001
+Title          : Edit existing Doctor details successfully
+Requirement    : 10
+Preconditions  : • Administrator logged in.
+                 • Doctor with Id “DR123” exists.
+Test Steps     :
+  1. Open “Edit/Update Doctor” screen (VCMDR03).
+  2. Enter “DR123” and press **Search**.
+  3. Change Experience to “7 years”.
+  4. Click **Update**.
+Expected Result: Updated information is saved and displayed on subsequent queries.
+Test Type      : Functional
+---
+TC-ID          : TC-10-002
+Title          : Query non‑existent Doctor Id
+Requirement    : 10
+Preconditions  : • Administrator logged in.
+Test Steps     :
+  1. Open “Edit/Update Doctor” screen.
+  2. Enter Id “DR9999” and press **Search**.
+Expected Result: Exception error message “Doctor does not exist” is shown.
+Test Type      : Negative
+---
+TC-ID          : TC-10-003
+Title          : Delete Doctor who has open Consultation Requests
+Requirement    : 10
+Preconditions  : • Administrator logged in.
+                 • Doctor Id “DR200” exists.
+                 • At least one open Patient Consultation Request references Doctor Id “DR200”.
+Test Steps     :
+  1. Open “Edit/Update Doctor” screen.
+  2. Search for “DR200”.
+  3. Click **Delete**.
+Expected Result: System blocks deletion and displays “Doctor has open Consultation Requests - cannot delete”.
+Test Type      : Negative
+---
+TC-ID          : TC-10-004
+Title          : Delete Doctor with no open requests
+Requirement    : 10
+Preconditions  : • Administrator logged in.
+                 • Doctor Id “DR210” exists and has no pending requests.
+Test Steps     :
+  1. Open “Edit/Update Doctor” screen.
+  2. Search for “DR210”.
+  3. Click **Delete** and confirm.
+Expected Result: Doctor record is removed and a success message appears.
+Test Type      : Functional
+---
+TC-ID          : TC-11-001
+Title          : Access Administrators Menu – Chemist & Labs maintenance option
+Requirement    : 11
+Preconditions  : • Administrator logged in.
+Test Steps     :
+  1. From main menu select **Maintain Chemist & Labs**.
+Expected Result: Screen shows options “Add Chemist / Labs” and “Edit/Update Chemist / Labs”.
+Test Type      : Functional
+---
+TC-ID          : TC-12-001
+Title          : Add a new Chemist with valid data
+Requirement    : 12
+Preconditions  : • Administrator logged in.
+Test Steps     :
+  1. Open “Add Chemist/Lab” screen (VCMCL02).
+  2. Select Chemist flag, enter Name, Address, Contact Details.
+  3. Click **Save**.
+Expected Result: System generates a Chemist/Lab Id, stores the record, and shows a success message.
+Test Type      : Functional
+---
+TC-ID          : TC-12-002
+Title          : Attempt to add Chemist without Contact Details
+Requirement    : 12
+Preconditions  : • Administrator logged in.
+Test Steps     :
+  1. Open “Add Chemist/Lab” screen.
+  2. Fill all fields except Contact Details.
+  3. Click **Save**.
+Expected Result: Validation error indicating Contact Details are required; record is not saved.
+Test Type      : Negative
+---
+TC-ID          : TC-13-001
+Title          : Edit existing Chemist information
+Requirement    : 13
+Preconditions  : • Administrator logged in.
+                 • Chemist Id “CH001” exists.
+Test Steps     :
+  1. Open “Edit/Update Chemist/Lab” screen (VCMCL03).
+  2. Enter “CH001” and press **Search**.
+  3. Modify Address.
+  4. Click **Update**.
+Expected Result: Updated address is persisted and displayed on next query.
+Test

@@ -1,0 +1,102 @@
+---
+TC-ID          : TC-2.6-001
+Title          : Verify that the User Guide is accessible from the Help menu
+Requirement    : Req-2.6
+Preconditions  :
+- User is logged into the application with a valid account.
+- The Help menu is visible in the main UI.
+Test Steps     :
+  1. Click the “Help” menu in the application header.
+  2. Select “User Guide” from the drop‑down list.
+  3. Observe the document that opens (PDF viewer or in‑app viewer).
+Expected Result: The User Guide document opens successfully, is fully rendered, and matches the latest approved version.
+Test Type      : Functional
+---
+TC-ID          : TC-2.6-002
+Title          : Verify that documentation cannot be accessed without authentication
+Requirement    : Req-2.6
+Preconditions  :
+- No user is logged in (anonymous session).
+- The application home page is displayed.
+Test Steps     :
+  1. Navigate directly to the URL of the User Guide (e.g., https://app.example.com/docs/user‑guide.pdf).
+  2. Attempt to download or view the document.
+Expected Result: Access is denied and the system redirects to the login page or shows an “Authentication required” error.
+Test Type      : Negative
+---
+TC-ID          : TC-2.6-003
+Title          : Verify that only authorized roles can view the Admin Operations Manual
+Requirement    : Req-2.6
+Preconditions  :
+- User is logged in with a standard (non‑admin) role.
+- Admin Operations Manual exists on the server.
+Test Steps     :
+  1. Attempt to open the Admin Operations Manual via the Help menu or direct URL.
+Expected Result: The system blocks access and displays an “Insufficient privileges” message; the document is not downloaded or displayed.
+Test Type      : Security
+---
+TC-ID          : TC-2.6-004
+Title          : Verify maximum allowed size of documentation files does not exceed 10 MB
+Requirement    : Req-2.6
+Preconditions  :
+- All documentation files have been uploaded to the documentation repository.
+Test Steps     :
+  1. Retrieve the file size metadata for each documentation file (User Guide, Installation Manual, Admin Manual, etc.).
+  2. Compare each size against the 10 MB limit.
+Expected Result: No documentation file exceeds 10 MB; if any do, the system logs a size‑violation warning.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.6-005
+Title          : Verify that documentation pages load within the performance SLA (≤ 2 seconds)
+Requirement    : Req-2.6
+Preconditions  :
+- User is logged in.
+- Network latency is within normal operating range (< 100 ms).
+Test Steps     :
+  1. From the Help menu, select “Installation Manual”.
+  2. Start a timer when the request is sent.
+  3. Stop the timer when the document is fully rendered or downloaded.
+Expected Result: The total elapsed time is ≤ 2 seconds.
+Test Type      : Performance
+---
+TC-ID          : TC-2.6-006
+Title          : Verify that all required documentation files are present and up‑to‑date
+Requirement    : Req-2.6
+Preconditions  :
+- The latest approved documentation list is available (e.g., User Guide, Installation Manual, FAQ, Release Notes).
+- System is running the current release.
+Test Steps     :
+  1. Access the “Documentation” section from the Help menu.
+  2   .Enumerate the displayed list of documents.
+  3. Cross‑check each listed document against the approved list.
+  4. Open each document and verify the version number/date matches the approved version.
+Expected Result: All required documents are present, and each shows the correct, most recent version/date.
+Test Type      : Functional
+---
+TC-ID          : TC-2.6-007
+Title          : Verify that documentation is delivered over a secure HTTPS connection
+Requirement    : Req-2.6
+Preconditions  :
+- User is logged in.
+- Browser developer tools are available.
+Test Steps     :
+  1. Open the User Guide from the Help menu.
+  2. Inspect the network request in the browser’s dev tools.
+  3. Check the protocol used for the request.
+Expected Result: The request URL begins with “https://” and the connection is marked as secure (lock icon present).
+Test Type      : Security
+---
+TC-ID          : TC-2.6-008
+Title          : Verify that documentation can be printed without loss of content
+Requirement    : Req-2.6
+Preconditions  :
+- User is logged in.
+- Printer is configured and reachable.
+Test Steps     :
+  1. Open the FAQ document from the Help menu.
+  2. Select “Print” from the document viewer.
+  3. Send the print job to the printer.
+  4. Review the printed pages for completeness and readability.
+Expected Result: The printed output contains all text and images from the on‑screen version, correctly paginated.
+Test Type      : Functional
+---

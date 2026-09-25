@@ -1,0 +1,231 @@
+---
+TC-ID          : TC-5.1-001
+Title          : Verify system response time for adding a new speciality
+Requirement    : Req-5.1 (Performance Requirements)
+Preconditions  :
+- User is authenticated with a role that permits adding specialities.
+- System is in normal operational state.
+- No pending background jobs that could affect performance.
+Test Steps     :
+  1. Navigate to the "Add Speciality" page.
+  2. Enter a valid speciality name "Cardiology".
+  3. Submit the form.
+  4. Measure the elapsed time from submission to confirmation display.
+Expected Result: The speciality is created and a confirmation message appears within 2 seconds of submission.
+Test Type      : Performance
+---
+TC-ID          : TC-5.1-002
+Title          : Verify system response time for editing an existing speciality
+Requirement    : Req-5.1 (Performance Requirements)
+Preconditions  :
+- User is authenticated with a role that permits editing specialities.
+- A speciality named "Dermatology" exists in the system.
+Test Steps     :
+  1. Navigate to the "Edit Speciality" page for "Dermatology".
+  2  Enter a new valid name "Dermatology & Skin Care".
+  3. Submit the update.
+  4. Measure the elapsed time from submission to success notification.
+Expected Result: The speciality name is updated and a success message appears within 2 seconds.
+Test Type      : Performance
+---
+TC-ID          : TC-5.2-001
+Title          : Verify data persistence after adding a speciality (Safety)
+Requirement    : Req-5.2 (Safety Requirements)
+Preconditions  :
+- User is authenticated with proper role.
+- System backup is up‑to‑date.
+Test Steps     :
+  1. Add a new speciality named "Neurology".
+  2. Log out and log back in.
+  3. Query the list of specialities.
+Expected Result: "Neurology" is present in the list, confirming that the data was safely persisted.
+Test Type      : Functional
+---
+TC-ID          : TC-5.3-001
+Title          : Ensure authentication is required to add a speciality
+Requirement    : Req-5.3 (Security Requirements)
+Preconditions  :
+- No user is logged into the system.
+Test Steps     :
+  1. Directly access the URL "/specialities/add".
+Expected Result: The system redirects to the login page or returns HTTP 401 Unauthorized.
+Test Type      : Security
+---
+TC-ID          : TC-5.3-002
+Title          : Verify only admins can edit a speciality
+Requirement    : Req-5.3 (Security Requirements)
+Preconditions  :
+- A speciality "Oncology" exists.
+- Two user accounts exist: admin_user (role: Admin) and staff_user (role: Staff).
+Test Steps     :
+  1. Log in as staff_user.
+  2. Attempt to navigate to the edit page for "Oncology".
+Expected Result: Access is denied with an appropriate error message (e.g., HTTP 403 Forbidden).
+Test Type      : Security
+---
+TC-ID          : TC-5.3-003
+Title          : Verify that a logged‑in user cannot inject script in speciality name
+Requirement    : Req-5.3 (Security Requirements)
+Preconditions  :
+- User is authenticated with role allowing speciality creation.
+Test Steps     :
+  1. Open "Add Speciality" form.
+  2. Enter the name `<script>alert('XSS')</script>`.
+  3. Submit the form.
+Expected Result: The input is rejected or sanitized; no script execution occurs; an error message is shown.
+Test Type      : Security
+---
+TC-ID          : TC-5.4-001
+Title          : Verify that speciality creation is logged for traceability
+Requirement    : Req-5.4 (Software Quality Attributes)
+Preconditions  :
+- User with admin role is logged in.
+- Logging subsystem is operational.
+Test Steps     :
+  1. Add a new speciality "Pediatrics".
+  2. Access the system audit log.
+Expected Result: An audit entry records the admin user ID, timestamp, and action "Create Speciality: Pediatrics".
+Test Type      : Functional
+---
+TC-ID          : TC-5.5-001
+Title          : Verify system continues to add specialities after primary DB failure (Redundancy)
+Requirement    : Req-5.5 (Software Back-ups and Redundancy)
+Preconditions  :
+- Primary database is currently active; secondary replica is configured and synchronized.
+- User with appropriate role is logged in.
+Test Steps     :
+  1. Simulate failure of the primary database (e.g., shutdown service).
+  2. Add a new speciality "Geriatrics".
+  3. Verify the operation succeeds.
+  4. Check that the new record exists on the secondary replica.
+Expected Result: The speciality is created without error; fail‑over occurs transparently; data is stored on the secondary database.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-001
+Title          : Add a new speciality – happy path
+Requirement    : Req-5.6 (Add Speciality)
+Preconditions  :
+- User is authenticated with permission to add specialities.
+- No speciality with name "Radiology" exists.
+Test Steps     :
+  1. Navigate to "Add Speciality".
+  2. Enter "Radiology" in the name field.
+  3. Click "Save".
+Expected Result: The system displays a success message and "Radiology" appears in the speciality list.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-002
+Title          : Prevent adding a duplicate speciality name
+Requirement    : Req-5.6 (Add Speciality)
+Preconditions  :
+- Speciality "Ophthalmology" already exists.
+- User is authenticated with add permission.
+Test Steps     :
+  1. Open "Add Speciality".
+  2. Enter "Ophthalmology" as the name.
+  3. Click "Save".
+Expected Result: The system rejects the request and shows an error such as "Speciality already exists."
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-003
+Title          : Enforce maximum length (50 chars) for speciality name – boundary test
+Requirement    : Req-5.6 (Add Speciality)
+Preconditions  :
+- User is authenticated with add permission.
+Test Steps     :
+  1. Open "Add Speciality".
+  2. Enter a name consisting of exactly 50 alphanumeric characters.
+  3. Click "Save".
+Expected Result: The speciality is created successfully.
+Test Type      : Boundary
+---
+TC-ID          : TC-5.6-004
+Title          : Reject speciality name exceeding maximum length – boundary negative
+Requirement    : Req-5.6 (Add Speciality)
+Preconditions  :
+- User is authenticated with add permission.
+Test Steps     :
+  1. Open "Add Speciality".
+  2. Enter a name of 51 characters.
+  3. Click "Save".
+Expected Result: The system displays a validation error: "Name must be 50 characters or fewer."
+Test Type      : Boundary
+---
+TC-ID          : TC-5.6-005
+Title          : Prevent adding a speciality with an empty name
+Requirement    : Req-5.6 (Add Speciality)
+Preconditions  :
+- User is authenticated with add permission.
+Test Steps     :
+  1. Open "Add Speciality".
+  2. Leave the name field blank.
+  3. Click "Save".
+Expected Result: Validation error "Name is required" is shown; speciality is not created.
+Test Type      : Negative
+---
+TC-ID          : TC-5.7-001
+Title          : Edit an existing speciality – happy path
+Requirement    : Req-5.7 (Edit/Update Speciality)
+Preconditions  :
+- User with edit permission is logged in.
+- Speciality "Physiotherapy" exists.
+Test Steps     :
+  1. Navigate to the edit page for "Physiotherapy".
+  2. Change the name to "Physical Therapy".
+  3. Click "Update".
+Expected Result: Confirmation message appears; the list now shows "Physical Therapy" instead of "Physiotherapy".
+Test Type      : Functional
+---
+TC-ID          : TC-5.7-002
+Title          : Prevent updating a speciality to a name that already exists
+Requirement    : Req-5.7 (Edit/Update Speciality)
+Preconditions  :
+- Specialities "Cardiology" and "Endocrinology" exist.
+- User with edit permission is logged in.
+Test Steps     :
+  1. Edit "Endocrinology".
+  2. Change its name to "Cardiology".
+  3. Submit the update.
+Expected Result: System rejects the change and displays "Speciality name already in use."
+Test Type      : Negative
+---
+TC-ID          : TC-5.7-003
+Title          : Enforce maximum length (50 chars) on edited speciality name – boundary test
+Requirement    : Req-5.7 (Edit/Update Speciality)
+Preconditions  :
+- Speciality "Immunology" exists.
+- User with edit permission is logged in.
+Test Steps     :
+  1. Open edit form for "Immunology".
+  2. Enter a 50‑character name.
+  3. Save changes.
+Expected Result: Update succeeds; the new name appears in the list.
+Test Type      : Boundary
+---
+TC-ID          : TC-5.7-004
+Title          : Reject edited speciality name exceeding maximum length – boundary negative
+Requirement    : Req-5.7 (Edit/Update Speciality)
+Preconditions  :
+- Speciality "Pathology" exists.
+- User with edit permission is logged in.
+Test Steps     :
+  1. Open edit form for "Pathology".
+  2. Enter a 51‑character name.
+  3. Attempt to save.
+Expected Result: Validation error "Name must be 50 characters or fewer" is displayed; no update occurs.
+Test Type      : Boundary
+---
+TC-ID          : TC-5.7-005
+Title          : Prevent updating a speciality with an empty name
+Requirement    : Req-5.7 (Edit/Update Speciality)
+Preconditions  :
+- Speciality "Radiology" exists.
+- User with edit permission is logged in.
+Test Steps     :
+  1. Open edit form for "Radiology".
+  2. Clear the name field.
+  3. Click "Update".
+Expected Result: System shows "Name is required" error; the original name remains unchanged.
+Test Type      : Negative
+---
+TC-ID          : TC-5.7-006

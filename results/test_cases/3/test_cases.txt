@@ -1,0 +1,211 @@
+---
+TC-ID          : TC-3.1-001
+Title          : Create a new user with valid password
+Requirement    : Req-3.1
+Preconditions  :
+- Tester is logged in as an Administrator.
+- No existing user with username "jdoe".
+Test Steps     :
+  1. Navigate to the “User Management” screen.
+  2. Click “Add New User”.
+  3. Enter Username = "jdoe".
+  4. Enter Password = "SecurePass123!" (meets policy).
+  5. Assign role = “Clerk”.
+  6. Click “Save”.
+Expected Result: New user “jdoe” is created, displayed in the user list, and can log in successfully.
+Test Type      : Functional
+---
+TC-ID          : TC-3.1-002
+Title          : Attempt to create a user with a duplicate username
+Requirement    : Req-3.1
+Preconditions  :
+- Tester is logged in as an Administrator.
+- User “asmith” already exists.
+Test Steps     :
+  1. Open “User Management”.
+  2. Click “Add New User”.
+  3. Enter Username = "asmith".
+  4. Enter a valid password.
+  5. Click “Save”.
+Expected Result: System displays error “Username already exists” and does not create a duplicate record.
+Test Type      : Negative
+---
+TC-ID          : TC-3.1-003
+Title          : Verify password length boundaries
+Requirement    : Req-3.1
+Preconditions  :
+- Tester is logged in as an Administrator.
+Test Steps     :
+  1. Open “Add New User”.
+  2. Enter Username = "bwhite".
+  3. Enter Password = "A1b2c3d4" (exact 8 characters).
+  4. Click “Save”.
+  5. Repeat steps 1‑4 with Password = "A1b2c3d4e5f6g7h8i9j0K!" (exact 20 characters).
+Expected Result: Both passwords are accepted; user is created successfully in each case.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.1-004
+Title          : Prevent non‑admin from creating a user
+Requirement    : Req-3.1
+Preconditions  :
+- Tester is logged in as a regular Clerk user.
+Test Steps     :
+  1. Attempt to navigate to “User Management”.
+Expected Result: Access is denied with message “Insufficient privileges”; user creation screen is not reachable.
+Test Type      : Security
+---
+TC-ID          : TC-3.2-001
+Title          : Set up control file with a valid 4‑digit pincode
+Requirement    : Req-3.2
+Preconditions  :
+- Tester is logged in as an Administrator.
+- No existing control file for the target module.
+Test Steps     :
+  1. Open “Control File Setup”.
+  2. Select module “Pincode Management”.
+  3. Enter Pincode = "5274".
+  4. Click “Save”.
+Expected Result: Control file is saved; system acknowledges “Pincode configured successfully”.
+Test Type      : Functional
+---
+TC-ID          : TC-3.2-002
+Title          : Reject invalid pincode formats
+Requirement    : Req-3.2
+Preconditions  :
+- Tester is logged in as an Administrator.
+Test Steps     :
+  a. Enter Pincode = "12A4" (contains non‑numeric character) and click “Save”.
+  b. Enter Pincode = "123" (too short) and click “Save”.
+  c. Enter Pincode = "12345" (too long) and click “Save”.
+Expected Result: For each entry the system displays “Pincode must be a 4‑digit numeric value” and does not save.
+Test Type      : Negative
+---
+TC-ID          : TC-3.2-003
+Title          : Accept pincode at exact boundary length
+Requirement    : Req-3.2
+Preconditions  :
+- Tester is logged in as an Administrator.
+Test Steps     :
+  1. Open “Control File Setup”.
+  2. Enter Pincode = "0000".
+  3. Click “Save”.
+Expected Result: Control file is saved successfully; “0000” is accepted as a valid pincode.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.2-004
+Title          : Prevent non‑admin from configuring pincode control file
+Requirement    : Req-3.2
+Preconditions  :
+- Tester is logged in as a Clerk.
+Test Steps     :
+  1. Attempt to open “Control File Setup”.
+Expected Result: System blocks access and shows “Administrator privileges required”.
+Test Type      : Security
+---
+TC-ID          : TC-3.3-001
+Title          : Create a new appointment file with all mandatory fields
+Requirement    : Req-3.3
+Preconditions  :
+- Tester is logged in as a Scheduler.
+- Patient record with ID “P1001” exists.
+Test Steps     :
+  1. Navigate to “Appointment Management”.
+  2. Click “Create Appointment”.
+  3. Select Patient ID = "P1001".
+  4. Enter Appointment Date = tomorrow’s date (e.g., 2026‑10‑01).
+  5. Enter Time = "10:30 AM".
+  6. Choose Provider = “Dr. Smith”.
+  7. Click “Save”.
+Expected Result: Appointment is stored, confirmation “Appointment created successfully” appears, and the file appears in the appointment list.
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-002
+Title          : Reject appointment creation when mandatory fields are missing
+Requirement    : Req-3.3
+Preconditions  :
+- Tester is logged in as a Scheduler.
+Test Steps     :
+  1. Open “Create Appointment”.
+  2. Leave Patient ID blank, fill other fields, click “Save”.
+  3. Repeat with missing Date, then with missing Time.
+Expected Result: System shows specific validation messages (e.g., “Patient ID is required”, “Date is required”, “Time is required”) and does not create the appointment.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-003
+Title          : Accept appointment on leap‑day (Feb 29) as a boundary date
+Requirement    : Req-3.3
+Preconditions  :
+- Tester is logged in as a Scheduler.
+- Current year is a leap year (2028).
+Test Steps     :
+  1. Create appointment with Date = "2028‑02‑29", valid Time and Patient.
+  2. Click “Save”.
+Expected Result: Appointment is saved without error; system correctly handles Feb 29.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.3-004
+Title          : Prevent creation of appointments in the past
+Requirement    : Req-3.3
+Preconditions  :
+- Tester is logged in as a Scheduler.
+Test Steps     :
+  1. Attempt to create appointment with Date = yesterday’s date.
+  2. Click “Save”.
+Expected Result: System displays error “Appointment date cannot be in the past” and aborts the operation.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-005
+Title          : Enforce role‑based restriction on appointment creation
+Requirement    : Req-3.3
+Preconditions  :
+- Tester is logged in as a Clerk (no scheduling rights).
+Test Steps     :
+  1. Attempt to access “Create Appointment”.
+Expected Result: Access denied with message “You do not have permission to schedule appointments”.
+Test Type      : Security
+---
+TC-ID          : TC-3.4-001
+Title          : View and print invoice for an existing patient
+Requirement    : Req-3.4
+Preconditions  :
+- Tester is logged in as a Billing Clerk.
+- Invoice for Patient ID “P2002” exists.
+Test Steps     :
+  1. Open “Invoice Management”.
+  2. Search for Patient ID “P2002”.
+  3. Click “View”.
+  4. Click “Print”.
+Expected Result: Invoice details are displayed accurately; print dialog opens and the printed copy matches on‑screen data.
+Test Type      : Functional
+---
+TC-ID          : TC-3.4-002
+Title          : Attempt to view invoice for a non‑existent patient
+Requirement    : Req-3.4
+Preconditions  :
+- Tester is logged in as a Billing Clerk.
+Test Steps     :
+  1. Open “Invoice Management”.
+  2. Search for Patient ID “P9999”.
+  3. Click “View”.
+Expected Result: System shows message “No invoice found for the specified patient” and no invoice window appears.
+Test Type      : Negative
+---
+TC-ID          : TC-3.4-003
+Title          : Verify invoice view response time meets SLA (<2 seconds)
+Requirement    : Req-3.4
+Preconditions  :
+- Tester is logged in as a Billing Clerk.
+- System load is normal (≤50% CPU, ≤70% memory usage).
+Test Steps     :
+  1. Start timer.
+  2. Open “Invoice Management” and search for a valid Patient ID.
+  3. Click “View”.
+  4. Stop timer when invoice is fully rendered.
+Expected Result: Elapsed time is ≤2.0 seconds; invoice displayed correctly.
+Test Type      : Performance
+---
+TC-ID          : TC-3.4-004
+Title          : Restrict invoice viewing to authorized roles
+Requirement    : Req-3.4
+Preconditions  :
+- Tester is logged in as a

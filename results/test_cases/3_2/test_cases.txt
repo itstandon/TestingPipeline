@@ -1,0 +1,174 @@
+---
+TC-ID          : TC-3.2-001
+Title          : Verify system is deployed on Heroku platform
+Requirement    : 3.2 (Deployment on Heroku)
+Preconditions  :
+  • The Virtual Clinic application has been released to production.
+  • Access to the public DNS records for the application is available.
+Test Steps     :
+  1. Open a web browser on any device.
+  2. Perform a DNS lookup for the application’s domain name.
+  3. Observe the CNAME or A‑record values returned.
+  4. Navigate to the URL returned.
+Expected Result: The DNS records resolve to a Heroku‑provided domain (e.g., *.herokuapp.com) and the web page loads successfully, confirming deployment on Heroku.
+Test Type      : Functional
+---
+TC-ID          : TC-3.2-002
+Title          : Access Virtual Clinic system via the specific URL
+Requirement    : 3.2 (Stakeholder URL access)
+Preconditions  :
+  • The system is deployed and reachable at the documented URL (e.g., https://clinic.example.com).
+Test Steps     :
+  1. Launch a web browser on a stakeholder’s device.
+  2. Enter the exact URL provided in the SRS.
+  3. Press Enter.
+Expected Result: The browser loads the Virtual Clinic landing page without error (HTTP 200 response).
+Test Type      : Functional
+---
+TC-ID          : TC-3.2-003
+Title          : Successful stakeholder login with valid credentials
+Requirement    : 3.2 (Stakeholder login)
+Preconditions  :
+  • Stakeholder has a registered account with username/password.
+  • Device meets minimum hardware requirements (Pentium 4+, ≥100 MB free disk, ≥128 MB RAM).
+  • System is reachable via its URL.
+Test Steps     :
+  1. Navigate to the login page of the Virtual Clinic website.
+  2. Enter a valid username.
+  3. Enter the correct password.
+  4. Click the “Log In” button.
+Expected Result: The system authenticates the user, redirects to the stakeholder dashboard, and displays a welcome message.
+Test Type      : Functional
+---
+TC-ID          : TC-3.2-004
+Title          : Prevent login with invalid credentials
+Requirement    : 3.2 (Stakeholder login security)
+Preconditions  :
+  • Stakeholder account exists.
+  • System is reachable via its URL.
+Test Steps     :
+  1. Open the login page.
+  2. Enter a valid username.
+  3. Enter an incorrect password.
+  4. Click “Log In”.
+Expected Result: Login is denied; the system shows an error message “Invalid username or password” and does not grant access to the dashboard.
+Test Type      : Security
+---
+TC-ID          : TC-3.2-005
+Title          : Block access when stakeholder device processor is below Pentium 4
+Requirement    : 3.2 (Stakeholder hardware – processor)
+Preconditions  :
+  • A test device emulating a processor older than Pentium 4 (e.g., Pentium III) is available.
+  • System URL is known.
+Test Steps     :
+  1. Launch a supported browser on the low‑end device.
+  2. Navigate to the Virtual Clinic URL.
+  3. Attempt to log in with valid credentials.
+Expected Result: The system detects insufficient CPU capability and displays a warning “Your device does not meet the minimum processor requirements” and prevents further interaction.
+Test Type      : Negative
+---
+TC-ID          : TC-3.2-006
+Title          : Accept stakeholder device with exactly Pentium 4 processor
+Requirement    : 3.2 (Stakeholder hardware – processor)
+Preconditions  :
+  • Test device with a Pentium 4 processor is available.
+  • Device meets other hardware minima (≥100 MB free disk, ≥128 MB RAM).
+Test Steps     :
+  1. Open a browser on the Pentium 4 device.
+  2. Navigate to the system URL.
+  3. Log in with valid credentials.
+Expected Result: Login succeeds and the dashboard loads, confirming the processor meets the minimum requirement.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.2-007
+Title          : Deny access when free hard‑drive space is less than 100 MB
+Requirement    : 3.2 (Stakeholder hardware – storage)
+Preconditions  :
+  • Stakeholder device reports 99 MB of free disk space.
+  • System URL is reachable.
+Test Steps     :
+  1. Open the Virtual Clinic website.
+  2. Attempt to log in with valid credentials.
+Expected Result: System displays “Insufficient disk space. Minimum 100 MB required.” and aborts the login process.
+Test Type      : Negative
+---
+TC-ID          : TC-3.2-008
+Title          : Accept stakeholder device with exactly 100 MB free disk space
+Requirement    : 3.2 (Stakeholder hardware – storage)
+Preconditions  :
+  • Device reports exactly 100 MB of free storage.
+  • Other hardware requirements satisfied.
+Test Steps     :
+  1. Access the system URL.
+  2. Log in with valid credentials.
+Expected Result: Login proceeds normally; dashboard is displayed, confirming the boundary condition is accepted.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.2-009
+Title          : Deny access when RAM is below 128 MB
+Requirement    : 3.2 (Stakeholder hardware – RAM)
+Preconditions  :
+  • Device reports 127 MB of RAM (or less).
+  • System URL is reachable.
+Test Steps     :
+  1. Open the website.
+  2. Attempt to log in with valid credentials.
+Expected Result: System shows “Insufficient memory. Minimum 128 MB RAM required.” and prevents further usage.
+Test Type      : Negative
+---
+TC-ID          : TC-3.2-010
+Title          : Accept stakeholder device with exactly 128 MB RAM
+Requirement    : 3.2 (Stakeholder hardware – RAM)
+Preconditions  :
+  • Device reports exactly 128 MB of RAM.
+  • Free disk space ≥100 MB, processor ≥ Pentium 4.
+Test Steps     :
+  1. Navigate to the Virtual Clinic URL.
+  2. Log in with valid credentials.
+Expected Result: Successful authentication and access to the dashboard.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.2-011
+Title          : Prevent hosting deployment when database space < 1 GB
+Requirement    : 3.2 (Hosting hardware – DB space)
+Preconditions  :
+  • A staging Heroku environment is configured with a PostgreSQL add‑on limited to 999 MB.
+Test Steps     :
+  1. Deploy the application to the staging environment.
+  2. Attempt to start the application.
+Expected Result: Deployment fails with an error message “Database size insufficient – minimum 1 GB required.”
+Test Type      : Negative
+---
+TC-ID          : TC-3.2-012
+Title          : Allow hosting deployment with exactly 1 GB database space
+Requirement    : 3.2 (Hosting hardware – DB space)
+Preconditions  :
+  • Heroku staging environment provisioned with a 1 GB database.
+Test Steps     :
+  1. Deploy the Virtual Clinic application.
+  2. Start the application.
+Expected Result: Deployment succeeds; application starts without database‑size errors.
+Test Type      : Boundary
+---
+TC-ID          : TC-3.2-013
+Title          : Prevent hosting when allocated RAM < 2 GB
+Requirement    : 3.2 (Hosting hardware – RAM)
+Preconditions  :
+  • Heroku dyno size configured with 1.5 GB RAM.
+Test Steps     :
+  1. Deploy the application to the dyno.
+  2. Attempt to run a typical user session (login + dashboard load).
+Expected Result: Application crashes or returns “Insufficient server memory – minimum 2 GB RAM required.”
+Test Type      : Negative
+---
+TC-ID          : TC-3.2-014
+Title          : Accept hosting environment with exactly 2 GB RAM
+Requirement    : 3.2 (Hosting hardware – RAM)
+Preconditions  :
+  • Heroku dyno sized to 2 GB RAM.
+Test Steps     :
+  1. Deploy the application.
+  2. Perform a full login flow and navigate to several core pages.
+Expected Result: All pages load successfully within normal response times; no memory‑related errors observed.
+Test Type      : Boundary
+---

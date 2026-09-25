@@ -1,0 +1,122 @@
+---
+TC-ID          : TC-5.4-001
+Title          : Verify continuous system availability (24/7 uptime)
+Requirement    : Req-5.4-Availability
+Preconditions  :
+  • System is deployed in production environment.
+  • Monitoring tools (ping/heartbeat) are configured.
+Test Steps     :
+  1. Initiate a continuous ping (or HTTP health‑check) to the system URL.
+  2. Record responses for a 24‑hour period without any planned maintenance.
+Expected Result: All health‑check requests return a successful status (200 OK / ICMP reply) throughout the 24‑hour window; no downtime is reported.
+Test Type      : Performance
+---
+TC-ID          : TC-5.4-002
+Title          : Verify rapid recovery after simulated server failure
+Requirement    : Req-5.4-Availability
+Preconditions  :
+  • System is operating normally and reachable.
+  • Access to the underlying host/virtual machine to force a restart.
+Test Steps     :
+  1. From an external client, record the current timestamp.
+  2. Force a graceful shutdown of the primary application server (e.g., stop service or reboot VM).
+  3. Continuously poll the system health‑check endpoint every 5 seconds.
+  4. Record the timestamp when the first successful response is received.
+Expected Result: System becomes reachable again within the defined recovery time (e.g., ≤ 30 seconds) after the failure event.
+Test Type      : Performance
+---
+TC-ID          : TC-5.4-003
+Title          : Verify unauthorized user cannot view patient consultation request data
+Requirement    : Req-5.4-Reliability, Req-5.4-Availability
+Preconditions  :
+  • An existing patient consultation request containing classified data is stored in the system.
+  • Test user account with no roles/permissions for patient data is created.
+Test Steps     :
+  1. Log in to the system using the unauthorized user credentials.
+  2. Attempt to navigate to the “Patient Consultation Requests” screen.
+  3. Attempt to open any consultation request record.
+Expected Result: Access is denied; the system displays an appropriate authorization error (e.g., “You do not have permission to view this information”) and no classified data is exposed.
+Test Type      : Security
+---
+TC-ID          : TC-5.4-004
+Title          : Verify authorized clinician can retrieve classified consultation request
+Requirement    : Req-5.4-Reliability
+Preconditions  :
+  • Clinician user account with proper role/permission is active.
+  • At least one consultation request with classified data exists.
+Test Steps     :
+  1. Log in using the authorized clinician credentials.
+  2. Navigate to the “Patient Consultation Requests” module.
+  3. Select a request and open its detail view.
+Expected Result: The clinician successfully views the full consultation request, including all classified fields, with no data truncation or error.
+Test Type      : Functional
+---
+TC-ID          : TC-5.4-005
+Title          : Verify consultation request is persisted correctly after submission
+Requirement    : Req-5.4-Reliability
+Preconditions  :
+  • Authenticated user with permission to create consultation requests.
+  • All mandatory fields for a consultation request are known.
+Test Steps     :
+  1. Log in and navigate to “Create Consultation Request”.
+  2. Fill in all required fields with valid data.
+  3. Submit the request.
+  4. Query the system (via UI or API) for the newly created request.
+Expected Result: The request appears in the system with exactly the data entered; timestamps, patient identifiers, and classified notes are stored without alteration.
+Test Type      : Functional
+---
+TC-ID          : TC-5.4-006
+Title          : Verify system handles abrupt network loss during request submission without data loss or duplication
+Requirement    : Req-5.4-Reliability
+Preconditions  :
+  • User is logged in and on the “Create Consultation Request” screen.
+  • Network connection can be manually disabled (e.g., unplug Ethernet, disable Wi‑Fi).
+Test Steps     :
+  1. Fill in all mandatory fields for a new consultation request.
+  2. While the user clicks “Submit”, immediately disable the network connection.
+  3. Re‑enable the network after 10 seconds.
+  4. Observe system behavior and subsequently query for the request.
+Expected Result: System either:
+  • Shows a clear error indicating submission failure and does NOT create a partial record, OR
+  • Automatically retries and creates a single, complete record once connectivity is restored.
+No duplicate or corrupted records exist.
+Test Type      : Negative
+---
+TC-ID          : TC-5.4-007
+Title          : Verify UI font size meets minimum usability requirement for elderly users
+Requirement    : Req-5.4-Usability
+Preconditions  :
+  • System is accessible on a standard desktop monitor (96 dpi).
+  • Test environment allows inspection of CSS styles.
+Test Steps     :
+  1. Open the main application login screen.
+  2. Inspect the computed font‑size of primary text elements (labels, buttons, navigation links) using browser developer tools.
+  3. Record the font‑size values.
+Expected Result: All primary text elements have a computed font size of ≥ 14 pt (≈ 18 px). Font size complies with the usability guideline for large‑font display.
+Test Type      : Functional
+---
+TC-ID          : TC-5.4-008
+Title          : Verify UI remains legible on high‑DPI (retina) displays
+Requirement    : Req-5.4-Usability
+Preconditions  :
+  • System is accessible on a high‑DPI monitor (e.g., 200 dpi).
+  • Browser scaling set to 100 %.
+Test Steps     :
+  1. Open the main dashboard screen.
+  2. Visually inspect all textual elements for clarity and proper scaling.
+  3. Capture a screenshot for documentation.
+Expected Result: Text remains crisp, properly scaled, and readable; no clipping or overlap occurs. Font size effectively meets the large‑font requirement despite higher pixel density.
+Test Type      : Functional
+---
+TC-ID          : TC-5.4-009
+Title          : Verify response time for loading Patient Consultation Requests list meets SLA
+Requirement    : Req-5.4-Availability
+Preconditions  :
+  • System is under normal load (e.g., ≤ 50 concurrent users).
+  • Performance measurement tool (e.g., JMeter, LoadRunner) is configured.
+Test Steps     :
+  1. Start a timer and send an authenticated request to load the “Patient Consultation Requests” list page.
+  2. Stop the timer when the page fully renders.
+Expected Result: Page load time is ≤ 2 seconds (or the SLA defined in the broader SRS). Meets high‑availability performance expectation.
+Test Type      : Performance
+---

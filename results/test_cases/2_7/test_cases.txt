@@ -1,0 +1,133 @@
+---
+TC-ID          : TC-2.7-001
+Title          : Register patient residing within the allowed zone
+Requirement    : Req-2.7-01
+Preconditions  : • System is live and accessible.<br>• List of allowed PinCodes / radius (25 km) is configured.<br>• Patient has a valid address that falls inside the allowed zone.
+Test Steps     :
+  1. Open the registration page.
+  2. Enter patient details including the address inside the allowed zone.
+  3. Submit the registration form.
+Expected Result: Patient account is created successfully; system displays a confirmation message and sends a welcome email.
+Test Type      : Functional
+---
+TC-ID          : TC-2.7-002
+Title          : Attempt to register patient residing outside the allowed zone
+Requirement    : Req-2.7-01
+Preconditions  : • System is live.<br>• Allowed zone (PinCodes / 25 km radius) is configured.<br>• Patient address is outside the allowed zone.
+Test Steps     :
+  1. Open the registration page.
+  2. Fill in patient details with the out‑of‑zone address.
+  3. Submit the registration form.
+Expected Result: Registration is rejected; an error message “Service not available in your area” is displayed; no account is created.
+Test Type      : Negative
+---
+TC-ID          : TC-2.7-003
+Title          : Register patient whose address lies exactly on the 25 km boundary
+Requirement    : Req-2.7-01
+Preconditions  : • System is live.<br>• Boundary calculation is correctly configured.<br>• Patient address is exactly 25 km from the hospital centre.
+Test Steps     :
+  1. Open the registration page.
+  2. Enter patient details with the boundary address.
+  3. Submit the registration form.
+Expected Result: Registration succeeds (boundary is inclusive); patient receives confirmation.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.7-004
+Title          : Create second chemist for a PinCode that already has an authorized chemist
+Requirement    : Req-2.7-02
+Preconditions  : • A chemist is already registered for PinCode 560001 and is active.<br>• Administrator is logged in with rights to add chemists.
+Test Steps     :
+  1. Navigate to “Add Chemist” screen.
+  2. Enter details for a new chemist with PinCode 560001.
+  3. Submit the form.
+Expected Result: System rejects the creation; error message “Only one authorized chemist allowed per PinCode” is shown.
+Test Type      : Negative
+---
+TC-ID          : TC-2.7-005
+Title          : Route prescription request to the correct chemist based on patient PinCode
+Requirement    : Req-2.7-03
+Preconditions  : • Patient with PinCode 560002 is registered and logged in.<br>• An authorized chemist exists for PinCode 560002.<br>• Patient has an uploaded, valid prescription PDF.
+Test Steps     :
+  1. Patient selects “Request Medicine Delivery”.
+  2. Upload the prescription file and submit.
+Expected Result: System creates a prescription request and assigns it to the chemist registered for PinCode 560002; chemist receives a notification with the request details.
+Test Type      : Functional
+---
+TC-ID          : TC-2.7-006
+Title          : Chemist marks prescription as delivered
+Requirement    : Req-2.7-04
+Preconditions  : • A prescription request is pending and assigned to Chemist C for PinCode 560002.<br>• Chemist C is logged into the system.
+Test Steps     :
+  1. Navigate to “My Prescription Requests”.
+  2. Open the pending request.
+  3. Click “Mark as Delivered”.
+Expected Result: Prescription status changes to “Delivered”; patient receives a delivery‑confirmation notification; the request is locked from further edits.
+Test Type      : Functional
+---
+TC-ID          : TC-2.7-007
+Title          : Unauthorized user attempts to mark a prescription as delivered
+Requirement    : Req-2.7-04
+Preconditions  : • Prescription request is pending and assigned to Chemist C.<br>• A user logged in as Patient P (not chemist) is active.
+Test Steps     :
+  1. Patient navigates to the prescription request URL (direct access).
+  2. Attempts to click “Mark as Delivered”.
+Expected Result: System denies the action; error “Insufficient privileges” is shown; status remains unchanged.
+Test Type      : Security
+---
+TC-ID          : TC-2.7-008
+Title          : Create second laboratory for a PinCode that already has an authorized lab
+Requirement    : Req-2.7-05
+Preconditions  : • A laboratory is already registered for PinCode 560003.<br>• Administrator is logged in.
+Test Steps     :
+  1. Go to “Add Laboratory” screen.
+  2. Enter details for a new lab with PinCode 560003.
+  3. Submit.
+Expected Result: System rejects the addition; displays “Only one authorized laboratory allowed per PinCode”.
+Test Type      : Negative
+---
+TC-ID          : TC-2.7-009
+Title          : Route laboratory test request to the correct laboratory based on patient PinCode
+Requirement    : Req-2.7-06
+Preconditions  : • Patient resides in PinCode 560003 and is logged in.<br>• Authorized lab exists for PinCode 560003.<br>• Patient has selected a lab test.
+Test Steps     :
+  1. Patient selects “Request Lab Test”.
+  2. Choose required test and submit request.
+Expected Result: System creates a lab request and assigns it to the lab registered for PinCode 560003; lab staff receive notification.
+Test Type      : Functional
+---
+TC-ID          : TC-2.7-010
+Title          : Upload maximum allowed number of reports (5) each at the size limit (1 MB)
+Requirement    : Req-2.7-07
+Preconditions  : • Patient has an active consultation session.<br>• Five distinct report files, each exactly 1 MB, are prepared.
+Test Steps     :
+  1. Open “Upload Reports” dialog within the consultation.
+  2. Select and upload Report 1 (1 MB); click Upload.
+  3. Repeat steps for Reports 2‑5.
+Expected Result: All five reports are accepted; system displays “5 reports uploaded successfully”; total stored size = 5 MB.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.7-011
+Title          : Attempt to upload a sixth report for a consultation
+Requirement    : Req-2.7-07
+Preconditions  : • Five reports have already been uploaded for the consultation (as in TC‑2.7‑010).<br>• Patient is still in the same consultation session.
+Test Steps     :
+  1. Click “Add Report”.
+  2. Select a sixth file (≤1 MB) and upload.
+Expected Result: System rejects the upload; error message “Maximum of 5 reports per consultation reached” is shown; no additional file is stored.
+Test Type      : Negative
+---
+TC-ID          : TC-2.7-012
+Title          : Attempt to upload a report larger than 1 MB
+Requirement    : Req-2.7-07
+Preconditions  : • Patient has an active consultation.<br>• A report file of size 1.2 MB is prepared.
+Test Steps     :
+  1. Open “Upload Reports”.
+  2. Select the 1.2 MB file and attempt to upload.
+Expected Result: Upload is blocked; error “File size exceeds 1 MB limit” is displayed.
+Test Type      : Negative
+---
+TC-ID          : TC-2.7-013
+Title          : Consultation request is routed to a doctor of the required speciality
+Requirement    : Req-2.7-08
+Preconditions  : • Patient selects “Book Consultation” and chooses speciality “Cardiology”.<br>• At least one cardiologist is active in the system.
+Test

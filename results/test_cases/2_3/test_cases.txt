@@ -1,0 +1,208 @@
+---
+TC-ID          : TC-2.3-001
+Title          : Patient registers successfully with valid data
+Requirement    : UC-01
+Preconditions  : • System is configured and running  
+                 • Registration page is accessible via URL  
+                 • No existing patient account with the same email
+Test Steps     :
+  1. Navigate to the registration page URL.  
+  2. Fill all mandatory fields (Name, Email, Password, DOB, Contact, Address) with valid values.  
+  3. Click the “Register” button.
+Expected Result: Patient account is created, a confirmation message is displayed, and the patient can log in.
+Test Type      : Functional
+---
+TC-ID          : TC-2.3-002
+Title          : Registration fails when mandatory field is missing
+Requirement    : UC-01
+Preconditions  : • System is running and registration page is reachable
+Test Steps     :
+  1. Open the registration page.  
+  2. Leave the “Email” field empty while filling all other mandatory fields.  
+  3. Submit the form.
+Expected Result: System displays an error message “Email is required” and no account is created.
+Test Type      : Negative
+---
+TC-ID          : TC-2.3-003
+Title          : Registration rejects duplicate email address
+Requirement    : UC-01
+Preconditions  : • A patient account already exists with email john.doe@example.com  
+                 • System is running
+Test Steps     :
+  1. Open registration page.  
+  2. Enter john.doe@example.com in the Email field and fill other mandatory fields with valid data.  
+  3. Submit the form.
+Expected Result: System returns error “Email already registered” and prevents duplicate account creation.
+Test Type      : Negative
+---
+TC-ID          : TC-2.3-004
+Title          : Registration accepts maximum length for Name field
+Requirement    : UC-01
+Preconditions  : • System is running
+Test Steps     :
+  1. Open registration page.  
+  2. Enter a Name consisting of 50 alphabetic characters (maximum allowed).  
+  3. Fill remaining mandatory fields with valid data.  
+  4. Submit the form.
+Expected Result: Registration succeeds; the 50‑character name is stored correctly.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.3-005
+Title          : Registration rejects Name exceeding maximum length
+Requirement    : UC-01
+Preconditions  : • System is running
+Test Steps     :
+  1. Open registration page.  
+  2. Enter a Name of 51 characters.  
+  3. Complete the form and submit.
+Expected Result: System displays validation error “Name cannot exceed 50 characters”.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.3-006
+Title          : Registration data is stored encrypted (password)
+Requirement    : UC-01
+Preconditions  : • System is running and a new registration is about to be submitted
+Test Steps     :
+  1. Register a new patient with a known password.  
+  2. After successful registration, query the database for the patient’s password field.
+Expected Result: Password is stored as a hash (e.g., bcrypt) not in plain text.
+Test Type      : Security
+---
+TC-ID          : TC-2.3-007
+Title          : Admin adds new speciality successfully
+Requirement    : UC-02
+Preconditions  : • System is configured and running  
+                 • Admin account exists and is logged in
+Test Steps     :
+  1. Navigate to “Setup Speciality” page.  
+  2. Enter a unique speciality name “Cardiology”.  
+  3. Click “Add Speciality”.
+Expected Result: Speciality “Cardiology” appears in the list; success message displayed.
+Test Type      : Functional
+---
+TC-ID          : TC-2.3-008
+Title          : Non‑admin user cannot add a speciality
+Requirement    : UC-02
+Preconditions  : • System is running  
+                 • Regular patient user is logged in
+Test Steps     :
+  1. Attempt to access the “Setup Speciality” URL directly.  
+  2. Observe the response.
+Expected Result: System redirects to access‑denied page or shows “Insufficient privileges”.
+Test Type      : Security
+---
+TC-ID          : TC-2.3-009
+Title          : Adding duplicate speciality is rejected
+Requirement    : UC-02
+Preconditions  : • Admin is logged in  
+                 • Speciality “Dermatology” already exists
+Test Steps     :
+  1. Navigate to “Setup Speciality”.  
+  2. Enter “Dermatology” as the new speciality name.  
+  3. Submit.
+Expected Result: System displays error “Speciality already exists”.
+Test Type      : Negative
+---
+TC-ID          : TC-2.3-010
+Title          : Speciality name maximum length validation
+Requirement    : UC-02
+Preconditions  : • Admin is logged in
+Test Steps     :
+  1. Open “Setup Speciality”.  
+  2. Input a speciality name of 30 characters (assumed max).  
+  3. Submit.
+Expected Result: Speciality is added successfully.  
+  4. Repeat with 31 characters.  
+Expected Result: Validation error “Speciality name cannot exceed 30 characters”.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.3-011
+Title          : Admin registers a new doctor successfully
+Requirement    : UC-03
+Preconditions  : • System is running  
+                 • Admin is logged in  
+                 • Desired speciality (e.g., “Neurology”) already exists
+Test Steps     :
+  1. Navigate to “Add Doctor” page.  
+  2. Fill Doctor’s Name, Email, Mobile, Select “Neurology”, set a password.  
+  3. Click “Create Doctor”.
+Expected Result: Doctor account is created, appears in doctor list, and receives a welcome email.
+Test Type      : Functional
+---
+TC-ID          : TC-2.3-012
+Title          : Non‑admin cannot register a doctor
+Requirement    : UC-03
+Preconditions  : • Patient user is logged in
+Test Steps     :
+  1. Directly request the “Add Doctor” URL.  
+  2. Observe system response.
+Expected Result: Access denied / redirect to login with admin role required.
+Test Type      : Security
+---
+TC-ID          : TC-2.3-013
+Title          : Doctor registration fails with missing mandatory field
+Requirement    : UC-03
+Preconditions  : • Admin is logged in
+Test Steps     :
+  1. Open “Add Doctor”.  
+  2. Leave the Email field empty, fill all other fields.  
+  3. Submit.
+Expected Result: Validation error “Email is required”; doctor not created.
+Test Type      : Negative
+---
+TC-ID          : TC-2.3-014
+Title          : Admin adds new lab and chemist successfully
+Requirement    : UC-04
+Preconditions  : • System is running and Admin is logged in
+Test Steps     :
+  1. Navigate to “Add Lab” page, enter Lab Name “City Lab”, address, contact, and submit.  
+  2. Navigate to “Add Chemist” page, enter Chemist Name “Health Pharmacy”, address, contact, and submit.
+Expected Result: Both Lab and Chemist records appear in their respective lists with success messages.
+Test Type      : Functional
+---
+TC-ID          : TC-2.3-015
+Title          : Non‑admin cannot add lab or chemist
+Requirement    : UC-04
+Preconditions  : • Patient user is logged in
+Test Steps     :
+  1. Attempt to access “Add Lab” URL.  
+  2. Attempt to access “Add Chemist” URL.
+Expected Result: System denies access for both attempts with appropriate error.
+Test Type      : Security
+---
+TC-ID          : TC-2.3-016
+Title          : Admin updates existing doctor information
+Requirement    : UC-05
+Preconditions  : • Admin is logged in  
+                 • Doctor “Dr. Smith” exists in the system
+Test Steps     :
+  1. Search for “Dr. Smith” in doctor management screen.  
+  2. Click “Edit”, change contact number, and save.
+Expected Result: Doctor’s contact number is updated in the database; audit log records the change.
+Test Type      : Functional
+---
+TC-ID          : TC-2.3-017
+Title          : Admin attempts to update non‑existent doctor
+Requirement    : UC-05
+Preconditions  : • Admin is logged in
+Test Steps     :
+  1. Manually navigate to edit URL for Doctor ID 9999 (non‑existent).  
+  2. Observe response.
+Expected Result: System shows “Doctor not found” error; no changes performed.
+Test Type      : Negative
+---
+TC-ID          : TC-2.3-018
+Title          : Admin updates lab/chemist details successfully
+Requirement    : UC-06
+Preconditions  : • Admin logged in  
+                 • Lab “City Lab” exists
+Test Steps     :
+  1. Open Lab management, select “City Lab”, click “Edit”.  
+  2. Modify address, save changes.
+Expected Result: Updated address is persisted; change logged.
+Test Type      : Functional
+---
+TC-ID          : TC-2.3-019
+Title          : Patient updates own profile information
+Requirement    : UC-07
+Preconditions 

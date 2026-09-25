@@ -1,0 +1,215 @@
+---
+TC-ID          : TC-2.2-001
+Title          : Add new medical specialty to specialty database (happy path)
+Requirement    : R1
+Preconditions  : • Admin user is logged in with “Admin” role  
+                • Specialty database is accessible
+Test Steps     :
+  1. Navigate to “Admin → Manage Specialties”.
+  2. Click “Add Specialty”.
+  3. Enter a unique specialty name “Dermatology”.
+  4. Click “Save”.
+Expected Result: The system stores “Dermatology” in the specialty table, displays a success message, and the new specialty appears in the specialty list.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-002
+Title          : Prevent adding duplicate medical specialty (negative)
+Requirement    : R1
+Preconditions  : • Admin is logged in  
+                • Specialty “Cardiology” already exists in the database
+Test Steps     :
+  1. Navigate to “Admin → Manage Specialties”.
+  2. Click “Add Specialty”.
+  3. Enter “Cardiology” as the specialty name.
+  4. Click “Save”.
+Expected Result: The system rejects the entry, shows an error “Specialty already exists”, and no duplicate record is created.
+Test Type      : Negative
+---
+TC-ID          : TC-2.2-003
+Title          : Link existing specialty to a new doctor and create doctor record (happy path)
+Requirement    : R2
+Preconditions  : • Admin is logged in  
+                • Specialty “Neurology” exists  
+                • No doctor with license “DOC12345” exists
+Test Steps     :
+  1. Go to “Admin → Manage Doctors”.
+  2. Click “Add Doctor”.
+  3. Fill required fields (Name, License “DOC12345”, Contact, etc.).
+  4. Select specialty “Neurology”.
+  5. Click “Save”.
+Expected Result: Doctor record with license “DOC12345” is created, linked to “Neurology”, and appears in the doctor list.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-004
+Title          : Reject linking doctor to non‑existent specialty (negative)
+Requirement    : R2
+Preconditions  : • Admin is logged in  
+                • Specialty “Pediatrics” does NOT exist
+Test Steps     :
+  1. Navigate to “Admin → Manage Doctors”.
+  2. Click “Add Doctor”.
+  3. Enter doctor details and attempt to select “Pediatrics” from the specialty dropdown.
+  4. Click “Save”.
+Expected Result: System displays error “Selected specialty is invalid” and does not create the doctor record.
+Test Type      : Negative
+---
+TC-ID          : TC-2.2-005
+Title          : Populate lab information into lab database (happy path)
+Requirement    : R3
+Preconditions  : • Admin is logged in  
+                • Lab “City Lab” does not already exist
+Test Steps     :
+  1. Open “Admin → Manage Labs”.
+  2. Click “Add Lab”.
+  3. Enter Lab Name “City Lab”, Address, Contact, and Service Types.
+  4. Click “Save”.
+Expected Result: “City Lab” is stored in the lab table and appears in the lab list.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-006
+Title          : Prevent adding lab with missing mandatory fields (negative)
+Requirement    : R3
+Preconditions  : • Admin is logged in
+Test Steps     :
+  1. Open “Admin → Manage Labs”.
+  2. Click “Add Lab”.
+  3. Leave the “Lab Name” field blank, fill other fields.
+  4. Click “Save”.
+Expected Result: System shows validation error “Lab Name is required” and does not create a record.
+Test Type      : Negative
+---
+TC-ID          : TC-2.2-007
+Title          : Populate chemist information into chemist database (happy path)
+Requirement    : R4
+Preconditions  : • Admin is logged in  
+                • Chemist “Health Pharmacy” does not exist
+Test Steps     :
+  1. Navigate to “Admin → Manage Chemists”.
+  2. Click “Add Chemist”.
+  3. Provide required details (Name, Address, License, Contact).
+  4. Click “Save”.
+Expected Result: “Health Pharmacy” record is stored and displayed in the chemist list.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-008
+Title          : Reject chemist entry with duplicate license number (negative)
+Requirement    : R4
+Preconditions  : • Admin is logged in  
+                • Chemist with license “CHEM001” already exists
+Test Steps     :
+  1. Open “Admin → Manage Chemists”.
+  2. Click “Add Chemist”.
+  3. Enter license “CHEM001” and other valid data.
+  4. Click “Save”.
+Expected Result: System displays error “Chemist license already exists” and no duplicate is created.
+Test Type      : Negative
+---
+TC-ID          : TC-2.2-009
+Title          : Patient registration with all mandatory details (happy path)
+Requirement    : R5
+Preconditions  : • No existing patient account with email “john.doe@example.com”
+Test Steps     :
+  1. Open the public “Patient Registration” page.
+  2. Fill First Name, Last Name, DOB, Email, Phone, Address, Password.
+  3. Click “Register”.
+Expected Result: Account is created, a verification email is sent, and user is redirected to login page with success message.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-010
+Title          : Prevent patient registration with missing mandatory fields (negative)
+Requirement    : R5
+Preconditions  : • None
+Test Steps     :
+  1. Open “Patient Registration”.
+  2. Leave Email blank, fill other fields.
+  3. Click “Register”.
+Expected Result: Validation error “Email is required” is shown; registration does not succeed.
+Test Type      : Negative
+---
+TC-ID          : TC-2.2-011
+Title          : Patient creates a consultation request (happy path)
+Requirement    : R6
+Preconditions  : • Patient is logged in (john.doe@example.com)  
+                • Patient profile is complete
+Test Steps     :
+  1. Click “New Consultation”.
+  2. Select specialty “Dermatology”.
+  3. Enter symptom description and optional attachment.
+  4. Click “Submit Request”.
+Expected Result: Consultation request is stored, status = “Pending”, and a notification is sent to doctors of the selected specialty.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-012
+Title          : Prevent consultation request submission when patient is not authenticated (negative)
+Requirement    : R6
+Preconditions  : • No user session (logged out)
+Test Steps     :
+  1. Directly access the URL “/consultation/new”.
+  2. Fill request form and click “Submit”.
+Expected Result: System redirects to login page; request is not created.
+Test Type      : Security
+---
+TC-ID          : TC-2.2-013
+Title          : Doctor views pending consultation requests for assigned specialty (happy path)
+Requirement    : R7
+Preconditions  : • Doctor “Dr. Smith” (license DOC54321) is logged in, specialty “Dermatology”  
+                • At least one pending request exists for Dermatology
+Test Steps     :
+  1. Navigate to “Doctor Dashboard → Pending Consultations”.
+  2. Verify the list shows the pending request.
+  3. Click on a request to open details.
+Expected Result: Request details are displayed; status remains “Pending”.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-014
+Title          : Prevent doctor from viewing consultations outside their specialty (negative)
+Requirement    : R7
+Preconditions  : • Doctor “Dr. Patel” (specialty “Cardiology”) is logged in  
+                • A pending Dermatology request exists
+Test Steps     :
+  1. Attempt to access the URL “/doctor/consultation/{DermRequestID}”.
+Expected Result: System returns “Access Denied” or 403; request is not visible.
+Test Type      : Security
+---
+TC-ID          : TC-2.2-015
+Title          : Doctor provides diagnosis and generates prescription (happy path)
+Requirement    : R8
+Preconditions  : • Doctor is logged in and has opened a pending consultation request.
+Test Steps     :
+  1. Enter diagnosis text in the “Diagnosis” field.
+  2. Add medication items (e.g., “Amoxicillin 500mg – 7 days”).
+  3. Click “Generate Prescription”.
+Expected Result: Prescription record is created, request status changes to “Completed”, and prescription is dispatched to patient, chemist, and lab modules.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-016
+Title          : Prevent prescription generation without a diagnosis (negative)
+Requirement    : R8
+Preconditions  : • Doctor has opened a pending request.
+Test Steps     :
+  1. Leave the “Diagnosis” field blank.
+  2. Add medication items.
+  3. Click “Generate Prescription”.
+Expected Result: System shows validation error “Diagnosis is required”; prescription is not created; request remains pending.
+Test Type      : Negative
+---
+TC-ID          : TC-2.2-017
+Title          : Prescription delivery to patient, chemist, and lab (happy path)
+Requirement    : R9
+Preconditions  : • Prescription has been generated for request ID #12345.
+Test Steps     :
+  1. Verify patient’s “My Prescriptions” page shows the new prescription.
+  2. Verify chemist “Health Pharmacy” receives a notification with prescription details.
+  3. Verify lab “City Lab” receives a notification with required tests (if any).
+Expected Result: All three parties have visible, identical prescription data; timestamps match creation time.
+Test Type      : Functional
+---
+TC-ID          : TC-2.2-018
+Title          : Chemist dispenses medicines based on prescription (happy path)
+Requirement    : R10
+Preconditions  : • Chemist user is logged in (Health Pharmacy).  
+                • Prescription for patient John Doe includes “Paracetamol 500mg – 5 tablets”.
+Test Steps     :
+  1. Open “Incoming Prescriptions”.
+  2. Select John Doe’s prescription.
+  3. Mark each medication as “Dispensed

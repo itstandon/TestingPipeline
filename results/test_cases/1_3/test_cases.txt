@@ -1,0 +1,192 @@
+---
+TC-ID          : TC-1.3-001
+Title          : Doctor successful login and dashboard access
+Requirement    : Req-1.3-01
+Preconditions  :
+  - Doctor user account exists with username "dr.jones" and password "SecurePass123".
+  - System is online and login page is reachable.
+Test Steps     :
+  1. Navigate to the system login page.
+  2. Enter username "dr.jones".
+  3. Enter password "SecurePass123".
+  4. Click the "Login" button.
+Expected Result: Doctor is authenticated, redirected to the Doctor Dashboard, and all doctor-specific menu items are visible.
+Test Type      : Functional
+---
+TC-ID          : TC-1.3-002
+Title          : Doctor login with invalid credentials rejected
+Requirement    : Req-1.3-01
+Preconditions  :
+  - Doctor user account exists.
+Test Steps     :
+  1. Navigate to the login page.
+  2. Enter username "dr.jones".
+  3. Enter incorrect password "WrongPass".
+  4. Click "Login".
+Expected Result: System displays an error message "Invalid username or password" and remains on the login page; no dashboard is shown.
+Test Type      : Negative
+---
+TC-ID          : TC-1.3-003
+Title          : Administration Staff successful login and admin panel access
+Requirement    : Req-1.3-02
+Preconditions  :
+  - Admin staff account exists with username "admin.smith" and password "Admin#2024".
+Test Steps     :
+  1. Open the login URL.
+  2. Input username "admin.smith".
+  3. Input password "Admin#2024".
+  4. Press "Login".
+Expected Result: User is authenticated and redirected to the Administration Panel showing admin functions (user management, system settings, etc.).
+Test Type      : Functional
+---
+TC-ID          : TC-1.3-004
+Title          : Administration Staff login blocked after three consecutive failures
+Requirement    : Req-1.3-02
+Preconditions  :
+  - Admin staff account "admin.smith" exists.
+  - System lockout policy: account locked after 3 failed attempts for 15 minutes.
+Test Steps     :
+  1. Attempt login with username "admin.smith" and wrong password "bad1".
+  2. Repeat step 1 two more times with passwords "bad2" and "bad3".
+  3. Attempt a fourth login with the correct password "Admin#2024".
+Expected Result: After the third failed attempt, the account is locked; the fourth attempt shows message "Account locked. Try again after 15 minutes."
+Test Type      : Security
+---
+TC-ID          : TC-1.3-005
+Title          : Authorized Chemist successful login and access to chemist module
+Requirement    : Req-1.3-03
+Preconditions  :
+  - Chemist user "chemist.lee" with password "Chem!2024" is registered and marked as authorized.
+Test Steps     :
+  1. Go to login page.
+  2. Enter username "chemist.lee".
+  3. Enter password "Chem!2024".
+  4. Click "Login".
+Expected Result: Chemist is taken to the Chemist Module where they can view prescriptions, upload dispensed medicine records, etc.
+Test Type      : Functional
+---
+TC-ID          : TC-1.3-006
+Title          : Unauthorized Chemist denied access to chemist module
+Requirement    : Req-1.3-03
+Preconditions  :
+  - User "john.doe" exists but is not marked as an authorized chemist.
+Test Steps     :
+  1. Log in with username "john.doe" and correct password.
+  2. Attempt to navigate to the Chemist Module URL directly.
+Expected Result: System redirects to an "Access Denied" page stating "You do not have permission to access this module."
+Test Type      : Security
+---
+TC-ID          : TC-1.3-007
+Title          : Authorized Lab staff successful login and access to lab module
+Requirement    : Req-1.3-04
+Preconditions  :
+  - Lab staff account "lab.raj" with password "LabPass!2024" exists and is authorized.
+Test Steps     :
+  1. Open login screen.
+  2. Input username "lab.raj".
+  3. Input password "LabPass!2024".
+  4. Click "Login".
+Expected Result: Lab staff is directed to Lab Dashboard where test orders and results can be managed.
+Test Type      : Functional
+---
+TC-ID          : TC-1.3-008
+Title          : Lab staff attempts to access chemist module and is blocked
+Requirement    : Req-1.3-04
+Preconditions  :
+  - Lab staff "lab.raj" is logged in.
+Test Steps     :
+  1. While logged in as lab.raj, enter the URL for the Chemist Module.
+Expected Result: System shows "Access Denied" with appropriate message; no chemist data is displayed.
+Test Type      : Security
+---
+TC-ID          : TC-1.3-009
+Title          : Patient self‑registration with all mandatory fields
+Requirement    : Req-1.3-05
+Preconditions  :
+  - Registration page is accessible to unauthenticated users.
+Test Steps     :
+  1. Navigate to "Patient Registration" page.
+  2. Fill in Name: "Alice Patel".
+  3. Fill in Date of Birth: "1990-04-15".
+  4. Fill in Email: "alice.patel@example.com".
+  5. Fill in Phone: "9876543210".
+  6. Set Password: "Patient#2024".
+  7. Confirm Password: "Patient#2024".
+  8. Click "Register".
+Expected Result: System creates a new patient account, shows message "Registration successful", and sends a verification email to the provided address.
+Test Type      : Functional
+---
+TC-ID          : TC-1.3-010
+Title          : Patient registration fails when mandatory field is missing
+Requirement    : Req-1.3-05
+Preconditions  :
+  - Registration page open.
+Test Steps     :
+  1. Fill all fields except leave Email blank.
+  2. Click "Register".
+Expected Result: System highlights the Email field, displays error "Email is required", and does not create an account.
+Test Type      : Negative
+---
+TC-ID          : TC-1.3-011
+Title          : Patient requests an appointment after successful login
+Requirement    : Req-1.3-06
+Preconditions  :
+  - Patient "alice.patel@example.com" has verified account and is logged in.
+  - At least one doctor is available for appointments.
+Test Steps     :
+  1. From patient dashboard, select "Request Appointment".
+  2. Choose Doctor "Dr. Jones" from dropdown.
+  3. Pick date "2024-10-05" and time "10:00 AM".
+  4. Click "Submit Request".
+Expected Result: System records the appointment request, shows confirmation "Your appointment request has been submitted", and sends email notification to the patient and the selected doctor.
+Test Type      : Functional
+---
+TC-ID          : TC-1.3-012
+Title          : Patient attempts to request appointment with past date (boundary test)
+Requirement    : Req-1.3-06
+Preconditions  :
+  - Patient is logged in.
+Test Steps     :
+  1. Open "Request Appointment" form.
+  2. Choose any doctor.
+  3. Select a date that is yesterday's date.
+  4. Click "Submit Request".
+Expected Result: System rejects the request and displays error "Appointment date must be in the future."
+Test Type      : Boundary
+---
+TC-ID          : TC-1.3-013
+Title          : Hospital staff (Doctor) views patient registration details
+Requirement    : Req-1.3-07
+Preconditions  :
+  - Patient "alice.patel@example.com" is registered.
+  - Doctor "dr.jones" is logged in.
+Test Steps     :
+  1. In Doctor Dashboard, navigate to "Patient List".
+  2. Search for patient by name "Alice Patel".
+  3. Click on the patient record.
+Expected Result: System displays full patient profile (personal details, contact info, medical history) as entered during registration.
+Test Type      : Functional
+---
+TC-ID          : TC-1.3-014
+Title          : Doctor attempts to view patient data without proper authorization
+Requirement    : Req-1.3-07
+Preconditions  :
+  - Nurse user "nurse.ram" is logged in (role does not have patient-view permission).
+Test Steps     :
+  1. Directly access the URL "/doctor/patient/12345".
+Expected Result: System redirects to "Access Denied" page; patient data is not displayed.
+Test Type      : Security
+---
+TC-ID          : TC-1.3-015
+Title          : System prevents unauthenticated user from accessing any restricted module
+Requirement    : Req-1.3-01 to Req-1.3-04
+Preconditions  :
+  - No user is logged in.
+Test Steps     :
+  1. Attempt to navigate to "/admin/dashboard".
+  2. Attempt to navigate to "/doctor/dashboard".
+  3. Attempt to navigate to "/chemist/module".
+  4. Attempt to navigate to "/lab/module".
+Expected Result: Each attempt results in redirect to login page with message "Please log in to continue."
+Test Type      : Security
+---

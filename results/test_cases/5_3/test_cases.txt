@@ -1,0 +1,92 @@
+---
+TC-ID          : TC-5.3-001
+Title          : Verify Doctor can view patient consultation requests
+Requirement    : Req-5.3-1
+Preconditions  : 
+  - Doctor user account exists and is active.
+  - Doctor is logged into the system with valid credentials.
+  - At least one patient consultation request is pending in the system.
+Test Steps     :
+  1. Navigate to the "Consultation Requests" module.
+  2. Select the pending consultation request from the list.
+  3. Open the request details.
+Expected Result: The system displays the full details of the selected patient consultation request without error.
+Test Type      : Functional
+---
+TC-ID          : TC-5.3-002
+Title          : Ensure non‑Doctor staff cannot access patient consultation requests
+Requirement    : Req-5.3-1
+Preconditions  : 
+  - Nurse user account exists and is active.
+  - Nurse is logged into the system with valid credentials.
+Test Steps     :
+  1. Attempt to navigate to the "Consultation Requests" module via the UI menu.
+  2. Observe any error or access denial message.
+Expected Result: Access is denied; the system shows an appropriate "Unauthorized" or "Insufficient permissions" message and does not display any consultation data.
+Test Type      : Negative
+---
+TC-ID          : TC-5.3-003
+Title          : Verify Chemist sees only need‑to‑know data (prescriptions) and not consultation details
+Requirement    : Req-5.3-2
+Preconditions  : 
+  - Chemist user account exists and is active.
+  - Chemist is logged into the system with valid credentials.
+  - A prescription linked to a patient exists in the system.
+Test Steps     :
+  1. Navigate to the "Prescriptions" section.
+  2. Open a prescription record.
+  3. Attempt to locate any patient consultation request information within the view.
+Expected Result: The chemist can view prescription details (medicines, dosage) but no consultation request data is displayed; fields related to consultation are omitted or hidden.
+Test Type      : Security
+---
+TC-ID          : TC-5.3-004
+Title          : Prevent Chemist from accessing patient consultation requests directly
+Requirement    : Req-5.3-2
+Preconditions  : 
+  - Chemist user account exists and is active.
+  - Chemist is logged into the system with valid credentials.
+Test Steps     :
+  1. Manually enter the URL or use a bookmark that points to the "Consultation Requests" page.
+  2. Press Enter to request the page.
+Expected Result: The system redirects the chemist to an error/unauthorized page and does not expose any consultation data.
+Test Type      : Negative
+---
+TC-ID          : TC-5.3-005
+Title          : Verify Lab staff sees only need‑to‑know data (lab orders) and not consultation details
+Requirement    : Req-5.3-2
+Preconditions  : 
+  - Lab technician user account exists and is active.
+  - Lab technician is logged into the system with valid credentials.
+  - At least one lab order associated with a patient exists.
+Test Steps     :
+  1. Navigate to the "Lab Orders" module.
+  2. Open a lab order record.
+  3. Search for any consultation request information within the view.
+Expected Result: The lab technician can view lab order details (test type, specimen, results) but no consultation request data is displayed; consultation fields are absent.
+Test Type      : Security
+---
+TC-ID          : TC-5.3-006
+Title          : Prevent Lab staff from accessing patient consultation requests directly
+Requirement    : Req-5.3-2
+Preconditions  : 
+  - Lab technician user account exists and is active.
+  - Lab technician is logged into the system with valid credentials.
+Test Steps     :
+  1. Attempt to access the "Consultation Requests" module via URL manipulation or menu hacking.
+  2. Observe the system response.
+Expected Result: Access is denied; the system shows an "Unauthorized" message and does not render any consultation data.
+Test Type      : Negative
+---
+TC-ID          : TC-5.3-007
+Title          : Confirm no external interfaces expose patient data
+Requirement    : Req-5.3-3
+Preconditions  : 
+  - System is deployed in a test environment with all documented internal APIs enabled.
+  - Network monitoring tool is active.
+Test Steps     :
+  1. Scan the system for publicly reachable endpoints (e.g., using a port scanner or API discovery tool).
+  2. Attempt to invoke any discovered endpoint without authentication.
+  3. Observe any data returned.
+Expected Result: No external endpoints are discovered; any attempted access is blocked or results in connection refusal. No patient data is returned.
+Test Type      : Security
+---

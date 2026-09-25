@@ -1,0 +1,153 @@
+---
+TC-ID          : TC-5.5-001
+Title          : Verify nightly full backup is created
+Requirement    : Sec-5.5
+Preconditions  :
+- Production system is powered on and operational.
+- Current date and time are set correctly.
+- No backup job is currently running.
+Test Steps     :
+  1. Wait until the scheduled backup time (00:00) or manually trigger the nightly backup scheduler.
+  2. Observe the backup subsystem logs for the start of a full backup job.
+  3. After the job completes, query the backup repository for a backup file dated today.
+  4. Verify the backup file size matches the size of the production database (within 5% tolerance).
+Expected Result: A full backup file for the current day is created, logged as successful, and stored in the designated backup location.
+Test Type      : Functional
+---
+TC-ID          : TC-5.5-002
+Title          : Verify rollback to any day within the 30‑day retention window
+Requirement    : Sec-5.5
+Preconditions  :
+- Backups exist for the past 30 consecutive days.
+- System is in a known state (e.g., baseline data set).
+- Administrator has appropriate restore privileges.
+Test Steps     :
+  1. Select a target date within the last 30 days (e.g., 15 days ago).
+  2. Initiate a restore operation using the backup file from the chosen date.
+  3. Wait for the restore process to complete and confirm the system reports success.
+  4. Query a set of known data records that were modified after the chosen date.
+  5. Verify those records now reflect the state they had on the target date.
+Expected Result: The system is successfully rolled back to the selected point‑in‑time; all data matches the state of the chosen backup.
+Test Type      : Functional
+---
+TC-ID          : TC-5.5-003
+Title          : Verify automatic restore on dummy production system after backup
+Requirement    : Sec-5.5
+Preconditions  :
+- Nightly full backup for the current day has completed successfully.
+- A dummy production environment (isolated test instance) is provisioned and powered on.
+- Dummy environment has no residual data from previous restores.
+Test Steps     :
+  1. Trigger the post‑backup verification job that restores the latest backup to the dummy system.
+  2. Monitor the restore logs for start, progress, and completion messages.
+  3. Once restore finishes, execute a data‑integrity check script on the dummy system (e.g., row count, checksum comparison with source database).
+  4. Record the integrity check results.
+Expected Result: The latest backup is fully restored on the dummy system; integrity checks pass, confirming completeness and correctness of the backup.
+Test Type      : Functional
+---
+TC-ID          : TC-5.5-004
+Title          : Verify dummy production database is purged after verification
+Requirement    : Sec-5.5
+Preconditions  :
+- Dummy production system contains a successfully restored copy of the latest backup.
+- Verification (integrity) step has reported success.
+Test Steps     :
+  1. Initiate the automated purge job for the dummy environment.
+  2. Observe purge logs for deletion of all tables/records.
+  3. After purge completes, attempt to query any known table in the dummy database.
+Expected Result: All data in the dummy database is removed; queries return “no data” or “table empty” without errors.
+Test Type      : Functional
+---
+TC-ID          : TC-5.5-005
+Title          : Verify backup media is stored only in fire‑proof cabinet at Mangalore HQ (25 km from hospital)
+Requirement    : Sec-5.5
+Preconditions  :
+- Physical security policy for backup storage is documented.
+- Access control list for the cabinet is defined (authorized personnel only).
+Test Steps     :
+  1. Inspect the inventory log for the latest backup media.
+  2. Confirm the recorded storage location is “Mangalore HQ, fire‑proof cabinet, 25 km from Hospital”.
+  3. Verify cabinet access logs show only authorized personnel entries during the past 24 hours.
+  4. Attempt to access the backup media with a user lacking cabinet access rights.
+Expected Result: Backup media is confirmed to reside in the specified secure location; unauthorized access attempt is denied and logged.
+Test Type      : Security
+---
+TC-ID          : TC-5.5-101
+Title          : Ensure backup does not start when system is offline
+Requirement    : Sec-5.5
+Preconditions  :
+- Production system is intentionally shut down or network‑isolated.
+- Backup scheduler is enabled.
+Test Steps     :
+  1. Wait for the scheduled backup time (or trigger the scheduler manually).
+  2. Observe the backup subsystem logs for any start events.
+Expected Result: No backup job is initiated; scheduler logs an error indicating system unavailable.
+Test Type      : Negative
+---
+TC-ID          : TC-5.5-102
+Title          : Verify backups older than 30 days are automatically deleted
+Requirement    : Sec-5.5
+Preconditions  :
+- Backups exist for at least 31 consecutive days.
+- Automatic retention policy is enabled.
+Test Steps     :
+  1. List all backup files in the repository with timestamps.
+  2. Identify the backup created 31 days ago.
+  3. Verify that the 31‑day‑old backup file is no longer present.
+  4. Confirm that backups for days 1‑30 are still retained.
+Expected Result: Backup files older than 30 days are purged; only the most recent 30 backups remain.
+Test Type      : Negative
+---
+TC-ID          : TC-5.5-103
+Title          : Verify restore fails when backup file is corrupted
+Requirement    : Sec-5.5
+Preconditions  :
+- A backup file for today is deliberately corrupted (e.g., truncated).
+- Dummy production environment is ready.
+Test Steps     :
+  1. Attempt to restore the corrupted backup onto the dummy system.
+  2. Monitor restore logs for error detection.
+  3. After restore completes (or aborts), check the dummy database for any partial data.
+Expected Result: Restore process aborts with a clear error indicating corruption; no data is written to the dummy system.
+Test Type      : Negative
+---
+TC-ID          : TC-5.5-104
+Title          : Ensure unauthorized user cannot access backup storage
+Requirement    : Sec-5.5
+Preconditions  :
+- Backup storage is accessible via a secured network share.
+- User “guest_user” does not have backup‑access privileges.
+Test Steps     :
+  1. Log in to a workstation as “guest_user”.
+  2. Attempt to mount or browse the backup network share.
+  3. Perform any read/write operation on the share.
+Expected Result: Access is denied with an authentication/authorization error; no files are listed or modified.
+Test Type      : Security
+---
+TC-ID          : TC-5.5-201
+Title          : Verify retention boundary at exactly 30 days
+Requirement    : Sec-5.5
+Preconditions  :
+- Backups exist for the past 30 days, with the oldest dated exactly 30 days ago.
+- Retention job is scheduled to run daily.
+Test Steps     :
+  1. Run the retention cleanup job manually (or wait for scheduled run).
+  2. List backup files after cleanup.
+  3. Confirm that the backup dated 30 days ago is still present.
+  4. Confirm that any backup dated 31 days ago (if any) has been removed.
+Expected Result: Backups up to 30 days old are retained; older backups are purged.
+Test Type      : Boundary
+---
+TC-ID          : TC-5.5-202
+Title          : Verify backup is performed at the exact midnight boundary
+Requirement    : Sec-5.5
+Preconditions  :
+- System clock is synchronized (NTP) and set to 23:59 on the current day.
+- No backup job is currently running.
+Test Steps     :
+  1. Observe the backup scheduler as the clock rolls from 23:59 to 00:00.
+  2. Capture logs for backup start time.
+  3. Verify that the backup start timestamp is exactly 00:00 (±1 second).
+Expected Result: Backup job initiates precisely at midnight, satisfying the nightly schedule.
+Test Type      : Boundary
+---

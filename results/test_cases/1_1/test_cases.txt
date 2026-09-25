@@ -1,0 +1,23 @@
+---
+TC-ID          : TC-1.1-001
+Title          : Verify system launches and displays Virtual Clinic homepage
+Requirement    : Purpose (Section 1.1)
+Preconditions  : • Virtual Clinic application is installed on the test device<br>• Device is powered on and has network connectivity
+Test Steps     :
+  1. Power on the test device and ensure it is connected to the internet.
+  2. Locate and double‑click the Virtual Clinic application icon.
+  3. Observe the application startup sequence.
+Expected Result: The application starts without errors and the Virtual Clinic homepage is displayed, showing the system logo, navigation menu, and welcome message.
+Test Type      : Functional
+---
+TC-ID          : TC-1.1-002
+Title          : Verify system startup response time meets performance criteria
+Requirement    : Purpose (Section 1.1)
+Preconditions  : • Virtual Clinic application is installed on the test device<br>• Device is powered on and has network connectivity
+Test Steps     :
+  1. Power on the test device and ensure it is connected to the internet.
+  2. Start a timer and launch the Virtual Clinic application.
+  3. Stop the timer when the homepage becomes fully interactive.
+Expected Result: The homepage becomes fully interactive within 3 seconds of launch, meeting the performance SLA for system startup.
+Test Type      : Performance
+---

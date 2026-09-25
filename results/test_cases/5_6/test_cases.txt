@@ -1,0 +1,237 @@
+---
+TC-ID          : TC-5.6-001
+Title          : Verify system access for allowed PinCode (happy path)
+Requirement    : BR-1
+Preconditions  : 
+- Parameter Control File contains PinCode 560001 as an allowed zone.
+- User device is configured with IP address mapped to PinCode 560001.
+Test Steps     :
+  1. Launch the application from the device.
+  2. Observe the system startup.
+Expected Result: System loads successfully and presents the login screen; no access restriction message is shown.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-002
+Title          : Deny system access for disallowed PinCode
+Requirement    : BR-1
+Preconditions  : 
+- Parameter Control File does NOT contain PinCode 999999.
+- User device is configured with IP address mapped to PinCode 999999.
+Test Steps     :
+  1. Attempt to open the application URL.
+  2. Observe the response.
+Expected Result: System displays an “Access Denied – Service not available in your area” error and blocks further navigation.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-003
+Title          : Successful login with valid credentials
+Requirement    : BR-2
+Preconditions  : 
+- A user account exists with UserID “dr.smith” and password “P@ssw0rd!” stored securely.
+- Login page is displayed.
+Test Steps     :
+  1. Enter UserID “dr.smith”.
+  2. Enter password “P@ssw0rd!”.
+  3. Click the “Login” button.
+Expected Result: User is authenticated, redirected to the dashboard, and a session token is issued (not containing the plaintext password).
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-004
+Title          : Login failure with incorrect password
+Requirement    : BR-2
+Preconditions  : 
+- A user account exists with UserID “patient01”.
+- Login page is displayed.
+Test Steps     :
+  1. Enter UserID “patient01”.
+  2. Enter password “wrongPass”.
+  3. Click “Login”.
+Expected Result: System returns “Invalid credentials” message; no session token is created.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-005
+Title          : Password is not exposed in API response
+Requirement    : BR-2
+Preconditions  : 
+- API endpoint `/api/auth/login` is reachable.
+- Valid credentials (UserID “admin”, password “Admin#123”) are known.
+Test Steps     :
+  1. Send a POST request with the credentials to `/api/auth/login`.
+  2. Inspect the JSON response.
+Expected Result: Response contains a session token and user role but does NOT contain the password field or its hash.
+Test Type      : Security
+---
+TC-ID          : TC-5.6-006
+Title          : Verify a speciality has at least one linked doctor (happy path)
+Requirement    : BR-3
+Preconditions  : 
+- Speciality “Cardiology” exists in the system.
+- Doctor “Dr. Heart” is linked to “Cardiology”.
+Test Steps     :
+  1. Retrieve the list of doctors for speciality “Cardiology” via the UI or API.
+Expected Result: The returned list contains at least one doctor (Dr. Heart).
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-007
+Title          : Prevent creation of speciality without any doctor
+Requirement    : BR-3
+Preconditions  : 
+- Administrator is logged in with rights to manage specialities.
+Test Steps     :
+  1. Navigate to “Create Speciality” screen.
+  2. Enter name “Neurology” and leave doctor assignment empty.
+  3. Click “Save”.
+Expected Result: System displays validation error “At least one doctor must be assigned to a speciality” and does not create the speciality.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-008
+Title          : Ensure a doctor is linked to only one speciality (happy path)
+Requirement    : BR-4
+Preconditions  : 
+- Doctor “Dr. Lee” is currently linked to speciality “Dermatology”.
+Test Steps     :
+  1. Open Doctor profile for “Dr. Lee”.
+  2. Verify the displayed speciality is “Dermatology”.
+Expected Result: Doctor shows a single associated speciality; UI does not allow adding another speciality.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-009
+Title          : Reject attempt to assign a doctor to a second speciality
+Requirement    : BR-4
+Preconditions  : 
+- Doctor “Dr. Lee” is linked to “Dermatology”.
+- Administrator is logged in.
+Test Steps     :
+  1. Navigate to “Edit Doctor” for “Dr. Lee”.
+  2. Attempt to add “Ophthalmology” as an additional speciality.
+  3. Click “Save”.
+Expected Result: System returns error “Doctor can be associated with only one speciality” and no changes are saved.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-010
+Title          : Verify doctor can provide at least one consultation (happy path)
+Requirement    : BR-5
+Preconditions  : 
+- Doctor “Dr. Patel” is logged in.
+- Patient “P001” has a pending consultation request for “Orthopaedics”.
+Test Steps     :
+  1. Open the pending consultation request for patient “P001”.
+  2. Enter consultation notes and click “Submit”.
+Expected Result: Consultation is recorded, linked to the doctor, and status changes to “Completed”.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-011
+Title          : Prevent doctor from submitting a consultation without notes
+Requirement    : BR-5
+Preconditions  : 
+- Doctor “Dr. Patel” is logged in.
+- A pending consultation request exists.
+Test Steps     :
+  1. Open the consultation request.
+  2. Leave the notes field empty.
+  3. Click “Submit”.
+Expected Result: System displays validation message “Consultation notes are required” and does not allow submission.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-012
+Title          : Patient registration generates unique patient ID (happy path)
+Requirement    : BR-6
+Preconditions  : 
+- No existing patient with email “newpatient@example.com”.
+- Registration page is accessible.
+Test Steps     :
+  1. Fill required fields: Name, DOB, Email, Phone, Address.
+  2. Submit the registration form.
+Expected Result: System creates a new patient record, generates a unique PatientID (e.g., “PAT-000123”), and displays a confirmation with that ID.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-013
+Title          : System prevents duplicate PatientID generation
+Requirement    : BR-6
+Preconditions  : 
+- Patient record exists with PatientID “PAT-000200”.
+- System is configured to use sequential ID generation.
+Test Steps     :
+  1. Simulate a race condition where two registration requests are sent simultaneously.
+  2. Observe ID assignment for both requests.
+Expected Result: System assigns two distinct IDs (e.g., “PAT-000201” and “PAT-000202”); no duplicate IDs are created.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-014
+Title          : Patient creates a consultation request linked to a speciality (happy path)
+Requirement    : BR-7
+Preconditions  : 
+- Patient “PAT-000150” is logged in.
+- Speciality “Gastroenterology” exists.
+Test Steps     :
+  1. Navigate to “New Consultation Request”.
+  2. Select speciality “Gastroenterology”.
+  3. Provide symptom description and submit.
+Expected Result: A consultation request is created, status “Pending”, linked to patient and selected speciality; patient receives a confirmation number.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-015
+Title          : Reject consultation request with invalid speciality
+Requirement    : BR-7
+Preconditions  : 
+- Patient is logged in.
+- No speciality with code “XYZ123” exists.
+Test Steps     :
+  1. Attempt to create a consultation request via API using speciality code “XYZ123”.
+  2. Submit the request.
+Expected Result: API returns error 400 with message “Invalid speciality identifier”.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-016
+Title          : Ensure each consultation request generates exactly one prescription (happy path)
+Requirement    : BR-8
+Preconditions  : 
+- Consultation request “REQ-789” is marked “Completed” by the assigned doctor.
+Test Steps     :
+  1. Trigger prescription generation (automatic after completion).
+  2. Retrieve prescriptions linked to “REQ-789”.
+Expected Result: Exactly one prescription record exists, linked to the request; no additional prescriptions are created.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-017
+Title          : Prevent multiple prescriptions for a single consultation request
+Requirement    : BR-8
+Preconditions  : 
+- Consultation request “REQ-790” is completed.
+- System erroneously receives a second “Generate Prescription” command.
+Test Steps     :
+  1. Manually invoke the prescription generation API a second time for “REQ-790”.
+  2. Observe system response.
+Expected Result: System returns error “Prescription already exists for this consultation request” and does not create a duplicate.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-018
+Title          : Chemist receives prescriptions mapped by PinCode (happy path)
+Requirement    : BR-9
+Preconditions  : 
+- Prescription “PRX-1001” is generated for a patient residing in PinCode 560001.
+- Chemist “ChemCo” is registered to serve PinCode 560001.
+Test Steps     :
+  1. Log in as Chemist “ChemCo”.
+  2. Access “Pending Prescriptions” list.
+Expected Result: Prescription “PRX-1001” appears in the list; no prescriptions from other PinCodes are shown.
+Test Type      : Functional
+---
+TC-ID          : TC-5.6-019
+Title          : Prevent chemist from receiving prescription outside its service PinCode
+Requirement    : BR-9
+Preconditions  : 
+- Prescription “PRX-2002” is for a patient in PinCode 999999.
+- Chemist “ChemCo” serves only PinCode 560001.
+Test Steps     :
+  1. Log in as Chemist “ChemCo”.
+  2. Search for prescription “PRX-2002”.
+Expected Result: System returns “Prescription not found” or does not list it, confirming proper mapping.
+Test Type      : Negative
+---
+TC-ID          : TC-5.6-020
+Title          : Lab receives prescriptions mapped by PinCode (happy path)
+Requirement    : BR-10
+Preconditions  : 
+- Prescription “PRX-3005” is for a patient in PinCode 560001.
+- Lab “LabPlus” is configured to serve PinCode 560001

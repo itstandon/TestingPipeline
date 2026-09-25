@@ -1,0 +1,107 @@
+---
+TC-ID          : TC-3.4-001
+Title          : Verify system accessibility via supported browsers (Safari, Chrome, Firefox)
+Requirement    : Req-3.4-1
+Preconditions  : • System is deployed and reachable at https://www.padmavathi-hospital.com  
+                 • Test machines have latest versions of Safari, Google Chrome, and Mozilla Firefox installed  
+                 • No network proxy interfering with HTTPS traffic
+Test Steps     :
+  1. Launch Safari and navigate to https://www.padmavathi-hospital.com.  
+  2. Observe page load and functional UI elements.  
+  3. Close Safari.  
+  4. Launch Google Chrome and navigate to the same URL.  
+  5. Observe page load and functional UI elements.  
+  6. Close Chrome.  
+  7. Launch Mozilla Firefox and navigate to the same URL.  
+  8. Observe page load and functional UI elements.
+Expected Result: The website loads successfully in each browser, displaying the home page without errors; all core UI elements are functional and the URL remains HTTPS.
+Test Type      : Functional
+---
+TC-ID          : TC-3.4-002
+Title          : Verify system rejects access from unsupported browsers
+Requirement    : Req-3.4-1
+Preconditions  : • System is deployed at https://www.padmavathi-hospital.com  
+                 • Test machine has Internet Explorer 11 installed
+Test Steps     :
+  1. Launch Internet Explorer and navigate to https://www.padmavathi-hospital.com.  
+  2. Observe the system’s response.
+Expected Result: The system displays a warning/error page indicating the browser is unsupported or automatically redirects to a supported browser download page; no confidential data is rendered.
+Test Type      : Negative
+---
+TC-ID          : TC-3.4-003
+Title          : Verify all communications use HTTPS (TLS) encryption
+Requirement    : Req-3.4-2
+Preconditions  : • System URL is reachable  
+                 • Network capture tool (e.g., Wireshark) is ready on the client machine
+Test Steps     :
+  1. Start packet capture on the client network interface.  
+  2. Open Google Chrome and navigate to https://www.padmavathi-hospital.com/login.  
+  3. Perform a successful login with valid credentials.  
+  4. Stop packet capture and filter traffic for the domain.
+Expected Result: All captured packets for the domain are encrypted (TLS handshake present, no plaintext HTTP); the TLS version is 1.2 or higher and the certificate is valid for the domain.
+Test Type      : Security
+---
+TC-ID          : TC-3.4-004
+Title          : Verify system redirects HTTP requests to HTTPS
+Requirement    : Req-3.4-2
+Preconditions  : • System is reachable via both http:// and https:// URLs
+Test Steps     :
+  1. In a browser, enter http://www.padmavathi-hospital.com (note the missing “s”).  
+  2. Observe the response.
+Expected Result: The browser is automatically redirected (301/302) to the HTTPS version of the site; the final URL displayed is https://www.padmavathi-hospital.com and the connection is encrypted.
+Test Type      : Negative
+---
+TC-ID          : TC-3.4-005
+Title          : Verify prescription and invoice emails are sent after successful consultation
+Requirement    : Req-3.4-4
+Preconditions  : • A patient account exists with a verified email address (patient@example.com)  
+                 • A completed consultation record is present in the system for that patient  
+                 • Email server is reachable and configured for TLS (SMTP over TLS)
+Test Steps     :
+  1. Log in as the consulting doctor.  
+  2. Open the completed consultation for the patient and click “Send Prescription & Invoice”.  
+  3. Monitor system logs for email dispatch status.  
+  4. Check the patient’s email inbox for a new message from no‑reply@padmavathi-hospital.com.  
+  5. Open the email and verify attachments/content.
+Expected Result: An email is received within 30 seconds, addressed to patient@example.com, containing the prescription and invoice as PDF attachments; the email transmission log shows TLS (STARTTLS) was used.
+Test Type      : Functional
+---
+TC-ID          : TC-3.4-006
+Title          : Verify no email is sent when consultation is incomplete
+Requirement    : Req-3.4-4
+Preconditions  : • A patient record exists with a pending (in‑progress) consultation  
+                 • No completed consultation exists for the patient
+Test Steps     :
+  1. Log in as the consulting doctor.  
+  2. Attempt to click “Send Prescription & Invoice” for the pending consultation.  
+  3. Observe system response.  
+  4. Verify the patient’s email inbox for the same period.
+Expected Result: The system displays an error/message indicating the consultation must be completed before sending; no email is dispatched and the patient’s inbox shows no new message.
+Test Type      : Negative
+---
+TC-ID          : TC-3.4-007
+Title          : Verify role‑based access to communication interfaces (Patient vs Chemist vs Lab)
+Requirement    : Req-3.4-2
+Preconditions  : • Separate user accounts exist for a Patient, a Chemist, and a Lab technician, each with valid credentials  
+                 • All users access via HTTPS
+Test Steps     :
+  1. Log in as Patient and attempt to access the “Lab Results” portal.  
+  2. Log out.  
+  3. Log in as Chemist and attempt to access the “Patient Personal Health Records” portal.  
+  4. Log out.  
+  5. Log in as Lab technician and attempt to access the “Prescription Ordering” portal.
+Expected Result: Each user is denied access (403 Forbidden or equivalent) to portals not permitted for their role; only the authorized sections are accessible. All communications remain encrypted.
+Test Type      : Security
+---
+TC-ID          : TC-3.4-008
+Title          : Verify SSL/TLS certificate validity and expiry handling
+Requirement    : Req-3.4-2
+Preconditions  : • System’s SSL certificate is close to expiry (test environment can simulate expiry)  
+                 • Browser with SSL warning capabilities
+Test Steps     :
+  1. Simulate an expired certificate on the test server (or use a test certificate with past expiry date).  
+  2. Attempt to open https://www.padmavathi-hospital.com in Chrome.  
+  3. Observe the browser’s security warning and any system behavior.
+Expected Result: Browser displays a clear “Your connection is not private” warning; the system does not allow the user to proceed without acknowledging the warning, ensuring no data is transmitted over an insecure connection.
+Test Type      : Security
+---

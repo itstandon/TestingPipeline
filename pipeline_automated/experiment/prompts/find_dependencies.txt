@@ -1,0 +1,24 @@
+Act as a Requirements Engineering expert.
+
+Given the following software requirements:
+{REQ}
+
+Analyze and identify ALL dependencies between requirements.
+For each dependency, classify it as one of:
+- requires: A cannot function without B
+- conflicts: A and B contradict each other
+- refines: A is a more detailed version of B
+- derives: A is derived from B
+- implements: A implements B
+
+Return ONLY JSON:
+{
+  "dependencies": [
+    {
+      "from_req": "REQ_XXXX",
+      "to_req": "REQ_XXXX",
+      "type": "requires|conflicts|refines|derives|implements",
+      "reason": "brief explanation"
+    }
+  ]
+}

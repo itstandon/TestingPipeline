@@ -1,0 +1,123 @@
+---
+TC-ID          : TC-4.2-001
+Title          : Add a new unique Speciality (Happy Path)
+Requirement    : Req-1/1
+Preconditions  :
+  - Administrator is logged in with valid credentials.
+  - No existing Speciality with name “Cardiology”.
+Test Steps     :
+  1. Navigate to **Maintain Specialities** → **Add Speciality** screen.
+  2. Enter “Cardiology” as the Speciality name and fill required fields.
+  3. Click **Save**.
+Expected Result: The system stores the new Speciality “Cardiology”, displays a success message, and the Speciality appears in the Specialities list.
+Test Type      : Functional
+---
+TC-ID          : TC-4.2-002
+Title          : Prevent adding duplicate Speciality
+Requirement    : Req-1/1
+Preconditions  :
+  - Administrator is logged in.
+  - Speciality “Cardiology” already exists.
+Test Steps     :
+  1. Open **Add Speciality** screen.
+  2. Enter “Cardiology” as the Speciality name.
+  3. Click **Save**.
+Expected Result: The system rejects the request, shows an error “Speciality already exists”, and no duplicate record is created.
+Test Type      : Negative
+---
+TC-ID          : TC-4.2-003
+Title          : Edit an existing Speciality (Happy Path)
+Requirement    : Req-1/2
+Preconditions  :
+  - Administrator logged in.
+  - Speciality “Neurology” exists.
+Test Steps     :
+  1. From the Specialities list, select “Neurology” and choose **Edit**.
+  2. Change the description to “Neuroscience”.
+  3. Click **Update**.
+Expected Result: The system updates the description, shows a success message, and the list reflects the new description.
+Test Type      : Functional
+---
+TC-ID          : TC-4.2-004
+Title          : Edit non‑existent Speciality (Negative)
+Requirement    : Req-1/2
+Preconditions  :
+  - Administrator logged in.
+Test Steps     :
+  1. Attempt to navigate directly to URL `/speciality/edit/9999` where ID 9999 does not exist.
+Expected Result: The system returns a “Speciality not found” error page; no edit form is displayed.
+Test Type      : Negative
+---
+TC-ID          : TC-4.2-005
+Title          : Delete a Speciality with no attached Doctors (Happy Path)
+Requirement    : Req-1/3
+Preconditions  :
+  - Administrator logged in.
+  - Speciality “Dermatology” exists and no Doctor is linked to it.
+Test Steps     :
+  1. From the Specialities list, select “Dermatology”.
+  2. Click **Delete** and confirm the deletion.
+Expected Result: The Speciality is removed from the system, a success message is shown, and it no longer appears in the list.
+Test Type      : Functional
+---
+TC-ID          : TC-4.2-006
+Title          : Prevent deleting Speciality that has attached Doctors
+Requirement    : Req-1/3
+Preconditions  :
+  - Administrator logged in.
+  - Speciality “Orthopedics” exists.
+  - Doctor “Dr. Smith” is associated with “Orthopedics”.
+Test Steps     :
+  1. Attempt to delete “Orthopedics” via the Specialities list.
+  2. Confirm the deletion prompt.
+Expected Result: The system blocks the deletion and displays “Cannot delete Speciality while doctors are attached.”
+Test Type      : Negative
+---
+TC-ID          : TC-4.2-007
+Title          : Add a new unique Doctor (Happy Path)
+Requirement    : Req-2/1
+Preconditions  :
+  - Administrator is logged in.
+  - Speciality “Cardiology” exists.
+  - No Doctor with registration number “D12345”.
+Test Steps     :
+  1. Navigate to **Maintain Doctors** → **Add Doctor**.
+  2. Fill: Name “Dr. Alice”, Age 45, Sex Female, Qualification “MD”, Experience 15 years, Speciality “Cardiology”, Registration No “D12345”.
+  3. Click **Save**.
+Expected Result: Doctor record is created, success message displayed, and Doctor appears in the list.
+Test Type      : Functional
+---
+TC-ID          : TC-4.2-008
+Title          : Prevent adding Doctor with duplicate registration number
+Requirement    : Req-2/1
+Preconditions  :
+  - Administrator logged in.
+  - Doctor with registration “D12345” already exists.
+Test Steps     :
+  1. Open **Add Doctor** screen.
+  2. Enter registration number “D12345” with any other details.
+  3. Click **Save**.
+Expected Result: System shows error “Doctor with this registration number already exists” and does not create a new record.
+Test Type      : Negative
+---
+TC-ID          : TC-4.2-009
+Title          : Edit Doctor details without changing Speciality (Happy Path)
+Requirement    : Req-2/2
+Preconditions  :
+  - Administrator logged in.
+  - Doctor “Dr. Alice” (Reg = D12345) exists, assigned to “Cardiology”.
+Test Steps     :
+  1. Select Doctor “Dr. Alice” and click **Edit**.
+  2. Update Age from 45 to 46 and Experience from 15 to 16 years.
+  3. Click **Update**.
+Expected Result: Doctor’s age and experience are updated; Speciality remains “Cardiology”; success message displayed.
+Test Type      : Functional
+---
+TC-ID          : TC-4.2-010
+Title          : Prevent changing Doctor’s Speciality during edit
+Requirement    : Req-2/2
+Preconditions  :
+  - Administrator logged in.
+  - Doctor “Dr. Bob” (Reg = D54321) exists, assigned to “Neurology”.
+Test Steps     :
+  1. Open **

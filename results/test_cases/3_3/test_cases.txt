@@ -1,0 +1,188 @@
+---
+TC-ID          : TC-3.3-001
+Title          : Verify chemist can log in and view prescriptions
+Requirement    : Req-3.3-1 (Self‑contained system, role‑based login)
+Preconditions  : • Chemist user account exists with valid credentials  
+                 • System is deployed and accessible via supported browser
+Test Steps     :
+  1. Open the system URL in Google Chrome.
+  2. Enter chemist’s username and password.
+  3. Click the **Login** button.
+  4. Navigate to the “Prescriptions” dashboard.
+Expected Result: Chemist is authenticated, redirected to dashboard, and a list of prescriptions assigned to the chemist is displayed.
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-002
+Title          : Verify lab technician can log in and view prescriptions
+Requirement    : Req-3.3-1 (Self‑contained system, role‑based login)
+Preconditions  : • Lab technician account exists with valid credentials  
+                 • System is deployed and accessible via supported browser
+Test Steps     :
+  1. Open the system URL in Mozilla Firefox.
+  2. Enter lab technician’s username and password.
+  3. Click **Login**.
+  4. Select the “Prescriptions” menu item.
+Expected Result: Lab technician is authenticated and can see only prescriptions relevant to the lab.
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-003
+Title          : Verify patient can log in and view own prescription
+Requirement    : Req-3.3-1 (Self‑contained system, role‑based login)
+Preconditions  : • Patient account exists with valid credentials  
+                 • Patient has at least one prescription assigned
+Test Steps     :
+  1. Open the system URL in Safari.
+  2. Enter patient’s username and password.
+  3. Click **Login**.
+  4. Click “My Prescriptions”.
+Expected Result: Patient is authenticated and the page displays only the patient’s own prescription(s).
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-004
+Title          : Prevent unauthorized user from accessing prescriptions page
+Requirement    : Req-3.3-1 (Access control)
+Preconditions  : • No user is logged in (anonymous session)  
+                 • System URL for prescriptions page is known
+Test Steps     :
+  1. Open the prescriptions URL directly in Chrome without logging in.
+Expected Result: System redirects to the login page or shows an “Access denied” message; no prescription data is displayed.
+Test Type      : Security
+---
+TC-ID          : TC-3.3-005
+Title          : Reject login with invalid credentials
+Requirement    : Req-3.3-1 (Authentication guard)
+Preconditions  : • User account exists
+Test Steps     :
+  1. Open the system URL in Firefox.
+  2. Enter a valid username with an incorrect password.
+  3. Click **Login**.
+Expected Result: Login fails, an error message “Invalid username or password” is shown, and user remains on login screen.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-006
+Title          : Verify email with full prescription and invoice is sent to patient after order completion
+Requirement    : Req-3.3-2 (Email delivery)
+Preconditions  : • Patient account with a valid email address exists  
+                 • Prescription and invoice are generated and marked “Ready for dispatch”  
+                 • Email server (SMTP) is configured
+Test Steps     :
+  1. Complete the payment flow for the patient (see TC‑3.3‑009).
+  2. After successful payment, trigger the “Send Invoice” action.
+  3. Check the patient’s mailbox.
+Expected Result: Patient receives a single email titled “Your Prescription and Invoice”, containing the complete prescription details and the invoice attachment. Email header shows system’s configured sender address.
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-007
+Title          : Do not send email to non‑patient role (e.g., chemist) after payment
+Requirement    : Req-3.3-2 (Email restriction to patients only)
+Preconditions  : • Chemist account exists with a valid email address  
+                 • Payment is processed for a prescription belonging to a patient
+Test Steps     :
+  1. Complete payment for a patient prescription.
+  2. Verify the email logs for any outbound email addressed to the chemist’s email.
+Expected Result: No email is sent to the chemist; only the patient receives the prescription/invoice email.
+Test Type      : Security
+---
+TC-ID          : TC-3.3-008
+Title          : Block email sending when patient email address is missing
+Requirement    : Req-3.3-2 (Email guard)
+Preconditions  : • Patient record exists without an email address  
+                 • Prescription and invoice are ready
+Test Steps     :
+  1. Attempt to trigger the “Send Invoice” action for the patient.
+Expected Result: System displays an error “Patient email address not configured” and does not attempt to send an email.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-009
+Title          : Process payment securely via Debit/Credit Card using payment gateway
+Requirement    : Req-3.3-3 (Payment gateway integration)
+Preconditions  : • Patient is logged in and has a pending prescription invoice  
+                 • Payment gateway credentials are configured and reachable
+Test Steps     :
+  1. Click the **Pay Now** button on the invoice page.
+  2. In the payment modal, select “Credit Card”.
+  3. Enter valid card details (test card number, expiry, CVV).
+  4. Submit the payment.
+Expected Result: Payment gateway returns a success response; system marks the invoice as “Paid”, displays a confirmation message, and enables the “Send Invoice” button.
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-010
+Title          : Decline payment when card is invalid
+Requirement    : Req-3.3-3 (Payment validation)
+Preconditions  : • Same as TC‑3.3‑009
+Test Steps     :
+  1. Initiate payment as in TC‑3.3‑009.
+  2. Enter an invalid card number (e.g., all zeros) or expired card.
+  3. Submit the payment.
+Expected Result: Payment gateway returns a failure; system shows an error “Payment declined – please check card details” and the invoice remains unpaid.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-011
+Title          : Ensure payment data is not stored in clear text in the database
+Requirement    : Req-3.3-3 (Security of payment information)
+Preconditions  : • Successful payment has been processed (as in TC‑3.3‑009)
+Test Steps     :
+  1. Access the MySQL database with appropriate privileges.
+  2. Query the `payments` table for the recent transaction.
+Expected Result: Sensitive fields (card number, CVV) are either masked, tokenized, or absent; only a transaction token/reference is stored.
+Test Type      : Security
+---
+TC-ID          : TC-3.3-012
+Title          : Disable payment button when payment gateway is unreachable
+Requirement    : Req-3.3-3 (Graceful degradation)
+Preconditions  : • Network to payment gateway is blocked (e.g., firewall rule)  
+                 • Patient has an unpaid invoice
+Test Steps     :
+  1. Log in as patient and navigate to the invoice page.
+Expected Result: The **Pay Now** button is either hidden or disabled, and a tooltip/message “Payment service unavailable – please try later” is displayed.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-013
+Title          : Verify system runs on Django 2.0 framework
+Requirement    : Req-3.3-4 (Hosting platform)
+Preconditions  : • Application source is deployed on a server
+Test Steps     :
+  1. Connect to the server shell.
+  2. Execute `python -c "import django; print(django.get_version())"`.
+Expected Result: Output shows `2.0.x` (where x ≥ 0). System starts without import errors.
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-014
+Title          : Fail start‑up when Django version is unsupported
+Requirement    : Req-3.3-4 (Platform guard)
+Preconditions  : • Application code unchanged, but server has Django 3.2 installed
+Test Steps     :
+  1. Attempt to start the Django service (`python manage.py runserver`).
+Expected Result: Application aborts with an error indicating incompatible Django version; service does not run.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-015
+Title          : Verify system runs with MySQL as the database backend
+Requirement    : Req-3.3-4 (Hosting platform)
+Preconditions  : • MySQL server version 5.7+ is installed and reachable
+Test Steps     :
+  1. Start the application.
+  2. Perform a simple CRUD operation (e.g., create a new patient record via UI).
+  3. Verify the record appears in the MySQL database (`SELECT * FROM patients WHERE ...`).
+Expected Result: Operation succeeds; data is persisted in MySQL without errors.
+Test Type      : Functional
+---
+TC-ID          : TC-3.3-016
+Title          : Reject operation when MySQL connection is lost
+Requirement    : Req-3.3-4 (Database availability)
+Preconditions  : • Application is running and connected to MySQL  
+                 • MySQL service is stopped manually
+Test Steps     :
+  1. Attempt to create a new prescription via the UI.
+Expected Result: System displays an error “Database connection unavailable – please try later” and does not create a record.
+Test Type      : Negative
+---
+TC-ID          : TC-3.3-017
+Title          : Verify application UI works in Google Chrome latest version
+Requirement    : Req-3.3-5 (Browser compatibility)
+Preconditions  : • Latest Google Chrome installed on Windows 10
+Test Steps     :
+  1. Open the system URL.
+  2. Log in as any valid user.
+  3. Navigate through all major menus (Dashboard, Prescriptions, Payments, Settings).
+Expected Result: All UI elements render correctly, no JavaScript errors in console, and all

@@ -1,0 +1,187 @@
+---
+TC-ID          : TC-2.1-001
+Title          : Submit consultation request with valid symptoms
+Requirement    : REQ-2.1-001 (Patient can create a consultation request by entering symptoms)
+Preconditions  : • Patient is registered and logged into the system.
+                  • System is online.
+Test Steps     :
+  1. Navigate to the “New Consultation” page.
+  2. Enter a non‑empty symptom description (e.g., “persistent cough and fever”).
+  3. Click the “Submit” button.
+Expected Result: The system records the consultation request, displays a confirmation message, and forwards the request to a doctor of the appropriate speciality.
+Test Type      : Functional
+---
+TC-ID          : TC-2.1-002
+Title          : System forwards consultation request to appropriate doctor
+Requirement    : REQ-2.1-002 (System must route request to a doctor with matching speciality)
+Preconditions  : • Consultation request from TC‑2.1‑001 exists.
+                  • At least one doctor with the required speciality is active in the system.
+Test Steps     :
+  1. Log in as the doctor of the matching speciality.
+  2. Access the “Pending Consultations” list.
+Expected Result: The newly submitted consultation request appears in the doctor’s pending list with correct patient symptoms.
+Test Type      : Functional
+---
+TC-ID          : TC-2.1-003
+Title          : Doctor generates a complete prescription
+Requirement    : REQ-2.1-003 (Doctor can create a prescription containing Diagnosis, Medicines, and optional Lab Requests)
+Preconditions  : • Doctor is logged in and has the pending consultation from TC‑2.1‑001.
+Test Steps     :
+  1. Open the pending consultation.
+  2. Enter a diagnosis (e.g., “Upper respiratory infection”).
+  3. Add at least one medicine (e.g., “Amoxicillin 500 mg – 3 times/day for 7 days”).
+  4. Add a lab request (e.g., “Complete blood count”) if needed.
+  5. Click “Generate Prescription”.
+Expected Result: The prescription is saved, assigned a unique ID, and is dispatched to the patient, the nearest chemist, and the nearest lab.
+Test Type      : Functional
+---
+TC-ID          : TC-2.1-004
+Title          : Patient receives prescription and can view it
+Requirement    : REQ-2.1-004 (Patient must receive and view the prescription)
+Preconditions  : • Prescription generated in TC‑2.1‑003.
+                  • Patient is logged in.
+Test Steps     :
+  1. Navigate to the “My Prescriptions” page.
+  2. Select the newly created prescription.
+Expected Result: The full prescription (Diagnosis, Medicines, Lab Requests) is displayed to the patient.
+Test Type      : Functional
+---
+TC-ID          : TC-2.1-005
+Title          : Chemist receives prescription with limited view
+Requirement    : REQ-2.1-005 (Chemist receives prescription but sees only medicines and lab request details; patient confidential data is hidden)
+Preconditions  : • Prescription generated in TC‑2.1‑003.
+                  • Chemist is registered, logged in, and assigned to the patient’s locality.
+Test Steps     :
+  1. Open the “Incoming Prescriptions” section.
+  2. Select the prescription intended for this chemist.
+Expected Result: The chemist sees a list of medicines and any lab requests; patient name, diagnosis, and personal identifiers are not displayed.
+Test Type      : Security
+---
+TC-ID          : TC-2.1-006
+Title          : Lab receives prescription with limited view
+Requirement    : REQ-2.1-006 (Lab receives prescription but sees only lab requests and necessary patient identifier)
+Preconditions  : • Prescription generated in TC‑2.1‑003.
+                  • Lab is registered, logged in, and assigned to the patient’s locality.
+Test Steps     :
+  1. Open the “Lab Orders” dashboard.
+  2. Select the prescription assigned to this lab.
+Expected Result: The lab sees the list of requested lab tests and a minimal patient identifier (e.g., patient ID); diagnosis and medicine list are not visible.
+Test Type      : Security
+---
+TC-ID          : TC-2.1-007
+Title          : Chemist delivers medicines and marks delivery complete
+Requirement    : REQ-2.1-007 (Chemist can confirm medicine delivery to patient)
+Preconditions  : • Chemist has viewed the prescription in TC‑2.1‑005.
+Test Steps     :
+  1. Click the “Mark as Delivered” button for the prescription.
+  2. Optionally enter delivery notes.
+Expected Result: The system records the delivery status as “Delivered” and notifies the patient.
+Test Type      : Functional
+---
+TC-ID          : TC-2.1-008
+Title          : Lab uploads completed lab report
+Requirement    : REQ-2.1-008 (Lab can upload lab results to the system and make them available to the patient)
+Preconditions  : • Lab has collected specimen for the lab request in TC‑2.1‑006.
+Test Steps     :
+  1. Navigate to the specific lab order.
+  2. Upload the lab report file (PDF, ≤ 1 MB).
+  3. Click “Submit Report”.
+Expected Result: The report is stored, linked to the prescription, and the patient receives a notification that results are available.
+Test Type      : Functional
+---
+TC-ID          : TC-2.1-009
+Title          : Patient views uploaded lab report
+Requirement    : REQ-2.1-009 (Patient can view lab reports associated with their prescription)
+Preconditions  : • Lab report uploaded in TC‑2.1‑008.
+                  • Patient is logged in.
+Test Steps     :
+  1. Open “My Prescriptions”.
+  2. Select the prescription with the completed lab test.
+  3. Click the “View Lab Report” link.
+Expected Result: The lab report is displayed/downloadable for the patient.
+Test Type      : Functional
+---
+TC-ID          : TC-2.1-010
+Title          : Submit consultation request with empty symptom field (negative)
+Requirement    : REQ-2.1-001
+Preconditions  : • Patient is logged in.
+Test Steps     :
+  1. Navigate to “New Consultation”.
+  2. Leave the symptom description blank.
+  3. Click “Submit”.
+Expected Result: The system displays a validation error “Symptom description cannot be empty” and does not create a consultation request.
+Test Type      : Negative
+---
+TC-ID          : TC-2.1-011
+Title          : Doctor attempts to generate prescription without diagnosis (negative)
+Requirement    : REQ-2.1-003
+Preconditions  : • Doctor is logged in with a pending consultation.
+Test Steps     :
+  1. Open the consultation.
+  2. Add medicines but leave the diagnosis field empty.
+  3. Click “Generate Prescription”.
+Expected Result: The system blocks the action and shows an error “Diagnosis is required”.
+Test Type      : Negative
+---
+TC-ID          : TC-2.1-012
+Title          : Chemist tries to view patient diagnosis (security negative)
+Requirement    : REQ-2.1-005
+Preconditions  : • Chemist is logged in and has an incoming prescription.
+Test Steps     :
+  1. Attempt to access the “Diagnosis” field via URL manipulation or UI hack.
+Expected Result: Access is denied; the system returns a “403 Forbidden” or hides the field entirely.
+Test Type      : Security
+---
+TC-ID          : TC-2.1-013
+Title          : Lab tries to view prescribed medicines (security negative)
+Requirement    : REQ-2.1‑006
+Preconditions  : • Lab is logged in and has a lab order.
+Test Steps     :
+  1. Attempt to navigate to a medicines view page or query the prescription API for medicine data.
+Expected Result: The system returns no medicine data and logs an unauthorized access attempt.
+Test Type      : Security
+---
+TC-ID          : TC-2.1-014
+Title          : Upload lab report exceeding size limit (boundary/negative)
+Requirement    : REQ-2.1‑008 (Assumed file size limit = 1 MB)
+Preconditions  : • Lab is logged in and viewing a pending lab order.
+Test Steps     :
+  1. Prepare a PDF file of size 1.5 MB.
+  2. Attempt to upload the file as the lab report.
+  3. Click “Submit Report”.
+Expected Result: The system rejects the upload, displays an error “File size exceeds 1 MB limit”, and does not store the file.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.1-015
+Title          : Submit symptom description at maximum allowed length (boundary)
+Requirement    : REQ-2.1‑001 (Assumed maximum symptom length = 500 characters)
+Preconditions  : • Patient is logged in.
+Test Steps     :
+  1. Navigate to “New Consultation”.
+  2. Enter a symptom string exactly 500 characters long.
+  3. Click “Submit”.
+Expected Result: The consultation request is accepted and processed normally.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.1-016
+Title          : Add maximum number of medicines to a prescription (boundary)
+Requirement    : REQ-2.1‑003 (Assumed max medicines = 10)
+Preconditions  : • Doctor is logged in with a pending consultation.
+Test Steps     :
+  1. Open the consultation.
+  2. Add 10 distinct medicine entries.
+  3. Fill diagnosis and optional lab requests.
+  4. Click “Generate Prescription”.
+Expected Result: Prescription is saved successfully with all 10 medicines displayed to the patient; attempts to add an 11th medicine are blocked with an error “Maximum of 10 medicines allowed”.
+Test Type      : Boundary
+---
+TC-ID          : TC-2.1-017
+Title          : Unauthorized user attempts to access a patient’s prescription
+Requirement    : REQ-2.1‑004 / REQ-2.1‑005 / REQ-2.1‑006 (Access control)
+Preconditions  : • An unauthenticated user (not logged in) or a logged‑in user with a different role tries to access a prescription URL.
+Test Steps     :
+  1. Directly enter the URL of the patient’s prescription in the browser.
+  2. Press Enter.
+Expected Result: The system redirects to the login page or shows “Access Denied”; no prescription data is disclosed.
+Test Type      : Security
+---

@@ -1,0 +1,95 @@
+Act as a Principal Software QA Engineer and Formal Verification Specialist. You are one stage in an automated pipeline that maps natural-language requirements to appropriate test case representations, which are later used to generate concrete test cases in those representations. You will be given a requirement and its dependencies on other requirements, and you must select the top 6 most suitable test case representations from the 30 listed below.
+
+Requirement:
+{REQ}
+
+Dependency Context (how this requirement relates to others):
+{DEPS}
+
+Available Representations (30 options):
+1. Gherkin (BDD DSL)
+2. Use-Cases & User Stories
+3. Goal-Oriented (KAOS / i*)
+4. Natural Language -> DSL
+5. Transition Systems (S, T, I)
+6. Finite State Machines / Statecharts
+7. Decision Tables
+8. Cause-Effect Graph
+8. Cause-Effect Graph
+9. Protocol State Machines
+10. Sequence Diagrams
+11. Interface Automata
+12. xUnit Test Cases
+12. xUnit Test Cases
+13. Concolic Testing
+14. Five-Structure Composite Model
+15. Classification-Tree Method
+14. Five-Structure Composite Model
+15. Classification-Tree Method
+16. Canonical Vector Space
+17. Symbolic Path Conditions
+18. Financial/Rule Tables
+19. FSM Path-Based Representations
+20. The W Method
+18. Financial/Rule Tables
+19. FSM Path-Based Representations
+20. The W Method
+21. GUI Event Graphs
+22. Object Construction Graphs
+23. Domain-Specific DSLs
+23. Domain-Specific DSLs
+24. Test Requirement Matrix
+25. Feature Vectors & Distributions
+26. Consumer-Driven Contract
+27. UML Testing Profile (UTP)
+28. Petri Nets
+29. Message Sequence Charts
+30. Temporal Logic (LTL)
+
+Available Representations (30 options), with definitions, structure, and examples:
+{REPRESENTATIONS_CATALOG}
+
+TASKS
+Task 1 — Select Representations: Choose the top 6 suitable representations that together fully test the given requirement from the library above. 
+
+Task 2 — Justify Each Selection: For each chosen representation type, provide a 2–3 sentence justification explaining why it fits this requirement.
+
+OUTPUT FORMAT
+
+First, write your step-by-step thinking process wrapped inside <think>...</think> tags.
+Then, return the selected representations in the following JSON format:
+25. Feature Vectors & Distributions
+26. Consumer-Driven Contract
+27. UML Testing Profile (UTP)
+28. Petri Nets
+29. Message Sequence Charts
+30. Temporal Logic (LTL)
+
+Available Representations (30 options), with definitions, structure, and examples:
+{REPRESENTATIONS_CATALOG}
+
+TASKS
+Task 1 — Select Representations: Choose the top 6 suitable representations that together fully test the given requirement from the library above. 
+
+Task 2 — Justify Each Selection: For each chosen representation type, provide a 2–3 sentence justification explaining why it fits this requirement.
+
+OUTPUT FORMAT
+
+First, write your step-by-step thinking process wrapped inside <think>...</think> tags.
+Then, return the selected representations in the following JSON format:
+{
+  "selected_representations": [
+    {
+      "representation": "rep1 (must match library name exactly)",
+      "representation": "rep1 (must match library name exactly)",
+      "requirement_excerpt": "the specific part of the requirement this covers",
+      "reason": "why this representation fits"
+    },
+    {
+      "representation": "rep2 (must match library name exactly)",
+      "representation": "rep2 (must match library name exactly)",
+      "requirement_excerpt": "...",
+      "reason": "..."
+    }
+  ]
+}
