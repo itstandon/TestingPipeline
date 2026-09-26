@@ -1,217 +1,787 @@
 **System‑Level Test Suite – “Virtual Clinic”**  
-*(All test cases are written in the exact format requested.  The IDs are grouped by the end‑to‑end workflow they validate.  “Req‑x” references functional requirements; “BR‑x” references business rules; “UC‑x” references use‑case numbers.)*  
+*All tests are written to validate the system as a whole through end‑to‑end user workflows.  Each test case follows the required template.*
 
 ---  
-**TC-ID**          : TC‑REG‑001  
-**Title**          : Successful Patient Registration (Happy Path)  
-**Workflow**       : Patient Registration → Consultation Request → Prescription Delivery  
-**Requirements**   : Req‑5/1, Req‑5/2, UC‑01, BR‑6, BR‑2  
-**Preconditions**  :  
-  - Admin has already created the default admin account and logged in.  
-  - System is up and running (URL reachable via HTTPS).  
-**Test Steps**     :  
-  1. Open the Virtual Clinic website in Chrome.  
-  2. Click **“Register”** and fill all mandatory fields (Name, DOB, Gender, Address with a valid Pin‑code, Email, Phone, Password).  
-  3. Click **“Submit”.**  
-  4. Verify that a confirmation message “Registration successful. Your Patient‑ID is XXXXX” appears.  
-  5. Log in using the newly created credentials.  
-**Expected Result**: Patient account is created, unique Patient‑ID generated, and the user lands on the Patient Dashboard within 4 seconds.  
-**Test Type**      : Functional  
+
+### 1️⃣ Patient‑Centric Workflows  
+
+| TC‑ID | Title | Workflow | Requirements | Test Type |
+|------|-------|----------|--------------|-----------|
+| **TC‑REG‑001** | Successful patient registration (happy path) | **Patient Registration** | Req‑5/1, UC‑01, BR‑2, BR‑6 | Functional |
+| **TC‑REG‑002** | Registration with duplicate email/phone (negative) | **Patient Registration** | Req‑5/1, UC‑01 | Negative |
+| **TC‑REG‑003** | Registration with missing mandatory fields (negative) | **Patient Registration** | Req‑5/1, UC‑01 | Negative |
+| **TC‑REG‑004** | Registration response time ≤ 4 s under load (10 000 concurrent users) | **Patient Registration (Performance)** | Req‑5/1, Performance Req (5.1) | Performance |
+| **TC‑REG‑005** | Registration with maximum allowed field lengths (boundary) | **Patient Registration** | Req‑5/1, UC‑01 | Boundary |
+| **TC‑REG‑006** | Registration from a PIN code outside the allowed zone (security/negative) | **Patient Registration** | BR‑1, UC‑01 | Security / Negative |
+
+---
+
+#### TC‑REG‑001  
+
+```
+TC-ID          : TC-REG-001
+Title          : Successful patient registration (happy path)
+Workflow       : Patient Registration
+Requirements   : Req-5/1, UC-01, BR-2, BR-6
+Preconditions  :
+  - System is up and reachable via https://padmavathi-hospital.com
+  - No existing user with the test email/phone
+Test Steps     :
+  1. Open the registration page in Chrome.
+  2. Fill all mandatory fields (Name, DOB, Gender, Email, Phone, Address, PIN‑code, Password) with valid data.
+  3. Click “Register”.
+  4. Observe the system response.
+Expected Result: 
+  - Registration succeeds, a unique Patient‑ID is generated, a confirmation email is sent, and the user is redirected to the login page within 4 seconds.
+Test Type      : Functional
+```
+
+#### TC‑REG‑002  
+
+```
+TC-ID          : TC-REG-002
+Title          : Registration with duplicate email (negative)
+Workflow       : Patient Registration
+Requirements   : Req-5/1, UC-01, BR-2
+Preconditions  :
+  - An existing patient account with email test@example.com already exists.
+Test Steps     :
+  1. Open the registration page.
+  2. Enter the same email (test@example.com) and a different phone number.
+  3. Fill all other mandatory fields with valid data.
+  4. Click “Register”.
+Expected Result: 
+  - System displays error “Email already in use” (≤80 characters) and prevents registration. No Patient‑ID is created.
+Test Type      : Negative
+```
+
+#### TC‑REG‑003  
+
+```
+TC-ID          : TC-REG-003
+Title          : Registration with missing mandatory fields
+Workflow       : Patient Registration
+Requirements   : Req-5/1, UC-01, BR-2
+Preconditions  :
+  - System is reachable.
+Test Steps     :
+  1. Open registration page.
+  2. Leave “Phone” blank; fill all other fields.
+  3. Click “Register”.
+Expected Result: 
+  - Validation error “Phone is required” appears; registration is blocked.
+Test Type      : Negative
+```
+
+#### TC‑REG‑004  
+
+```
+TC-ID          : TC-REG-004
+Title          : Registration response time under peak load
+Workflow       : Patient Registration (Performance)
+Requirements   : Req-5/1, Performance requirement (≤4 s)
+Preconditions  :
+  - Load generator ready to simulate 10 000 concurrent registration requests.
+  - System deployed in production‑like environment.
+Test Steps     :
+  1. Start load test – each virtual user submits a valid registration request.
+  2. Measure average response time for the HTTP 200/201 response.
+Expected Result: 
+  - 95 % of the requests complete within 4 seconds; no server error (5xx) observed.
+Test Type      : Performance
+```
+
+#### TC‑REG‑005  
+
+```
+TC-ID          : TC-REG-005
+Title          : Registration with maximum field lengths (boundary)
+Workflow       : Patient Registration
+Requirements   : Req-5/1, UC-01
+Preconditions  :
+  - System is up.
+Test Steps     :
+  1. Open registration page.
+  2. Enter a name of 100 characters, email of 254 characters, address of 500 characters, password of 64 characters (all at their defined max).
+  3. Fill remaining mandatory fields with valid data.
+  4. Click “Register”.
+Expected Result: 
+  - Registration succeeds; system stores full values without truncation; UI shows success message.
+Test Type      : Boundary
+```
+
+#### TC‑REG‑006  
+
+```
+TC-ID          : TC-REG-006
+Title          : Registration from out‑of‑zone PIN code (security)
+Workflow       : Patient Registration
+Requirements   : BR-1, UC-01
+Preconditions  :
+  - List of allowed PIN codes is configured (e.g., 560001‑560050).
+Test Steps     :
+  1. Open registration page.
+  2. Enter a PIN code outside the allowed range (e.g., 590001).
+  3. Fill remaining fields with valid data.
+  4. Click “Register”.
+Expected Result: 
+  - System shows error “Service not available in your area” and aborts registration.
+Test Type      : Security / Negative
+```
 
 ---  
-**TC-ID**          : TC‑REG‑002  
-**Title**          : Registration with Missing Mandatory Fields (Negative)  
-**Workflow**       : Patient Registration  
-**Requirements**   : Req‑5/1, UC‑01, BR‑2  
-**Preconditions**  : System is available.  
-**Test Steps**     :  
-  1. Open the registration page.  
-  2. Leave **“Email”** blank, fill all other mandatory fields.  
-  3. Click **“Submit”.**  
-**Expected Result**: An error message “Email is required” (≤ 80 characters) appears at the bottom of the screen; registration does **not** occur.  
-**Test Type**      : Negative  
+
+### 2️⃣ Consultation Request Workflows  
+
+| TC‑ID | Title | Workflow | Requirements | Test Type |
+|------|-------|----------|--------------|-----------|
+| **TC‑CONS‑001** | Create appointment‑type consultation request (happy path) | **Consultation Request – Appointment** | Req‑6/1, Req‑6/2, UC‑06, BR‑7 | Functional |
+| **TC‑CONS‑002** | Create offline‑consultation request with report upload (happy path) | **Consultation Request – Offline** | Req‑6/1, Req‑4/1‑4/3, UC‑06, BR‑8 | Functional |
+| **TC‑CONS‑003** | Upload more than 5 reports (negative) | **Consultation Request – Report Upload** | Req‑6/1, BR‑8 | Negative |
+| **TC‑CONS‑004** | Upload a report larger than 1 MB (boundary) | **Consultation Request – Report Upload** | Req‑6/1, BR‑8 | Boundary |
+| **TC‑CONS‑005** | Consultation request response time ≤ 2 s under load (performance) | **Consultation Request – Performance** | Req‑6/1, Performance (≤2 s) | Performance |
+| **TC‑CONS‑006** | Attempt to request consultation for a non‑existent speciality (negative) | **Consultation Request – Validation** | Req‑6/1, BR‑3 | Negative |
+| **TC‑CONS‑007** | Verify that a consultation request is routed to exactly one doctor (integration) | **Doctor Routing** | Req‑8, BR‑4, BR‑5 | Integration |
+
+---
+
+#### TC‑CONS‑001  
+
+```
+TC-ID          : TC-CONS-001
+Title          : Create appointment‑type consultation request (happy path)
+Workflow       : Consultation Request – Appointment
+Requirements   : Req-6/1, Req-6/2, UC-06, BR-7
+Preconditions  :
+  - Patient (PID‑12345) is registered and logged in.
+  - At least one doctor of the required speciality (e.g., Dermatology) exists.
+Test Steps     :
+  1. Navigate to “New Consultation Request”.
+  2. Select “Appointment” mode.
+  3. Choose “Dermatology” speciality.
+  4. Pick symptoms “Itchy skin”, “Rash”.
+  5. Set preferred appointment date = tomorrow.
+  6. Click “Submit”.
+Expected Result: 
+  - Request is saved, an entry appears in “My Requests” with status “Pending – Doctor Review”.
+  - System creates a record in the Patient Appointment File for next‑day appointments.
+  - Response returned within 2 seconds.
+Test Type      : Functional
+```
+
+#### TC‑CONS‑002  
+
+```
+TC-ID          : TC-CONS-002
+Title          : Create offline‑consultation request with report upload (happy path)
+Workflow       : Consultation Request – Offline
+Requirements   : Req-6/1, Req-4/1‑4/3, UC-06, BR-8
+Preconditions  :
+  - Patient is logged in.
+  - Patient has a valid email and PIN code within service zone.
+Test Steps     :
+  1. Open “New Consultation Request”.
+  2. Select “Offline Consultation” mode.
+  3. Choose speciality “Cardiology”.
+  4. Select symptoms “Chest pain”, “Shortness of breath”.
+  5. Click “Add Report”, upload a 900 KB PDF (previous ECG).
+  6. Submit request.
+Expected Result: 
+  - Request saved with attached report(s) (≤5 files, each ≤1 MB).
+  - System sends acknowledgment email with request ID.
+  - Status shown as “Pending – Doctor Review”.
+Test Type      : Functional
+```
+
+#### TC‑CONS‑003  
+
+```
+TC-ID          : TC-CONS-003
+Title          : Upload more than 5 reports (negative)
+Workflow       : Consultation Request – Report Upload
+Requirements   : Req-6/1, BR-8
+Preconditions  :
+  - Patient is logged in.
+Test Steps     :
+  1. Start a new consultation request.
+  2. Attempt to upload six separate PDF files (each 200 KB).
+Expected Result: 
+  - System blocks the sixth upload with error “Maximum 5 reports allowed per request”.
+  - No additional files are stored.
+Test Type      : Negative
+```
+
+#### TC‑CONS‑004  
+
+```
+TC-ID          : TC-CONS-004
+Title          : Upload a report larger than 1 MB (boundary)
+Workflow       : Consultation Request – Report Upload
+Requirements   : Req-6/1, BR-8
+Preconditions  :
+  - Patient logged in.
+Test Steps     :
+  1. Begin a new consultation request.
+  2. Click “Add Report” and select a 1.2 MB PDF.
+Expected Result: 
+  - System rejects the file with message “File size exceeds 1 MB limit”.
+  - Request proceeds without the oversized file.
+Test Type      : Boundary
+```
+
+#### TC‑CONS‑005  
+
+```
+TC-ID          : TC-CONS-005
+Title          : Consultation request response time ≤ 2 s under peak load
+Workflow       : Consultation Request – Performance
+Requirements   : Req-6/1, Performance (≤2 s)
+Preconditions  :
+  - Load generator prepared to issue 10 000 simultaneous request submissions.
+Test Steps     :
+  1. Launch load test; each virtual user logs in and submits a minimal consultation request (one symptom, no upload).
+  2. Capture response time for each HTTP 200/201.
+Expected Result: 
+  - ≥95 % of submissions complete within 2 seconds; no data loss, no server errors.
+Test Type      : Performance
+```
+
+#### TC‑CONS‑006  
+
+```
+TC-ID          : TC-CONS-006
+Title          : Request consultation for a non‑existent speciality (negative)
+Workflow       : Consultation Request – Validation
+Requirements   : Req-6/1, BR-3
+Preconditions  :
+  - Admin has NOT added speciality “Neurology”.
+  - Patient is logged in.
+Test Steps     :
+  1. Open “New Consultation Request”.
+  2. Attempt to manually enter speciality “Neurology” (via URL manipulation or hidden field).
+  3. Submit.
+Expected Result: 
+  - System validates and returns error “Invalid speciality” and does not create the request.
+Test Type      : Negative
+```
+
+#### TC‑CONS‑007  
+
+```
+TC-ID          : TC-CONS-007
+Title          : Verify single‑doctor routing for a consultation request
+Workflow       : Doctor Routing
+Requirements   : Req-8, BR-4, BR-5
+Preconditions  :
+  - Two doctors (Dr. A – Dermatology, Dr. B – Dermatology) are active.
+  - Patient submits a Dermatology request.
+Test Steps     :
+  1. Patient creates a Dermatology consultation request.
+  2. Log in as admin and inspect the workflow table.
+  3. Verify which doctor is assigned.
+  4. Log in as the non‑assigned doctor; attempt to view the request.
+Expected Result: 
+  - Only the assigned doctor (e.g., Dr. A) can see the request; Dr. B receives “Access denied”.
+  - Routing rule prevents multiple doctors from handling the same request.
+Test Type      : Integration
+```
 
 ---  
-**TC-ID**          : TC‑REG‑003  
-**Title**          : Registration with Invalid Pin‑code (Boundary)  
-**Workflow**       : Patient Registration  
-**Requirements**   : Req‑5/1, BR‑1, UC‑01  
-**Preconditions**  : System is up.  
-**Test Steps**     :  
-  1. Open registration page.  
-  2. Enter a Pin‑code that is **outside** the allowed service zone (e.g., 999999).  
-  3. Fill other fields with valid data.  
-  4. Click **“Submit”.**  
-**Expected Result**: System displays “Service not available in your area” and aborts registration.  
-**Test Type**      : Boundary  
+
+### 3️⃣ Doctor Interaction & Prescription Generation  
+
+| TC‑ID | Title | Workflow | Requirements | Test Type |
+|------|-------|----------|--------------|-----------|
+| **TC‑DOC‑001** | Doctor logs in and views pending consultation (happy) | **Doctor Consultation Review** | Req‑15, UC‑09, Req‑8 | Functional |
+| **TC‑DOC‑002** | Doctor provides diagnosis, medicines, and lab test (happy) | **Prescription Creation** | Req‑8, Req‑9, Req‑10, UC‑09, UC‑10 | Functional |
+| **TC‑DOC‑003** | Doctor attempts to edit a prescription after flagging as “Delivered” (negative) | **Prescription Edit Restriction** | Req‑8, BR‑9, BR‑10 | Negative |
+| **TC‑DOC‑004** | Machine‑Learning disease prediction displayed and overridden (integration) | **ML Assist + Doctor Override** | Req‑7, Req‑8 | Integration |
+| **TC‑DOC‑005** | Doctor response time ≤ 2 s for opening pending list under load (performance) | **Doctor Dashboard Performance** | Performance (≤2 s) | Performance |
+| **TC‑DOC‑006** | Unauthorized user (patient) attempts to view doctor’s pending list (security) | **Access Control** | BR‑2, BR‑4 | Security |
+
+---
+
+#### TC‑DOC‑001  
+
+```
+TC-ID          : TC-DOC-001
+Title          : Doctor logs in and views pending consultation (happy)
+Workflow       : Doctor Consultation Review
+Requirements   : Req-15, UC-09, Req-8
+Preconditions  :
+  - Doctor (DrID‑D001) with valid credentials exists and is assigned to Dermatology.
+  - At least one pending consultation request for Dermatology exists.
+Test Steps     :
+  1. Navigate to login page, enter doctor credentials, click “Login”.
+  2. On dashboard, click “Pending Consultations”.
+  3. Locate the request with ID “CR-1001”.
+Expected Result: 
+  - Dashboard loads within 2 seconds.
+  - Request “CR-1001” is listed with patient details, symptoms, and status “Pending”.
+Test Type      : Functional
+```
+
+#### TC‑DOC‑002  
+
+```
+TC-ID          : TC-DOC-002
+Title          : Doctor provides diagnosis, medicines, and lab test (happy)
+Workflow       : Prescription Creation
+Requirements   : Req-8, Req-9, Req-10, UC-09, UC-10
+Preconditions  :
+  - Doctor D001 is logged in.
+  - Pending consultation request CR-1002 (Cardiology) is assigned.
+Test Steps     :
+  1. Open CR-1002.
+  2. Enter diagnosis “Stable Angina”.
+  3. Select medicines: “Aspirin 75 mg”, “Atorvastatin 20 mg”.
+  4. Add lab test “Lipid Profile”.
+  5. Click “Generate Prescription”.
+Expected Result: 
+  - Prescription P-2001 is created, linked to CR-1002.
+  - System sends prescription notification to patient, to the Chemist (by PIN) and to the Lab (by PIN).
+  - Status of CR‑1002 changes to “Prescription Issued”.
+Test Type      : Functional
+```
+
+#### TC‑DOC‑003  
+
+```
+TC-ID          : TC-DOC-003
+Title          : Doctor attempts to edit a prescription after delivery flag set (negative)
+Workflow       : Prescription Edit Restriction
+Requirements   : Req-8, BR-9, BR-10
+Preconditions  :
+  - Prescription P-3001 exists and Chemist has set flag “Medicines Delivered”.
+  - Doctor D001 is logged in.
+Test Steps     :
+  1. Open Prescription P-3001 from the doctor’s dashboard.
+  2. Attempt to modify the medicines list.
+Expected Result: 
+  - System displays error “Prescription is locked – delivery completed” and prevents editing.
+Test Type      : Negative
+```
+
+#### TC‑DOC‑004  
+
+```
+TC-ID          : TC-DOC-004
+Title          : ML disease prediction displayed and doctor overrides (integration)
+Workflow       : ML Assist + Doctor Override
+Requirements   : Req-7, Req-8
+Preconditions  :
+  - New consultation request CR-1100 (Symptoms: “Fever, Cough”) is pending.
+  - ML batch has already run and assigned a “Probable Diagnosis: Influenza (80%)”.
+  - Doctor D002 logs in.
+Test Steps     :
+  1. Open CR-1100; verify ML suggested diagnosis is displayed.
+  2. Doctor changes diagnosis to “COVID‑19” and saves.
+Expected Result: 
+  - System records the doctor’s final diagnosis (“COVID‑19”) and logs that ML suggestion was overridden.
+  - Prescription generation proceeds with doctor’s choice.
+Test Type      : Integration
+```
+
+#### TC‑DOC‑005  
+
+```
+TC-ID          : TC-DOC-005
+Title          : Doctor dashboard list loads ≤ 2 s under peak load
+Workflow       : Doctor Dashboard Performance
+Requirements   : Performance (≤2 s), Req-15
+Preconditions  :
+  - Simulated 8 000 concurrent doctors (max allowed) are logged in.
+Test Steps     :
+  1. Each virtual doctor navigates to “Pending Consultations”.
+  2. Measure response time for the HTTP 200 page load.
+Expected Result: 
+  - ≥95 % of page loads complete within 2 seconds; no timeout errors.
+Test Type      : Performance
+```
+
+#### TC‑DOC‑006  
+
+```
+TC-ID          : TC-DOC-006
+Title          : Unauthorized patient attempts to view doctor’s pending list (security)
+Workflow       : Access Control
+Requirements   : BR-2, BR-4
+Preconditions  :
+  - Patient P‑5678 is logged in.
+Test Steps     :
+  1. Directly navigate to URL /doctor/pending (or attempt via API).
+Expected Result: 
+  - System returns HTTP 403 “Access Denied” and does not reveal any doctor data.
+Test Type      : Security
+```
 
 ---  
-**TC-ID**          : TC‑REG‑004  
-**Title**          : Registration with Duplicate Email (Negative)  
-**Workflow**       : Patient Registration  
-**Requirements**   : Req‑5/1, UC‑01, BR‑2  
-**Preconditions**  : A patient with email **john.doe@example.com** already exists.  
-**Test Steps**     :  
-  1. Attempt to register a new patient using the same email address.  
-  2. Submit the form.  
-**Expected Result**: Error “Email already registered” is shown; no new record is created.  
-**Test Type**      : Negative  
+
+### 4️⃣ Chemist & Lab Workflows  
+
+| TC‑ID | Title | Workflow | Requirements | Test Type |
+|------|-------|----------|--------------|-----------|
+| **TC‑CHEM‑001** | Chemist receives correct prescription based on patient PIN (happy) | **Chemist Prescription Reception** | Req‑9, BR‑9, UC‑13 | Functional |
+| **TC‑CHEM‑002** | Chemist marks medicines as delivered, flag updates correctly (happy) | **Medicine Delivery** | Req‑9, BR‑9 | Functional |
+| **TC‑CHEM‑003** | Chemist tries to access prescription of another PIN (security) | **Prescription Access Control** | BR‑9, BR‑2 | Security |
+| **TC‑LAB‑001** | Lab receives correct lab request, updates status, uploads report (happy) | **Lab Test Execution** | Req‑10, BR‑10, UC‑12 | Functional |
+| **TC‑LAB‑002** | Lab attempts to upload report > 1 MB (negative) | **Lab Report Upload Boundary** | BR‑8 | Boundary |
+| **TC‑LAB‑003** | Lab tries to update a prescription that is already marked “Medicines Delivered” (negative) | **Cross‑Entity Integrity** | BR‑9, BR‑10 | Negative |
+| **TC‑INTEG‑001** | End‑to‑end flow: Patient → Doctor → Chemist → Patient (invoice) (integration) | **Full Prescription Delivery** | Req‑5/1, Req‑6/1, Req‑8, Req‑9, Req‑11 | Integration |
+| **TC‑INTEG‑002** | End‑to‑end flow: Patient → Doctor → Lab → Patient (report view) (integration) | **Full Lab Test Flow** | Req‑5/1, Req‑6/1, Req‑8, Req‑10, Req‑11 | Integration |
+
+---
+
+#### TC‑CHEM‑001  
+
+```
+TC-ID          : TC-CHEM-001
+Title          : Chemist receives correct prescription based on patient PIN (happy)
+Workflow       : Chemist Prescription Reception
+Requirements   : Req-9, BR-9, UC-13
+Preconditions  :
+  - Patient P‑2001 (PIN 560012) has a prescription P‑4001 generated.
+  - Chemist C‑560012 is active and logged in.
+Test Steps     :
+  1. Chemist logs in.
+  2. Navigate to “My Prescriptions”.
+  3. Verify that P‑4001 appears in the list.
+Expected Result: 
+  - Only prescriptions whose patient PIN matches the chemist’s PIN are listed.
+  - Prescription details show masked patient data (only name, age, required fields).
+Test Type      : Functional
+```
+
+#### TC‑CHEM‑002  
+
+```
+TC-ID          : TC-CHEM-002
+Title          : Chemist marks medicines as delivered, flag updates correctly (happy)
+Workflow       : Medicine Delivery
+Requirements   : Req-9, BR-9
+Preconditions  :
+  - Prescription P‑4002 is pending delivery to patient with PIN 560015.
+  - Chemist C‑560015 is logged in.
+Test Steps     :
+  1. Open P‑4002.
+  2. Click “Mark as Delivered”.
+  3. Confirm delivery timestamp.
+Expected Result: 
+  - Prescription status changes to “Medicines Delivered”.
+  - Patient receives email notification.
+  - Doctor view shows delivery flag set; chemist cannot edit further.
+Test Type      : Functional
+```
+
+#### TC‑CHEM‑003  
+
+```
+TC-ID          : TC-CHEM-003
+Title          : Chemist tries to access prescription of another PIN (security)
+Workflow       : Prescription Access Control
+Requirements   : BR-9, BR-2
+Preconditions  :
+  - Chemist C‑560020 logged in.
+  - Prescription P‑5000 belongs to patient with PIN 560030.
+Test Steps     :
+  1. Directly request /chemist/prescription/5000 via URL.
+Expected Result: 
+  - System returns HTTP 403 “Access Denied”.
+  - No prescription data is exposed.
+Test Type      : Security
+```
+
+#### TC‑LAB‑001  
+
+```
+TC-ID          : TC-LAB-001
+Title          : Lab receives correct lab request, updates status, uploads report (happy)
+Workflow       : Lab Test Execution
+Requirements   : Req-10, BR-10, UC-12
+Preconditions  :
+  - Prescription P‑6001 includes Lab Test “Blood Sugar”.
+  - Lab L‑560040 (matching patient PIN) is logged in.
+Test Steps     :
+  1. Lab dashboard shows pending lab request P‑6001.
+  2. Click “Collect Sample” → status changes to “Sample Collected”.
+  3. After testing, click “Upload Report”, attach a PDF (600 KB) named “BloodSugarReport.pdf”.
+  4. Click “Mark Report Ready”.
+Expected Result: 
+  - Lab request status = “Report Ready”.
+  - Patient receives email with a secure link to view the report.
+  - System logs timestamps for collection and report upload.
+Test Type      : Functional
+```
+
+#### TC‑LAB‑002  
+
+```
+TC-ID          : TC-LAB-002
+Title          : Lab attempts to upload report > 1 MB (negative)
+Workflow       : Lab Report Upload Boundary
+Requirements   : BR-8
+Preconditions  :
+  - Lab L‑560040 is logged in, handling request P‑6002.
+Test Steps     :
+  1. Click “Upload Report”.
+  2. Select a PDF of size 1.4 MB.
+Expected Result: 
+  - System rejects file with message “Report size exceeds 1 MB limit”.
+  - No file stored; request remains in “Sample Collected” state.
+Test Type      : Boundary
+```
+
+#### TC‑LAB‑003  
+
+```
+TC-ID          : TC-LAB-003
+Title          : Lab tries to update a prescription already marked “Medicines Delivered” (negative)
+Workflow       : Cross‑Entity Integrity
+Requirements   : BR-9, BR-10
+Preconditions  :
+  - Prescription P‑7001 has status “Medicines Delivered” (chemist flag set).
+  - Lab L‑560050 is logged in.
+Test Steps     :
+  1. Attempt to open P‑7001 from Lab dashboard.
+  2. Try to add a lab test or change status.
+Expected Result: 
+  - System shows “Cannot modify prescription – medicines already delivered”.
+  - No changes are allowed.
+Test Type      : Negative
+```
 
 ---  
-**TC-ID**          : TC‑CONS‑001  
-**Title**          : Create Consultation Request – Appointment (Happy Path)  
-**Workflow**       : Patient Consultation Request → Doctor Consultation → Prescription → Chemist Delivery → Lab Report  
-**Requirements**   : Req‑6/1, Req‑6/2, UC‑06, BR‑7, BR‑8  
-**Preconditions**  :  
-  - Patient **P12345** is logged in.  
-  - At least one speciality (e.g., “Dermatology”) with an active doctor exists.  
-  - Patient’s Pin‑code matches a registered Chemist and Lab.  
-**Test Steps**     :  
-  1. From Dashboard, select **“New Consultation”**.  
-  2. Choose **“Dermatology”**, select **“Appointment”** mode, pick a date for the next day.  
-  3. Select symptoms **“Itchy skin”** and **“Red rash”** from the master list.  
-  4. Upload a supporting image (≤ 1 MB).  
-  5. Click **“Submit”.**  
-**Expected Result**: Consultation request is stored, an entry appears in the **Patient Appointment File** for the selected date; response time ≤ 2 seconds.  
-**Test Type**      : Functional  
+
+### 5️⃣ Patient Post‑Consultation Activities  
+
+| TC‑ID | Title | Workflow | Requirements | Test Type |
+|------|-------|----------|--------------|-----------|
+| **TC‑PAT‑001** | Patient views prescription and prints invoice (happy) | **View/Print Prescription & Invoice** | Req‑11, UC‑14, BR‑8 | Functional |
+| **TC‑PAT‑002** | Patient attempts to view another patient’s prescription (security) | **Prescription Access Control** | BR‑2, BR‑8 | Security |
+| **TC‑PAT‑003** | Patient downloads a lab report (happy) | **Lab Report Retrieval** | Req‑11, UC‑12 | Functional |
+| **TC‑PAT‑004** | Patient attempts to download a report belonging to another patient (security) | **Report Access Control** | BR‑2, BR‑10 | Security |
+| **TC‑PAT‑005** | Patient updates profile with invalid email format (negative) | **Profile Update Validation** | Req‑5/2, UC‑07 | Negative |
+| **TC‑PAT‑006** | Patient profile update response time ≤ 4 s (performance) | **Profile Update Performance** | Performance (≤4 s) | Performance |
+
+---
+
+#### TC‑PAT‑001  
+
+```
+TC-ID          : TC-PAT-001
+Title          : Patient views prescription and prints invoice (happy)
+Workflow       : View/Print Prescription & Invoice
+Requirements   : Req-11, UC-14, BR-8
+Preconditions  :
+  - Patient P‑3001 is logged in.
+  - Prescription P‑8001 exists for this patient.
+Test Steps     :
+  1. Navigate to “My Prescriptions”.
+  2. Click on P‑8001 → view details.
+  3. Click “Print Invoice”.
+Expected Result: 
+  - Prescription details and an itemised invoice are displayed in printable format.
+  - Browser print dialog opens; data matches stored prescription.
+Test Type      : Functional
+```
+
+#### TC‑PAT‑002  
+
+```
+TC-ID          : TC-PAT-002
+Title          : Patient attempts to view another patient’s prescription (security)
+Workflow       : Prescription Access Control
+Requirements   : BR-2, BR-8
+Preconditions  :
+  - Patient A (PID‑A) logged in.
+  - Prescription P‑9001 belongs to Patient B.
+Test Steps     :
+  1. Manually enter URL /patient/prescription/9001.
+Expected Result: 
+  - System returns HTTP 403 “Access Denied”.
+  - No data of Prescription P‑9001 is shown.
+Test Type      : Security
+```
+
+#### TC‑PAT‑003  
+
+```
+TC-ID          : TC-PAT-003
+Title          : Patient downloads a lab report (happy)
+Workflow       : Lab Report Retrieval
+Requirements   : Req-11, UC-12
+Preconditions  :
+  - Patient P‑4002 has a completed lab report “CBC.pdf”.
+  - Patient is logged in.
+Test Steps     :
+  1. Go to “My Lab Reports”.
+  2. Click “Download” beside “CBC.pdf”.
+Expected Result: 
+  - PDF downloads successfully; file size matches the uploaded report.
+Test Type      : Functional
+```
+
+#### TC‑PAT‑004  
+
+```
+TC-ID          : TC-PAT-004
+Title          : Patient attempts to download a report of another patient (security)
+Workflow       : Report Access Control
+Requirements   : BR-2, BR-10
+Preconditions  :
+  - Patient A logged in.
+  - Report R‑12345 belongs to Patient B.
+Test Steps     :
+  1. Directly request /patient/report/12345 via URL.
+Expected Result: 
+  - System returns HTTP 403 “Access Denied”.
+Test Type      : Security
+```
+
+#### TC‑PAT‑005  
+
+```
+TC-ID          : TC-PAT-005
+Title          : Patient updates profile with invalid email format (negative)
+Workflow       : Profile Update Validation
+Requirements   : Req-5/2, UC-07
+Preconditions  :
+  - Patient P‑5005 is logged in.
+Test Steps     :
+  1. Navigate to “My Profile”.
+  2. Change email to “invalid‑email”.
+  3. Click “Save”.
+Expected Result: 
+  - Validation error “Please enter a valid email address”.
+  - No changes persisted.
+Test Type      : Negative
+```
+
+#### TC‑PAT‑006  
+
+```
+TC-ID          : TC-PAT-006
+Title          : Patient profile update response time ≤ 4 s (performance)
+Workflow       : Profile Update Performance
+Requirements   : Performance (≤4 s)
+Preconditions  :
+  - 5 000 concurrent patients are logged in and editing profiles.
+Test Steps     :
+  1. Each virtual patient changes a non‑critical field (e.g., “Preferred Language”) and clicks “Save”.
+  2. Measure response time for the HTTP 200 response.
+Expected Result: 
+  - ≥95 % of updates complete within 4 seconds; no server errors.
+Test Type      : Performance
+```
 
 ---  
-**TC-ID**          : TC‑CONS‑002  
-**Title**          : Consultation Request – Invalid Symptom Selection (Negative)  
-**Workflow**       : Patient Consultation Request  
-**Requirements**   : Req‑6/1, UC‑06, BR‑7  
-**Preconditions**  : Patient is logged in.  
-**Test Steps**     :  
-  1. Open **“New Consultation”**.  
-  2. Attempt to add a symptom that is **not** present in the master symptom list (e.g., manually type “Alien infection”).  
-  3. Click **“Submit”.**  
-**Expected Result**: System rejects the entry with error “Invalid symptom selected”.  
-**Test Type**      : Negative  
 
----  
-**TC-ID**          : TC‑CONS‑003  
-**Title**          : Consultation Request – Upload Exceeds Size Limit (Boundary)  
-**Workflow**       : Patient Consultation Request  
-**Requirements**   : Req‑6/1, UC‑06, BR‑7  
-**Preconditions**  : Patient is logged in.  
-**Test Steps**     :  
-  1. Start a new consultation request.  
-  2. Attempt to upload a PDF of **2 MB** (limit is 1 MB).  
-  3. Submit the request.  
-**Expected Result**: Error “File size exceeds 1 MB limit” appears; request is not saved.  
-**Test Type**      : Boundary  
+### 6️⃣ Administrative Functions  
 
----  
-**TC-ID**          : TC‑DOC‑001  
-**Title**          : Doctor Views and Provides Diagnosis (Happy Path)  
-**Workflow**       : Doctor Consultation → Prescription Generation → Routing to Chemist/Lab  
-**Requirements**   : Req‑8, UC‑09, BR‑5, BR‑8  
-**Preconditions**  :  
-  - Consultation request **CR‑001** is pending, assigned to Doctor **D100** (Dermatology).  
-  - Doctor **D100** is logged in.  
-**Test Steps**     :  
-  1. Navigate to **“Pending Consultations”**.  
-  2. Open **CR‑001** and review patient symptoms.  
-  3. Enter diagnosis “Contact dermatitis”.  
-  4. Add medicines **“Hydrocortisone 1% cream – 2 tubes”**.  
-  5. Add Lab test **“Allergy panel”**.  
-  6. Click **“Generate Prescription”.**  
-**Expected Result**: Prescription record created, status changes to **“Ready for Chemist & Lab”**; doctor receives confirmation within 2 seconds.  
-**Test Type**      : Functional  
+| TC‑ID | Title | Workflow | Requirements | Test Type |
+|------|-------|----------|--------------|-----------|
+| **TC‑ADM‑001** | Admin adds a new speciality (happy) | **Speciality Management** | Req‑1/1, UC‑02, BR‑3 | Functional |
+| **TC‑ADM‑002** | Admin deletes a speciality that still has doctors attached (negative) | **Speciality Deletion Constraint** | Req‑1/3, BR‑3 | Negative |
+| **TC‑ADM‑003** | Admin edits doctor details (cannot change speciality) (happy) | **Doctor Edit** | Req‑2/2, UC‑05, BR‑4 | Functional |
+| **TC‑ADM‑004** | Admin attempts to delete a doctor with pending consultation (negative) | **Doctor Deletion Constraint** | Req‑2/3, BR‑5 | Negative |
+| **TC‑ADM‑005** | Admin bulk‑adds 50 000 patients via import (performance) | **Mass Patient Import** | Req‑5/1, Performance (large data load) | Performance |
+| **TC‑ADM‑006** | Admin logs in with default password and is forced to change it on first use (security) | **Password Policy** | BR‑2, Req‑15 | Security |
+| **TC‑ADM‑007** | Admin runs nightly backup and verifies dummy restore (integration) | **Backup & Restore** | Req‑13, Req‑5/1, BR‑2 | Integration |
 
----  
-**TC-ID**          : TC‑DOC‑002  
-**Title**          : Doctor Attempts to Edit Prescription After Submission (Negative)  
-**Workflow**       : Doctor Prescription  
-**Requirements**   : Req‑8, UC‑09, BR‑5  
-**Preconditions**  : Prescription **PR‑555** already generated and status set to **“Sent to Chemist”**.  
-**Test Steps**     :  
-  1. Doctor opens **PR‑555** from the **“Sent Prescriptions”** list.  
-  2. Attempt to modify medicine list.  
-  3. Click **“Save”.**  
-**Expected Result**: System shows “Prescription cannot be edited after dispatch” and prevents changes.  
-**Test Type**      : Negative  
+---
 
----  
-**TC-ID**          : TC‑DOC‑003  
-**Title**          : Doctor Views Prioritized Consultation Queue (Performance)  
-**Workflow**       : Doctor Consultation Queue Load  
-**Requirements**   : Req‑8, UC‑09, BR‑5, Performance (critical)  
-**Preconditions**  : 8,000 pending consultation requests exist across all specialties.  
-**Test Steps**     :  
-  1. Doctor logs in and navigates to **“Pending Consultations”**.  
-**Expected Result**: The list loads within **≤ 2 seconds**; requests are ordered by priority (Critical → Medium → Low) as set by the disease‑prediction batch job.  
-**Test Type**      : Performance  
+#### TC‑ADM‑001  
 
----  
-**TC-ID**          : TC‑CHEM‑001  
-**Title**          : Chemist Retrieves Assigned Prescription (Happy Path)  
-**Workflow**       : Chemist Prescription Retrieval → Offline Medicine Delivery → Status Update  
-**Requirements**   : Req‑9, UC‑13, BR‑9  
-**Preconditions**  :  
-  - Prescription **PR‑777** (patient Pin‑code 560001) is pending.  
-  - Chemist **C200** (Pin‑code 560001) is logged in.  
-**Test Steps**     :  
-  1. From Chemist Dashboard, select **“My Prescriptions”**.  
-  2. Open **PR‑777** and view required medicines.  
-  3. Click **“Mark as Delivered”.**  
-**Expected Result**: Prescription status updates to **“Medicines Delivered”**, timestamp recorded; response ≤ 2 seconds.  
-**Test Type**      : Functional  
+```
+TC-ID          : TC-ADM-001
+Title          : Admin adds a new speciality (happy)
+Workflow       : Speciality Management
+Requirements   : Req-1/1, UC-02, BR-3
+Preconditions  :
+  - Admin user (admin@hospital.com) is logged in.
+Test Steps     :
+  1. Navigate to “Maintain Specialities”.
+  2. Click “Add Speciality”.
+  3. Enter name “Ophthalmology”, description “Eye care”.
+  4. Click “Save”.
+Expected Result: 
+  - New speciality appears in the list with a unique ID.
+  - System logs the creation event.
+Test Type      : Functional
+```
 
----  
-**TC-ID**          : TC‑CHEM‑002  
-**Title**          : Chemist Attempts to Access Prescription Outside Pincode (Security)  
-**Workflow**       : Chemist Prescription Access Control  
-**Requirements**   : Req‑9, BR‑9, Security Req‑5/15  
-**Preconditions**  : Chemist **C200** (Pin‑code 560001) logged in; prescription **PR‑888** belongs to patient Pin‑code 560002.  
-**Test Steps**     :  
-  1. In the dashboard, try to manually enter **PR‑888** ID in a URL query.  
-**Expected Result**: System returns **403 Forbidden** with message “Access denied – prescription not assigned to your region”. No patient data is displayed.  
-**Test Type**      : Security  
+#### TC‑ADM‑002  
 
----  
-**TC-ID**          : TC‑LAB‑001  
-**Title**          : Lab In‑charge Updates Lab Report (Happy Path)  
-**Workflow**       : Lab Test Execution → Report Upload → Patient View  
-**Requirements**   : Req‑10, UC‑12, BR‑10  
-**Preconditions**  :  
-  - Lab **L300** (Pin‑code 560001) logged in.  
-  - Prescription **PR‑777** includes Lab test “Allergy panel”.  
-**Test Steps**     :  
-  1. Open **“Pending Lab Tests”** list.  
-  2. Select **PR‑777**, mark **“Specimen Collected”**.  
-  3. After test completion, upload PDF report (≤ 1 MB).  
-  4. Click **“Finalize Report”.**  
-**Expected Result**: Lab report linked to prescription, status changes to **“Report Ready”**, patient can view/download within 4 seconds.  
-**Test Type**      : Functional  
+```
+TC-ID          : TC-ADM-002
+Title          : Admin deletes a speciality that still has doctors attached (negative)
+Workflow       : Speciality Deletion Constraint
+Requirements   : Req-1/3, BR-3
+Preconditions  :
+  - Speciality “Cardiology” exists and has 3 doctors linked.
+  - Admin is logged in.
+Test Steps     :
+  1. Go to “Maintain Specialities”.
+  2. Attempt to delete “Cardiology”.
+Expected Result: 
+  - System blocks deletion with message “Cannot delete speciality with assigned doctors”.
+  - No change to database.
+Test Type      : Negative
+```
 
----  
-**TC-ID**          : TC‑LAB‑002  
-**Title**          : Lab Attempts to Upload Oversized Report (Boundary)  
-**Workflow**       : Lab Report Upload  
-**Requirements**   : Req‑10, UC‑12, BR‑10  
-**Preconditions**  : Lab logged in, test pending.  
-**Test Steps**     :  
-  1. Attempt to upload a **2 MB** PDF as the lab report.  
-**Expected Result**: Error “Report exceeds maximum size of 1 MB”; upload rejected.  
-**Test Type**      : Boundary  
+#### TC‑ADM‑003  
 
----  
-**TC-ID**          : TC‑PAT‑VIEW‑001  
-**Title**          : Patient Views Prescription and Invoice (Happy Path)  
-**Workflow**       : Patient Prescription Retrieval → Print Invoice  
-**Requirements**   : Req‑11, UC‑14, BR‑8  
-**Preconditions**  : Patient **P12345** logged in; Prescription **PR‑777** status = “Medicines Delivered”.  
-**Test Steps**     :  
-  1. Click **“My Prescriptions”**.  
-  2. Open **PR‑777**, verify diagnosis, medicines, lab tests.  
-  3. Click **“View Invoice”** and then **“Print”.**  
-**Expected Result**: Prescription details and itemised invoice displayed correctly; printable PDF generated within 4 seconds.  
-**Test Type**      : Functional  
+```
+TC-ID          : TC-ADM-003
+Title          : Admin edits doctor details (cannot change speciality) (happy)
+Workflow       : Doctor Edit
+Requirements   : Req-2/2, UC-05, BR-4
+Preconditions  :
+  - Doctor Dr‑D123 (speciality Dermatology) exists.
+  - Admin logged in.
+Test Steps     :
+  1. Open “Maintain Doctors”.
+  2. Search for Dr‑D123, click “Edit”.
+  3. Change phone number, leave speciality field read‑only.
+  4. Click “Save”.
+Expected Result: 
+  - Doctor record updated; speciality unchanged.
+  - Audit log records the edit.
+Test Type      : Functional
+```
 
----  
-**TC-ID**          : TC‑PAT‑VIEW‑002  
-**Title**          : Unauthorized Access to Another Patient’s Prescription (Security)  
-**Workflow**       : Patient Data Isolation  
-**Requirements**   : BR‑2, Security Req‑5/15, Req‑11  
-**Preconditions**  : Patient **P12345** logged in; another patient **P67890**
+#### TC‑ADM‑004  
+
+```
+TC-ID          : TC-ADM-004
+Title          : Admin attempts to delete a doctor with pending consultation (negative)
+Workflow       : Doctor Deletion Constraint
+Requirements   : Req-2/3, BR-5
+Preconditions  :
+  - Doctor Dr‑D456 has a pending consultation request CR‑2000.
+  - Admin logged in.
+Test Steps     :
+  1. Navigate to “Maintain Doctors”.
+  2. Attempt to delete Dr‑D456.
+Expected Result: 
+  - System refuses deletion, shows “Doctor has pending consultations; cannot delete”.
+Test Type      : Negative
+```
+
+#### TC‑ADM‑005  
+
+```
+TC-ID          : TC-ADM-005
+Title          : Admin bulk‑adds 50 000 patients via import (performance)
+Workflow       : Mass Patient Import
+Requirements   : Req-5/1, Performance (large data load)
+Preconditions  :
+  - CSV file with 50 000 valid patient records prepared.
+  - Admin logged in.
+Test Steps     :
+  1. Go to “Import Patients”.
+  2. Upload CSV, start import.
+  3. Monitor progress bar and total import time.
+Expected Result: 
+  - Import completes within 10 minutes; all records inserted without error.
+  - System remains responsive for other users (

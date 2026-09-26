@@ -44,11 +44,13 @@ Environment variables (or .env)
 """
 
 import argparse
+import json
 import os
 import re
 import sys
 import time
 import random
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -73,6 +75,7 @@ LLM_BASE_URL   = os.getenv("LLM_BASE_URL",   "https://api.groq.com/openai/v1")
 GITHUB_REPO    = os.getenv("GITHUB_REPO",    "mishal23/virtual-clinic")
 MAX_RETRIES    = int(os.getenv("LLM_MAX_RETRIES",    "5"))
 BACKOFF_BASE   = float(os.getenv("LLM_BACKOFF_BASE", "5"))
+PROMPT_PATH    = os.getenv("PROMPT_PATH", "prompts/generate_testcases.txt")
 
 GITHUB_BASE = f"https://raw.githubusercontent.com/{GITHUB_REPO}/master/server"
 
@@ -119,7 +122,8 @@ def call_llm(prompt: str, label: str = "") -> str:
                 headers={"Authorization": f"Bearer {LLM_API_KEY}",
                          "Content-Type": "application/json"},
                 json={"model": LLM_MODEL,
-                      "messages": [{"role": "user", "content": current_prompt}]},
+                      "messages": [{"role": "user", "content": current_prompt}],
+                      "max_tokens": 8000},
                 timeout=300,
             )
             if resp.status_code == 413:
@@ -179,50 +183,165 @@ def load_srs_from_mongo(sections_filter: list[str] | None = None) -> str:
         return ""
 
 
+
+# ──────────────────────────────────────────────
+# PROMPT TEMPLATE + META HELPERS
+# ──────────────────────────────────────────────
+
+def load_prompt_template(path: str) -> str:
+    candidates = [
+        Path(path),
+        Path(__file__).parent.parent / path,
+        Path(__file__).parent / path,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            print(f"  [prompt] Loaded template from {candidate.resolve()}")
+            return candidate.read_text(encoding="utf-8")
+    raise FileNotFoundError(
+        "Prompt template not found. Tried:\n"
+        + "\n".join(f"  {c}" for c in candidates)
+    )
+
+
+def save_meta(out_dir: Path, filename: str, data: dict) -> None:
+    """Save a metadata JSON file alongside an output file."""
+    meta_file = out_dir / filename
+    meta_file.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    print(f"  [saved] {meta_file}")
+
 # ──────────────────────────────────────────────
 # STEP 1 — TEST CASES FROM CODE
 # ──────────────────────────────────────────────
 
-def run_step1(out_dir: Path) -> str:
-    print("\n[Step 1] Generating test cases from the implemented code ...")
-    print(f"  Fetching source from github.com/{GITHUB_REPO} ...")
-    code = fetch_code()
+# Group source files into batches so each LLM call stays within limits.
+# forms.py (20k chars) is split by extracting first/second half of classes.
+# views_admin.py (25k chars) gets its own call and is also pre-truncated.
+FILE_GROUPS = [
+    ["models.py"],
+    ["forms.py"],          # handled specially — split in half before sending
+    ["urls.py", "views_home.py", "views_profile.py"],
+    ["views_prescription.py", "views_medtest.py", "views_medicalinfo.py"],
+    ["views_appointment.py", "views_message.py", "views_api.py"],
+    ["views_admin.py"],    # handled specially — pre-truncated to 10k chars
+]
 
-    if not code:
-        print("  [error] Could not fetch any source files.")
-        sys.exit(1)
+# Delay between consecutive LLM calls to avoid rate limiting (seconds)
+INTER_CALL_DELAY = 8
 
-    prompt = f"""You are a senior QA engineer. Below is the complete source code of a
-healthcare web application called Virtual Clinic.
-
-=== SOURCE CODE ===
-{code[:12000]}
-
-Based ONLY on what the code actually implements (models, views, forms, URLs),
-generate a complete test case suite. Do not invent functionality that is not
-in the code. Cover every model, every view function, every form, and every URL.
-
-For each test case use this format:
-
+TC_FORMAT = """
 ---
 TC-ID          : TC-CODE-<NNN>
 Title          : <short title>
-Target         : <what is being tested: model/view/form/url>
+Target         : <model/view/form/url being tested>
 Preconditions  :
   - <precondition>
 Test Steps     :
   1. <step>
 Expected Result: <verifiable outcome based on the code>
 Test Type      : <Functional | Negative | Boundary | Security>
----
+---"""
+
+
+def run_step1(out_dir: Path) -> str:
+    print("\n[Step 1] Generating test cases from the implemented code ...")
+    print(f"  Fetching source from github.com/{GITHUB_REPO} ...")
+
+    # Fetch all files once
+    all_code: dict[str, str] = {}
+    for fname in SOURCE_FILES:
+        r = requests.get(f"{GITHUB_BASE}/{fname}", timeout=15)
+        if r.status_code == 200:
+            all_code[fname] = r.text
+            print(f"  [github] {fname} ({len(r.text)} chars)")
+        else:
+            print(f"  [github] NOT FOUND: {fname}")
+
+    if not all_code:
+        print("  [error] Could not fetch any source files.")
+        sys.exit(1)
+
+    # Generate test cases per file group and collect results
+    all_results = []
+    tc_counter = 1
+
+    def make_prompt(src: str, start_id: int) -> str:
+        return f"""You are a senior QA engineer. Below is source code from a Django
+healthcare web application called Virtual Clinic.
+
+=== SOURCE CODE ===
+{src}
+
+Based ONLY on what this code implements, generate a complete test case suite.
+Do not invent functionality not present in the code.
+Cover every model field, every view function, every form validator, every URL.
+Start TC-IDs from TC-CODE-{start_id:03d}.
+
+For each test case use this format:
+{TC_FORMAT}
 """
 
-    print("  [LLM] Generating code-based test cases ...")
-    result = call_llm(prompt, "Step1")
+    def run_group(label: str, src: str, start_id: int) -> str:
+        """Send one group to the LLM and return the result."""
+        print(f"  [LLM] Generating test cases for: {label} ...")
+        time.sleep(INTER_CALL_DELAY)   # avoid rate limiting between calls
+        return call_llm(make_prompt(src, start_id), f"Step1-{label}")
+
+    for group in FILE_GROUPS:
+        # Build combined source for this group
+        group_src = ""
+        group_found = []
+        for fname in group:
+            if fname in all_code:
+                group_src += f"\n# === {fname} ===\n{all_code[fname]}\n"
+                group_found.append(fname)
+
+        if not group_src.strip():
+            continue
+
+        label = group_found[0]
+
+        # forms.py is ~20k — split into two halves by finding a class boundary
+        if "forms.py" in group_found:
+            src = all_code["forms.py"]
+            mid = len(src) // 2
+            # find nearest class boundary after midpoint
+            split = src.find("\nclass ", mid)
+            if split == -1:
+                split = mid
+            part1, part2 = src[:split], src[split:]
+            r1 = run_group("forms.py-part1", f"# === forms.py (part 1) ===\n{part1}", tc_counter)
+            tc_counter += r1.count("TC-ID")
+            r2 = run_group("forms.py-part2", f"# === forms.py (part 2) ===\n{part2}", tc_counter)
+            tc_counter += r2.count("TC-ID")
+            all_results.append(
+                f"# {'='*60}\n# Files: forms.py\n# {'='*60}\n\n{r1}\n\n{r2}"
+            )
+            continue
+
+        # views_admin.py is ~25k — truncate to first 10k chars
+        if "views_admin.py" in group_found:
+            src = all_code["views_admin.py"]
+            group_src = f"# === views_admin.py (truncated) ===\n{src[:10000]}\n"
+            print(f"  [note] views_admin.py truncated to 10000 chars for LLM call")
+
+        result = run_group(label, group_src, tc_counter)
+        all_results.append(f"# {'='*60}\n# Files: {group_found}\n# {'='*60}\n\n{result}")
+        tc_counter += result.count("TC-ID")
+
+    combined = "\n\n".join(all_results)
     out_file = out_dir / "step1_code_testcases.txt"
-    out_file.write_text(result, encoding="utf-8")
+    out_file.write_text(combined, encoding="utf-8")
     print(f"  [saved] {out_file}")
-    return result
+    save_meta(out_dir, "step1_meta.json", {
+        "step":          "step1_code_testcases",
+        "model":         LLM_MODEL,
+        "github_repo":   GITHUB_REPO,
+        "files_fetched": list(all_code.keys()),
+        "file_groups":   FILE_GROUPS,
+        "generated_at":  datetime.now(timezone.utc).isoformat(),
+    })
+    return combined
 
 
 # ──────────────────────────────────────────────
@@ -230,51 +349,40 @@ Test Type      : <Functional | Negative | Boundary | Security>
 # ──────────────────────────────────────────────
 
 def run_step2(out_dir: Path, sections_filter: list[str] | None = None) -> str:
-    print("\n[Step 2] Generating test cases from the SRS ...")
+    print("\n[Step 2] Generating test cases from the SRS using generate_testcases.txt ...")
     srs_text = load_srs_from_mongo(sections_filter)
 
     if not srs_text:
         print("  [error] SRS not found in MongoDB. Run ingest_srs.py first.")
         sys.exit(1)
 
-    # Focus on requirement-dense sections to stay within token limits
+    # Load the shared prompt template
+    template = load_prompt_template(PROMPT_PATH)
+
+    # Build SRS content block — skip boilerplate lines
     skip = {"table of contents", "revision history", "national institute",
             "software requirements specification", "figure"}
     lines = [l.strip() for l in srs_text.splitlines()
              if l.strip() and len(l.strip()) > 20
              and not any(s in l.lower() for s in skip)]
-    srs_trimmed = "\n".join(lines[:400])
+    srs_content = "\n".join(lines[:400])
 
-    prompt = f"""You are a senior QA engineer. Below is a Software Requirements
-Specification (SRS) for a healthcare web application called Virtual Clinic.
-
-=== SRS ===
-{srs_trimmed}
-
-Based ONLY on what the SRS specifies, generate a complete test case suite.
-Do not assume anything about implementation. Cover every requirement,
-business rule, and use case stated in the SRS.
-
-For each test case use this format:
-
----
-TC-ID          : TC-SRS-<NNN>
-Title          : <short title>
-Requirement    : <Req-X / BR-X / UC-X>
-Preconditions  :
-  - <precondition>
-Test Steps     :
-  1. <step>
-Expected Result: <verifiable outcome based on the SRS>
-Test Type      : <Functional | Negative | Boundary | Security | Performance>
----
-"""
+    # Fill the template — generate_testcases.txt uses {SRS_CONTENT}
+    prompt = template.replace("{SRS_CONTENT}", srs_content)
 
     print("  [LLM] Generating SRS-based test cases ...")
     result = call_llm(prompt, "Step2")
     out_file = out_dir / "step2_srs_testcases.txt"
     out_file.write_text(result, encoding="utf-8")
     print(f"  [saved] {out_file}")
+    save_meta(out_dir, "step2_meta.json", {
+        "step":             "step2_srs_testcases",
+        "model":            LLM_MODEL,
+        "prompt_template":  PROMPT_PATH,
+        "sections_used":    sections_filter,
+        "prompt_sent":      prompt,
+        "generated_at":     datetime.now(timezone.utc).isoformat(),
+    })
     return result
 
 
@@ -338,8 +446,14 @@ Compare the two suites and produce a structured gap report with these sections:
     out_file = out_dir / "step3_gap_report.txt"
     out_file.write_text(result, encoding="utf-8")
     print(f"  [saved] {out_file}")
+    save_meta(out_dir, "step3_meta.json", {
+        "step":         "step3_gap_report",
+        "model":        LLM_MODEL,
+        "prompt_sent":  prompt,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    })
     print("\n" + "="*60)
-    print(result[:3000])
+    print(result)
     print("="*60)
     return result
 

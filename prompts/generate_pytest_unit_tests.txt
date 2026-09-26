@@ -1,0 +1,11 @@
+Write pytest unit tests for this file: {SOURCE_FILE}
+Output file: {OUTPUT_FILE}
+
+{SOURCE_CODE}
+
+Rules:
+- One test per behaviour (happy path, error branch, boundary)
+- Plain assert statements only
+- No mocks. No patches.
+- Each test has a one-line docstring.
+- Output only valid Python, no markdown.

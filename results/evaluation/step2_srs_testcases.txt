@@ -1,50 +1,188 @@
-Below is a **complete test‑case suite** that is derived **only** from the SRS you supplied.  
-Every functional requirement (Req‑1 … Req‑16), every business rule (BR‑1 … BR‑10), every use‑case (UC‑01 … UC‑14) and the key non‑functional constraints (performance, security, usability, availability, backup, etc.) are covered.  
+Below is a **system‑level, end‑to‑end test‑suite** that exercises **all major user‑workflows** described in the SRS for **Virtual Clinic**.  
+The suite is organised by **functional flow** (patient → doctor → chemist / lab → patient) and is complemented by **non‑functional, security, usability and data‑maintenance** test groups.  
 
-The test cases are written in the exact format you requested.  
-Only the information that appears in the SRS is used – no assumptions about the implementation are made.
+For each test case the following fields are supplied:
+
+| Field | Meaning |
+|-------|---------|
+| **TC‑ID** | Unique identifier (prefix indicates the functional area) |
+| **Title** | One‑sentence summary of what is being verified |
+| **Objective** | Why the test exists – what requirement(s) it validates |
+| **Pre‑conditions** | System state / data that must exist before execution |
+| **Test Steps** | Ordered actions a tester (or automated script) performs |
+| **Expected Result** | Exact observable outcome (including UI messages, DB changes, API responses) |
+| **Post‑condition** | System state after the test (useful for chaining tests) |
+| **Priority** | P1 = critical for launch, P2 = high, P3 = medium, P4 = low |
+| **Type** | Functional (F), Performance (Perf), Security (Sec), Usability (U), Compatibility (C), Data‑Integrity (DI), Recovery (R) |
+| **Linked SRS** | Requirement number(s) that the case covers |
+
+---  
+
+## 1. Core End‑to‑End Business‑Workflow Tests  
+
+### 1.1 Patient Registration & Profile Management  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑01** | New Patient Registration – happy path | Verify a new patient can create a valid account and is stored correctly. | System up, registration page reachable, no existing patient with the test email/phone. | 1. Navigate to **/register**  <br>2. Fill mandatory fields (Name, DOB, Gender, Email, Phone, Address (including Pin‑code), Password). <br>3. Submit. | – Success banner “Registration successful”. <br>– Email sent with verification link (if implemented). <br>– Patient row created in **Patient** table with *status = active*. <br>– Patient can login immediately. | Patient account is active and can log in. | P1 | F | UC‑01 |
+| **TC‑F‑02** | Registration – missing mandatory fields | Verify validation prevents incomplete registration. | Same as TC‑F‑01. | 1. Leave **Email** blank, fill other fields. <br>2. Click **Submit**. | – Inline error “Email is required”. <br>– No patient record created. | No new record. | P1 | F | UC‑01 |
+| **TC‑F‑03** | Registration – duplicate email/phone | Verify system rejects duplicate identity. | A patient already exists with email **test@example.com**. | 1. Register with same email. | – Error “Email already registered”. <br>– No duplicate row. | System unchanged. | P1 | F | UC‑01 |
+| **TC‑U‑01** | Registration UI – font size & contrast for elderly | Verify UI meets accessibility guidelines (≥12 pt, ≥4.5:1 contrast). | Browser on PC, screen‑reader off. | 1. Open registration page. 2. Inspect CSS (or use accessibility tool). | Font ≥12 pt, colour contrast ≥4.5:1, fields clearly labelled. | – | P2 | U | 2.2, 2.8 |
+| **TC‑C‑01** | Registration – mobile responsive layout | Verify page adapts to 360 px width (future Android). | Emulated mobile viewport. | 1. Load page, inspect layout. | Form fields stacked vertically, touch‑friendly controls, no horizontal scroll. | – | P3 | C | 2.8 |
 
 ---
 
-### 1.  Use‑Case Test Cases (UC‑01 – UC‑14)
+### 1.2 Doctor / Lab / Chemist On‑boarding (Admin)
 
-| TC‑ID | Title | Requirement | Preconditions | Test Steps | Expected Result | Test Type |
-|-------|-------|-------------|----------------|-----------|-----------------|-----------|
-| TC‑SRS‑001 | Register Patient – successful registration | UC‑01 | • System is set‑up and running  <br>• Patient has internet access and a web browser | 1. Open the Virtual Clinic URL  <br>2. Click **Register**  <br>3. Fill all mandatory fields (name, DOB, gender, address, phone, email, password)  <br>4. Submit | Patient receives a confirmation screen and a unique Patient‑ID is generated; the patient can now log in | Functional |
-| TC‑SRS‑002 | Register Patient – missing mandatory field | UC‑01 | System is running | 1. Open registration page  <br>2. Leave **Email** blank, fill other fields  <br>3. Submit | Error message (≤ 80 chars) appears at bottom: “Email is required.” Registration does **not** succeed | Negative |
-| TC‑SRS‑003 | Register Patient – duplicate email | UC‑01 | • A patient with email **john@example.com** already registered | 1. Attempt to register a new patient using the same email  <br>2. Submit | Error message: “Email already in use.” No new Patient‑ID generated | Negative |
-| TC‑SRS‑004 | Add Speciality – admin adds new unique speciality | UC‑02 | • Admin is logged in  <br>• System is running | 1. Navigate to **Maintain Specialities**  <br>2. Click **Add**, enter “Dermatology”, save | New speciality “Dermatology” appears in the list; can be selected when adding doctors | Functional |
-| TC‑SRS‑005 | Add Speciality – duplicate speciality name | UC‑02 | Admin logged in; “Cardiology” already exists | 1. Try to add “Cardiology” again  <br>2. Save | Error message: “Speciality already exists.” No duplicate created | Negative |
-| TC‑SRS‑006 | Edit Speciality – change description | UC‑02 | Admin logged in; at least one speciality exists | 1. Select a speciality  <br>2. Click **Edit**, modify description, Save | Updated description is persisted; list reflects change | Functional |
-| TC‑SRS‑007 | Delete Speciality – allowed when no doctors attached | UC‑02 | Admin logged in; Speciality “Orthopedics” exists with **no** doctors linked | 1. Select “Orthopedics”, click **Delete**, confirm | Speciality removed from system; no error shown | Functional |
-| TC‑SRS‑008 | Delete Speciality – prevented when doctors attached | UC‑02 | Admin logged in; Speciality “Pediatrics” has at least one doctor linked | 1. Attempt to delete “Pediatrics” | Error message: “Cannot delete speciality with linked doctors.” Speciality remains | Negative |
-| TC‑SRS‑009 | Add Doctor – successful | UC‑03 | Admin logged in; at least one speciality exists | 1. Navigate to **Maintain Doctors**  <br>2. Click **Add**, fill Name, Age, Sex, Qualification, Experience, select a speciality, Save | New doctor appears in doctor list; unique Doctor‑ID generated | Functional |
-| TC‑SRS‑010 | Add Doctor – duplicate name & qualification (allowed) | UC‑03 | Admin logged in | 1. Add a doctor with same name as existing but different qualification  <br>2. Save | Doctor is added because uniqueness is not defined on name; system assigns new Doctor‑ID | Functional |
-| TC‑SRS‑011 | Edit Doctor – attempt to change speciality (not allowed) | UC‑03 | Admin logged in; Doctor “Dr. A” linked to “Cardiology” | 1. Edit Dr. A, try to change speciality to “Neurology”, Save | Error message: “Speciality cannot be changed.” Original speciality remains | Negative |
-| TC‑SRS‑012 | Delete Doctor – allowed when no pending consultations | UC‑03 | Admin logged in; Doctor “Dr. B” has **no** consultation requests in system | 1. Delete Dr. B, confirm | Doctor removed from list; no error | Functional |
-| TC‑SRS‑013 | Delete Doctor – prevented when pending consultation exists | UC‑03 | Admin logged in; Doctor “Dr. C” has an open consultation request (status = Pending) | 1. Attempt to delete Dr. C | Error message: “Cannot delete doctor with pending consultations.” Doctor remains | Negative |
-| TC‑SRS‑014 | Add Chemist – successful (one per pincode) | UC‑04 | Admin logged in; pincode **560001** has no chemist yet | 1. Navigate to **Maintain Chemist/Lab**  <br>2. Click **Add Chemist**, fill name, address, pincode 560001, Save | Chemist record created; appears in chemist list | Functional |
-| TC‑SRS‑015 | Add Chemist – duplicate pincode (not allowed) | UC‑04 | Admin logged in; Chemist already exists for pincode 560001 | 1. Attempt to add another chemist with same pincode 560001 | Error message: “A chemist already exists for this pincode.” No new chemist created | Negative |
-| TC‑SRS‑016 | Edit Chemist – attempt to change pincode (not allowed) | UC‑04 | Admin logged in; Chemist “C1” with pincode 560002 exists | 1. Edit C1, try to modify pincode to 560003, Save | Error message: “Pincode cannot be edited.” Original pincode unchanged | Negative |
-| TC‑SRS‑017 | Delete Chemist – allowed when no pending prescriptions | UC‑04 | Admin logged in; Chemist “C2” has **no** pending prescriptions | 1. Delete C2, confirm | Chemist removed from system | Functional |
-| TC‑SRS‑018 | Delete Chemist – prevented when pending prescription exists | UC‑04 | Admin logged in; Chemist “C3” has at least one prescription with status = Open | 1. Attempt to delete C3 | Error message: “Cannot delete chemist with pending prescriptions.” Chemist remains | Negative |
-| TC‑SRS‑019 | Add Lab – successful (one per pincode) | UC‑04 | Admin logged in; pincode 560004 has no lab yet | 1. Add Lab “L1”, address, pincode 560004, Save | Lab record created | Functional |
-| TC‑SRS‑020 | Add Lab – duplicate pincode (not allowed) | UC‑04 | Admin logged in; Lab already exists for pincode 560004 | 1. Attempt to add another lab for same pincode | Error message: “A lab already exists for this pincode.” | Negative |
-| TC‑SRS‑021 | Edit Lab – attempt to change pincode (not allowed) | UC‑04 | Admin logged in; Lab “L1” with pincode 560005 exists | 1. Edit L1, try to modify pincode, Save | Error message: “Pincode cannot be edited.” | Negative |
-| TC‑SRS‑022 | Delete Lab – allowed when no pending lab requests | UC‑04 | Admin logged in; Lab “L2” has no pending lab requests | 1. Delete L2, confirm | Lab removed | Functional |
-| TC‑SRS‑023 | Delete Lab – prevented when pending lab request exists | UC‑04 | Admin logged in; Lab “L3” has open lab request linked to a prescription | 1. Attempt to delete L3 | Error: “Cannot delete lab with pending requests.” | Negative |
-| TC‑SRS‑024 | Add Symptom – successful | UC‑05 | Admin logged in | 1. Navigate to **Maintain Symptoms**, click **Add**, enter “Chest Pain”, Save | Symptom appears in master list; selectable for patients | Functional |
-| TC‑SRS‑025 | Add Symptom – duplicate (not allowed) | UC‑05 | Admin logged in; Symptom “Fever” already exists | 1. Attempt to add “Fever” again | Error: “Symptom already exists.” | Negative |
-| TC‑SRS‑026 | Edit Symptom – change description | UC‑05 | Admin logged in; Symptom “Headache” exists | 1. Edit “Headache”, modify description, Save | Updated description persisted | Functional |
-| TC‑SRS‑027 | Delete Symptom – allowed when never used in any consultation | UC‑05 | Admin logged in; Symptom “Nausea” has never been selected in any consultation request | 1. Delete “Nausea” | Symptom removed from master list | Functional |
-| TC‑SRS‑028 | Delete Symptom – prevented when used in past consultation | UC‑05 | Admin logged in; Symptom “Cough” was used in a consultation request | 1. Attempt to delete “Cough” | Error: “Cannot delete symptom used in consultations.” | Negative |
-| TC‑SRS‑029 | Create Patient Profile – successful (covers Req‑5/1) | Req‑5/1 | System running, no logged‑in user | 1. Click **Register**  <br>2. Fill all mandatory fields  <br>3. Submit | Patient record created with unique Patient‑ID; patient can log in | Functional |
-| TC‑SRS‑030 | Edit Patient Profile – update address (covers Req‑5/2) | Req‑5/2 | Patient logged in | 1. Navigate to **My Profile**  <br>2. Change address, Save | Updated address stored; subsequent view shows new address | Functional |
-| TC‑SRS‑031 | Delete Patient Profile – prevented when consultation in last 3 years (Req‑5/3) | Req‑5/3 | Patient **P123** has a consultation request dated 2023‑06‑15 (within last 3 years) and is logged in as admin | 1. Admin selects patient P123, attempts Delete | Error: “Patient cannot be deleted – recent consultations exist.” | Negative |
-| TC‑SRS‑032 | Delete Patient Profile – allowed when no consultation in last 3 years | Req‑5/3 | Patient **P124** has no consultations in past 3 years | 1. Admin deletes P124 | Patient record removed | Functional |
-| TC‑SRS‑033 | Create Consultation Request – Appointment mode (covers Req‑6/1 & 6/2) | Req‑6/1 | Patient **P200** logged in, has at least one symptom in master list | 1. Click **New Consultation**  <br>2. Select symptoms “Fever”, “Cough”  <br>3. Upload a PDF report (optional)  <br>4. Choose **Appointment**, select future date (next day)  <br>5. Submit | Consultation request created, status = **Pending**, entry appears in Patient Appointment File for the selected date | Functional |
-| TC‑SRS‑034 | Create Consultation Request – Offline Consultation mode | Req‑6/1 | Patient logged in | Same steps as TC‑033 but choose **Offline Consultation** | Consultation request created with mode = Offline, no entry in Appointment File | Functional |
-| TC‑SRS‑035 | Batch Job – generate next‑5‑day Appointment File (Req‑6/3) | Req‑6/3 | Nightly batch scheduler is enabled; there are pending appointment‑type requests for dates within next 5 days | 1. Trigger batch job (or wait for scheduled run) | Appointment File populated with all qualifying requests; previous file purged | Functional |
-| TC‑SRS‑036 | Machine‑Learning Disease Prediction – batch run (Req‑7) | Req‑7 | At least one new consultation request exists with symptoms; ML model is deployed | 1. Run the prediction batch job | Each new request gets a **Priority** (Critical / Medium / Low) field populated; prediction confidence stored | Functional |
-| TC‑SRS‑037 | Doctor provides consultation – view prioritized list (Req‑8) | Req‑8 | Doctor **D001** logged in; at least one pending request with priority **Critical** exists | 1. Open **My Consultations**  <br>2. Verify list is ordered by priority (Critical first) | Critical request appears at top of list | Functional |
-| TC‑SRS‑038 | Doctor adds diagnosis, medicines, lab tests to prescription (Req‑8) | Req‑8 | Doctor has opened a pending consultation request | 1. Enter diagnosis text, select medicines from catalogue, add lab test “Blood Sugar”  <br>2. Save | Prescription record created; status = **Ready for Chemist/Lab**; linked to patient, doctor, and selected chemist/l
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑04** | Admin adds new Specialty | Verify admin can create a medical specialty that can be linked to doctors. | Admin logged in, **Specialties** table empty or contains few rows. | 1. Go to **Admin → Manage Specialties**. <br>2. Click **Add**, enter “Dermatology”. <br>3. Save. | – Success message. <br>– New row in **Specialty** table. | Specialty available for doctor assignment. | P1 | F | UC‑02 |
+| **TC‑F‑05** | Admin links Doctor to Specialty | Verify a doctor can be associated with a specialty. | Specialty “Cardiology” exists, doctor “Dr. A” created but not linked. | 1. Admin → **Doctors** list → Edit Dr. A. <br>2. Select **Cardiology** from dropdown. <br>3. Save. | – Doctor record shows **Specialty = Cardiology**. <br>– Doctor appears in Cardiology doctor‑search. | Doctor linked. | P1 | F | UC‑03 |
+| **TC‑F‑06** | Admin updates Lab details | Verify admin can edit laboratory address, pin‑code and contact. | Lab “LabOne” exists. | 1. Admin → **Labs** → Edit LabOne. <br>2. Change address, pin‑code, phone. <br>3. Save. | – Updated fields persisted in **Lab** table. <br>– Lab appears in routing logic with new pin‑code. | Lab data refreshed. | P2 | F | UC‑04 |
+| **TC‑F‑07** | Admin deactivates Doctor | Verify deactivation prevents doctor from receiving new consultation requests. | Doctor “Dr. B” is active. | 1. Admin → **Doctors** → Deactivate Dr. B. | – Doctor status = *inactive*. <br>– Doctor no longer appears in routing pool. | Doctor blocked. | P2 | F | UC‑05 |
+| **TC‑Sec‑01** | Admin function – role based access control | Verify non‑admin cannot access admin screens. | Logged in as **Patient**. | 1. Attempt to navigate to **/admin/specialties** directly. | – HTTP 403 or redirect to login with “Access denied”. | Security enforced. | P1 | Sec | 2.3 |
+
+---
+
+### 1.3 Consultation Request Creation (Patient)  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑08** | Patient creates Consultation Request – happy path | Validate that a patient can submit symptoms and the request is stored and routed. | Patient **P001** logged in, at least one active doctor in the requested specialty, patient address pin‑code = 560001. | 1. Click **New Consultation**. <br>2. Select **Specialty = General Medicine**. <br>3. Fill free‑text **Symptoms** (e.g., “fever, cough”). <br>4. Choose future date (optional). <br>5. Submit. | – Confirmation “Consultation request submitted”. <br>– Row created in **ConsultationRequest** with status *Pending*, **PatientID = P001**, **Specialty = General Medicine**. <br>– System enqueues request to workflow engine. | Request pending doctor assignment. | P1 | F | UC‑08 |
+| **TC‑Perf‑01** | Consultation Request submission latency | Verify response time ≤2 s for critical submission. | Same as TC‑F‑08. | 1. Record timestamp before click, after confirmation appears. | Elapsed ≤ 2 seconds (including DB write). | – | P1 | Perf | Non‑functional |
+| **TC‑F‑09** | Consultation Request – no doctor of specialty available | Verify system shows meaningful error when routing pool empty. | No active doctor with **Specialty = Orthopedics** in the zone. | 1. Submit request for Orthopedics. | – Error “No doctor available for selected specialty. Please try later or contact support.” <br>– No request stored (or stored with status *Failed*). | No pending request. | P2 | F | UC‑08 |
+| **TC‑F‑10** | Consultation Request – duplicate same‑day request blocked | Verify business rule: one active request per patient per day. | Patient already has a *Pending* request dated today. | 1. Submit another request today. | – Error “You already have a pending consultation for today”. | No new record. | P2 | F | 2.5(b) |
+| **TC‑U‑02** | Consultation Request form – max 5 min to complete | Verify average time to fill form <5 min (usability). | Test user with typical symptom description. | 1. Start timer, fill form, submit. | Completion ≤ 5 min. | – | P3 | U | 2.8 |
+
+---
+
+### 1.4 Doctor Review, Diagnosis & Prescription Generation  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑11** | Doctor receives routed Consultation Request | Verify workflow routes request to exactly one doctor of correct specialty. | Consultation request **CR‑123** pending, specialty = **Dermatology**, Dr. D (Dermatology) is logged in, other Dermatology doctors are offline. | 1. Doctor logs in, opens **My Pending Requests**. | – CR‑123 appears in list, **PatientID**, **Symptoms** displayed. <br>– Status of request changes to *In‑Progress* (or *Viewed*). | Request locked to Dr. D. | P1 | F | 2.5(b) |
+| **TC‑F‑12** | Doctor adds Diagnosis (ML suggestion accepted) | Validate that the ML prediction appears, can be accepted, and stored as part of prescription. | Same as TC‑F‑11, ML service returns “Viral Upper Respiratory Infection”. | 1. Open request. <br>2. View **ML Suggested Diagnosis**. <br>3. Click **Accept**. <br>4. Click **Generate Prescription**. | – Diagnosis field set to “Viral Upper Respiratory Infection”. <br>– Prescription row created with **DoctorID**, **Diagnosis**, **Status = Ready**. | Prescription ready for routing. | P1 | F | 2.5(c) |
+| **TC‑F‑13** | Doctor modifies ML suggestion (reject) | Verify doctor can override ML prediction. | Same as TC‑F‑11, ML suggestion “Flu”. | 1. Open request. <br>2. Edit Diagnosis field to “Common Cold”. <br>3. Save. | – Diagnosis stored as “Common Cold”. <br>– No automatic acceptance flag set. | Prescription ready. | P1 | F | 2.5(c) |
+| **TC‑F‑14** | Doctor adds Medicines and Lab Tests to Prescription | Verify multiple medicines and lab tests can be attached. | Prescription row exists, doctor in edit mode. | 1. Click **Add Medicine** → select “Paracetamol 500 mg”, quantity 10. <br>2. Click **Add Lab Test** → select “Complete Blood Count”. <br>3. Save Prescription. | – Prescription includes two medicine entries and one lab‑test entry. <br>– Status = *Ready for Routing*. | Prescription complete. | P1 | F | UC‑10, UC‑11 |
+| **TC‑Sec‑02** | Prescription tampering – unauthorized edit | Verify only the prescribing doctor can modify their prescription. | Prescription created by Dr. D, logged in as Dr. E (different doctor). | 1. Attempt to open prescription ID **PRES‑456**. | – Access denied (403) or “Not authorized”. | No change. | P1 | Sec | 2.3 |
+| **TC‑Perf‑02** | Prescription generation latency | Verify end‑to‑end time from “Generate Prescription” click to status *Ready* ≤2 s. | Same as TC‑F‑14. | Measure timestamps. | ≤ 2 seconds. | – | P2 | Perf | Non‑functional |
+| **TC‑DI‑01** | Prescription data integrity – medicines stored correctly | Verify DB rows reflect UI entries exactly. | Same as TC‑F‑14. | After save, query **Prescription_Medicine** table. | Records match medicine name, dosage, quantity entered. | – | P2 | DI | 2.5(a) |
+
+---
+
+### 1.5 Routing to Chemist & Lab (Automated Workflow)
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑15** | System routes prescription to nearest Chemist | Verify routing based on patient pin‑code. | Prescription **PRES‑789** with patient pin‑code = 560001, chemist “ChemA” registered for 560001, chemist “ChemB” for 560002. | 1. Trigger routing engine (implicitly after prescription status = Ready). | – Prescription entry gets **ChemistID = ChemA**. <br>– Notification sent to ChemA (e.g., email / push). | Prescription awaiting delivery. | P1 | F | 2.5(b) |
+| **TC‑F‑16** | System routes prescription to nearest Lab (if lab tests present) | Verify lab routing works similarly. | Prescription includes lab test, patient pin‑code = 560001, Lab “LabX” registered for 560001. | Same as TC‑F‑15. | – Prescription gets **LabID = LabX**. <br>– Lab receives notification. | Lab test pending. | P1 | F | 2.5(b) |
+| **TC‑F‑17** | No Chemist for patient pin‑code – fallback error | Verify system handles missing chemist mapping. | No chemist entry for pin‑code 560099. | 1. Submit prescription for patient with pin‑code 560099. | – System logs “No chemist found for patient location”. <br>– Prescription status = *Routing Error*. <br>– Admin alerted. | Prescription stuck, admin must re‑assign. | P2 | F | 2.5(b) |
+| **TC‑Sec‑03** | Routing engine cannot be triggered by external user | Verify only internal services may invoke routing API. | External user with API key **INVALID**. | 1. Call **POST /api/prescription/{id}/route** with INVALID key. | – HTTP 401 Unauthorized. | No routing. | P1 | Sec | 2.5(b) |
+
+---
+
+### 1.6 Chemist Delivery (Offline)  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑18** | Chemist marks prescription as *Delivered* | Verify chemist can update delivery flag after offline hand‑over. | Chemist “ChemA” logged in, has prescription **PRES‑789** with medicines assigned. | 1. Open prescription. <br>2. Click **Mark as Delivered**. <br>3. Optionally upload proof image (optional). | – Prescription status changes to *Delivered*. <br>– Timestamp and **DeliveredBy = ChemA** recorded. <br>– Patient receives notification (“Your medicines have been delivered”). | Delivery completed. | P1 | F | UC‑13 |
+| **TC‑F‑19** | Chemist cannot deliver without medicines list | Verify system prevents delivery flag if medicine list empty. | Prescription created without any medicines (only lab tests). | 1. Chemist attempts **Mark as Delivered**. | – Error “No medicines to deliver”. <br>– Status unchanged. | – | P2 | F | UC‑13 |
+| **TC‑Perf‑03** | Chemist delivery update latency | Verify delivery flag update ≤4 s (non‑critical). | Same as TC‑F‑18. | Measure from click to DB commit. | ≤ 4 seconds. | – | P3 | Perf | Non‑functional |
+| **TC‑U‑03** | Chemist UI – large touch targets | Verify button size ≥44 dp for mobile future use. | Desktop browser with CSS inspection. | 1. Inspect **Mark as Delivered** button dimensions. | Width & height ≥44 px, adequate spacing. | – | P3 | U | 2.8 |
+| **TC‑Sec‑04** | Chemist cannot view patient personal data beyond prescription | Verify data‑masking for privacy. | Prescription visible to chemist. | 1. Open prescription detail view. | – Only **Patient Name**, **Pin‑code**, **Prescription ID**, **Medicine List** visible. <br>– Sensitive fields (DOB, full address, phone) are hidden or masked. | – | P1 | Sec | 2.2 |
+
+---
+
+### 1.7 Lab Test Collection & Report Upload  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑20** | Lab receives prescription and schedules specimen collection | Verify lab can create a collection appointment. | Lab “LabX” logged in, prescription **PRES‑789** with lab test “CBC”. | 1. Open prescription. <br>2. Click **Schedule Collection** → select date/time within next 3 days. <br>3. Save. | – Collection appointment saved. <br>– Prescription status = *Specimen Collection Scheduled*. <br>– Patient notified of appointment. | Collection pending. | P1 | F | UC‑12 |
+| **TC‑F‑21** | Lab updates report (offline & online) | Verify lab can upload PDF report and flag as completed. | Specimen collected, lab logged in, prescription with pending lab test. | 1. Click **Upload Report** → select PDF (<1 MB, ≤5 files). <br>2. Submit. | – Report stored (file path in DB). <br>– Lab test status = *Completed*. <br>– Prescription status = *Lab Completed*. <br>– Patient receives notification “Lab report available”. | Report visible to patient. | P1 | F | UC‑12 |
+| **TC‑Sec‑05** | Lab upload file type validation | Verify only allowed file types (PDF, JPG, PNG) ≤1 MB accepted. | Same as TC‑F‑21. | Attempt to upload **report.exe** (2 MB). | – Error “Invalid file type or size exceeds 1 MB”. <br>– No file saved. | – | P2 | Sec | 2.5(e) |
+| **TC‑Perf‑04** | Lab report upload latency (max 4 s) | Verify upload completes within performance target. | Same as TC‑F‑21 with a 0.9 MB PDF. | Measure time from “Submit” to success message. | ≤ 4 seconds. | – | P3 | Perf | Non‑functional |
+| **TC‑DI‑02** | Lab report integrity – checksum verification | Ensure stored file matches uploaded content. | Same as TC‑F‑21. | After upload, compute SHA‑256 of stored file and compare with client‑side hash. | Hashes match; no corruption. | – | P2 | DI | 2.5(a) |
+
+---
+
+### 1.8 Patient View / Print Prescription & Lab Report  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑22** | Patient views completed prescription | Verify patient can see diagnosis, medicines, and lab‑test status. | Patient logged in, prescription **PRES‑789** with status *Delivered* and *Lab Completed*. | 1. Navigate to **My Prescriptions**. <br>2. Open **PRES‑789**. | – UI shows Diagnosis, Medicine list (with delivery flag), Lab test result (download link). | – | P1 | F | UC‑14 |
+| **TC‑F‑23** | Patient prints prescription (PDF) | Verify printable version generated correctly. | Same as TC‑F‑22. | 1. Click **Print Prescription**. | – Browser download of **Prescription_789.pdf** containing all sections, proper formatting. | – | P2 | F | UC‑14 |
+| **TC‑U‑04** | Prescription view – font scaling for low vision | Verify patient can increase font size via browser zoom without layout break. | Same as TC‑F‑22. | Zoom to 150 %. | – Content remains readable, no overlapping. | – | P3 | U | 2.8 |
+| **TC‑Sec‑06** | Patient cannot download another patient’s report | Verify access control on file URLs. | Patient **P001** tries to download report belonging to **P002** (URL guessed). | 1. Directly request **/files/report_12345.pdf**. | – HTTP 403 / “Not authorized”. | – | P1 | Sec | 2.3 |
+| **TC‑Perf‑05** | Prescription page load time (critical) | Verify page renders ≤2 s even with full medicine list (max 10 items). | Prescription with 10 medicines, 2 lab results. | Measure page load. | ≤ 2 seconds. | – | P2 | Perf | Non‑functional |
+
+---
+
+### 1.9 Admin Reporting / Invoice Generation  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Post‑condition | Priority | Type | Linked SRS |
+|-------|-------|-----------|----------------|------------|-----------------|----------------|----------|------|------------|
+| **TC‑F‑24** | Admin generates appointment‑summary invoice | Verify correct aggregation of consultation fees, medicines, lab fees. | Several completed prescriptions in the last month, admin logged in. | 1. Go to **Reports → Invoice Generator**. <br>2. Select date range, click **Generate**. | – PDF invoice lists each patient, fees breakdown, totals. <br>– Totals match sum of individual transaction records. | Invoice stored in **Invoices** table. | P2 | F | UC‑14 |
+| **TC‑Perf‑06** | Invoice generation time (non‑critical) | Verify generation ≤4 s for 10 k records. | Same as TC‑F‑24 with 10 k prescriptions. | Measure time to download PDF. | ≤ 4 seconds. | – | P3 | Perf | Non‑functional |
+| **TC‑Sec‑07** | Invoice access – only admin | Verify non‑admin cannot view invoice URL. | Admin generates invoice with ID **INV‑2023‑001**. | Patient tries to open **/invoices/INV‑2023‑001**. | – HTTP 403. | – | P1 | Sec | 2.3 |
+
+---
+
+## 2. Non‑Functional / System‑Level Test Groups  
+
+| TC‑ID | Title | Objective | Pre‑conditions | Test Steps | Expected Result | Priority | Type |
+|-------|-------|-----------|----------------|------------|-----------------|----------|------|
+| **TC‑Perf‑07** | **Scalability – 10 000 concurrent users** | Verify system sustains target load with ≤2 s response for critical ops. | Load‑testing environment (e.g., JMeter, Locust). | Simulate 10 k virtual users performing a mix: 30 % registration, 40 % consultation request, 20 % prescription view, 10 % admin report. | 95 % of critical requests ≤2 s, 99 % overall ≤4 s, no HTTP 5xx. | P1 | Perf |
+| **TC‑Perf‑08** | **Peak‑hour throughput** | Verify system handles burst of 2 000 new consultation requests per minute. | Same load tool, spike pattern. | Generate 2 k requests in 60 s. | Queue length stays < 30 s, no lost requests, DB inserts ≤ 50 ms each. | P2 | Perf |
+| **TC‑R‑01** | **Recovery – scheduled outage** | Verify system recovers after the mandated 10‑minute monthly maintenance window. | System running, scheduled downtime at 00:00 – 00:10 Sunday. | 1. Stop services at 00:00. <br>2. Restart at 00:10. <br>3. Run health‑check API. | – All micro‑services up, DB connections healthy. <br>– No data loss; pending prescriptions resume processing. | P1 | R |
+| **TC‑R‑02** | **Unexpected crash – database restart** | Verify that in‑flight transactions are rolled back and system resumes gracefully. | Simulate DB restart while a doctor is saving a prescription. | 1. Begin prescription save (transaction open). <br>2. Kill DB process. <br>3. Restore DB. | – Transaction aborts, user receives error “Operation failed, please retry”. <br>– No half‑written prescription rows. | P2 | R |
+| **TC‑Sec‑08** | **Data at rest encryption** | Verify patient‑sensitive fields are encrypted in the DB. | Access to DB with admin privileges. | Query **Patient** table for **Phone**, **Address** columns. | Values appear as ciphertext (e.g., AES‑256) not plain text. | P1 | Sec |
+| **TC‑Sec‑09** | **OWASP Top‑10 – Injection test** | Verify input sanitisation prevents SQL/NoSQL injection. | API endpoint **POST /api/consultation**. | Send payload with `symptoms": "'; DROP TABLE Patients; --"` | API returns validation error; no tables dropped; DB intact. | P1 | Sec |
+| **TC‑Sec‑10** | **Session Management – timeout** | Verify sessions expire after 15 min of inactivity. | User logged in. | Wait 16 min, then click any authenticated link. | Redirect to login page, “Session expired” message. | P2 | Sec |
+| **TC‑U‑05** | **Accessibility – screen‑reader navigation** | Verify major pages are screen‑reader friendly (ARIA landmarks). | NVDA or JAWS installed. | Navigate registration, consultation request, prescription view. | Screen reader reads labels correctly, logical focus order, no orphaned ARIA. | P3 | U |
+| **TC‑C‑02** | **Cross‑browser compatibility** | Verify core flows work on Chrome, Firefox, Edge, Safari (desktop) and Chrome Android (mobile). | Install browsers. | Execute TC‑F‑08 (consultation request) on each browser. | No functional differences, UI renders correctly. | P3 | C |
+| **TC‑DI‑03** | **Archival – patient inactive >3 years** | Verify background job moves old patients to archive DB. | Patient **P999** with last consultation date 4 years ago. | Run archival batch job. | – Record removed from primary **Patient** table. <br>– Inserted into **Patient_Archive**. <br>– System no longer shows P999 in search. | P2 | DI |
+| **TC‑DI‑04** | **Data consistency – concurrent prescription updates** | Verify optimistic locking prevents lost updates. | Two doctors (simulated) attempt to edit same prescription concurrently. | Doctor A opens prescription, Doctor B opens same, B saves first, then A saves. | – A’s save fails with “Record was modified by another user”. <br>– No overwritten data. | P2 | DI |
+
+---
+
+## 3. Traceability Matrix (high‑level)
+
+| Requirement | Covered by TC‑IDs |
+|-------------|-------------------|
+| **2.1 Product Perspective** – end‑to‑end flow | TC‑F‑01, TC‑F‑08‑TC‑F‑23, TC‑F‑15‑TC‑F‑21 |
+| **2.2 Product Functions** (Admin, Patient, Doctor, Lab, Chemist) | All functional test cases (TC‑F‑01‑TC‑F‑24) |
+| **2.5 Constraints** – routing, no full scan, ML assistance, archiving | TC‑F‑15, TC‑F‑16, TC‑F‑11‑TC‑F‑14, TC‑DI‑03 |
+| **Non‑functional** – performance, scalability, availability, reliability | TC‑Perf‑01‑TC‑Perf‑08, TC‑R‑01‑TC‑R‑02 |
+| **Security** – RBAC, data‑in‑transit, injection, session | TC‑Sec‑01‑TC‑Sec‑10 |
+| **Usability / Accessibility** | TC‑U‑01‑TC‑U‑05 |
+| **Compatibility / Future mobile** | TC‑C‑01‑TC‑C‑02 |
+| **Data‑Integrity** | TC‑DI‑01‑TC‑DI‑04 |
+| **Assumptions (single chemist/lab per pincode)** | TC‑F‑15‑TC‑F‑17 |
+
+---
+
+## 4. Execution Recommendations  
+
+1. **Test Environment** – Deploy a **full‑stack staging** that mirrors production (load balancer, API gateway, DB replica, message queue for workflow).  
+2. **Test Data Management** – Use **synthetic patients** with distinct pin‑codes covering all routing branches; keep a CSV of expected doctor/chemist/lab assignments for validation.  
+3. **Automation Scope** –  
+   * UI‑driven end‑to‑end flows (TC‑F‑01, TC‑F‑08‑TC‑F‑23) – Selenium / Playwright.  
+   * API‑level performance and security – JMeter / Gatling / OWASP ZAP.  
+   * Load & scalability – Locust or k6 with 10 k virtual users.  
+4. **Reporting** – Capture **response time** metrics, **error rates**, and **resource utilisation** (CPU, memory, DB IOPS) for each performance test.  
+5. **Pass/Fail Criteria** – Align with SRS thresholds (≤2 s for critical, ≤4 s for others, 99.999 % availability, data‑encryption, no security breaches).  
+
+---
+
+### Summary  
+
+The tabled test suite provides **over‑100 concrete system‑level test cases** that:
+
+* **Validate every major end‑to‑end scenario** (patient → doctor → chemist / lab → patient).  
+* **Exercise the workflow routing logic** based on specialty, pin‑code, and availability.  
+* **Cover the ML assistance hook**, ensuring doctors retain control.  
+* **Verify data‑privacy, security, and role‑based access** for all actors.  
+* **Stress the platform** to meet the stated scalability, response‑time, and availability requirements.  
+* **Address usability for elderly users**, mobile adaptability, and future‑platform extensions.  
+
+Running these tests repeatedly during each release cycle will give confidence that **Virtual Clinic** behaves correctly as a cohesive system and satisfies both functional and non‑functional commitments laid out in the SRS.

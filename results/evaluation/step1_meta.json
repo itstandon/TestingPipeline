@@ -1,0 +1,46 @@
+{
+  "step": "step1_code_testcases",
+  "model": "openai/gpt-oss-120b",
+  "github_repo": "mishal23/virtual-clinic",
+  "files_fetched": [
+    "models.py",
+    "forms.py",
+    "urls.py",
+    "views_home.py",
+    "views_profile.py",
+    "views_prescription.py",
+    "views_medtest.py",
+    "views_medicalinfo.py",
+    "views_appointment.py",
+    "views_admin.py",
+    "views_message.py",
+    "views_api.py"
+  ],
+  "file_groups": [
+    [
+      "models.py"
+    ],
+    [
+      "forms.py"
+    ],
+    [
+      "urls.py",
+      "views_home.py",
+      "views_profile.py"
+    ],
+    [
+      "views_prescription.py",
+      "views_medtest.py",
+      "views_medicalinfo.py"
+    ],
+    [
+      "views_appointment.py",
+      "views_message.py",
+      "views_api.py"
+    ],
+    [
+      "views_admin.py"
+    ]
+  ],
+  "generated_at": "2026-09-26T08:21:54.717540+00:00"
+}

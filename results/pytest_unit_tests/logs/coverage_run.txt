@@ -1,0 +1,117 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-9.1.1, pluggy-1.6.0
+django: version: 5.2.17, settings: virtualclinic.settings (from ini)
+rootdir: /home2/arushi.tandon/pipeline
+configfile: pytest.ini
+plugins: cov-7.1.0, django-4.14.0, anyio-4.14.2
+collected 30 items
+
+results/pytest_unit_tests/models/test_models.py ..........F.             [ 40%]
+results/pytest_unit_tests/forms/test_forms.py .......F......F.FF         [100%]
+
+=================================== FAILURES ===================================
+____________________ test_medicaltest_get_populated_fields _____________________
+
+    @pytest.mark.django_db
+    def test_medicaltest_get_populated_fields():
+        """MedicalTest.get_populated_fields returns all defined fields."""
+        user_doc = get_user_model().objects.create_user(username="doc5", password="test")
+        user_pat = get_user_model().objects.create_user(username="pat5", password="test")
+        profile_doc = models.Profile.objects.create(firstname="Doc", lastname="Five")
+        profile_pat = models.Profile.objects.create(firstname="Pat", lastname="Five")
+        doc_acc = models.Account.objects.create(role=models.Account.ACCOUNT_DOCTOR, profile=profile_doc, user=user_doc)
+        pat_acc = models.Account.objects.create(role=models.Account.ACCOUNT_PATIENT, profile=profile_pat, user=user_pat)
+    
+        loc = models.Location.objects.create(city="Hyderabad", zip="500001", state="Telangana", address="99 Blvd")
+        hosp = models.Hospital.objects.create(name="Metro Hospital", phone="7778889999", location=loc)
+    
+        test = models.MedicalTest.objects.create(
+            name="Blood Test",
+            date=date.today(),
+            hospital=hosp,
+            description="Standard blood panel",
+            doctor=doc_acc,
+            patient=pat_acc,
+            private=False,
+            completed=True,
+        )
+        fields = test.get_populated_fields()
+        assert fields["name"] == "Blood Test"
+        assert fields["date"] == date.today()
+        assert fields["hospital"] is hosp
+        assert fields["description"] == "Standard blood panel"
+        assert fields["doctor"] is doc_acc
+        assert fields["patient"] is pat_acc
+        assert fields["private"] is False
+        assert fields["completed"] is True
+        # Image fields default to None
+        for img_field in ("image1", "image2", "image3", "image4", "image5"):
+>           assert fields[img_field] is None
+E           assert <FieldFile: None> is None
+
+results/pytest_unit_tests/models/test_models.py:278: AssertionError
+__________________ test_basic_form_disable_and_error_handling __________________
+
+    def test_basic_form_disable_and_error_handling():
+        """BasicForm methods correctly manipulate field attributes and errors."""
+>       class SampleForm(BasicForm):
+
+results/pytest_unit_tests/forms/test_forms.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    class SampleForm(BasicForm):
+>       name = forms.CharField(max_length=10)
+E       NameError: name 'forms' is not defined
+
+results/pytest_unit_tests/forms/test_forms.py:90: NameError
+____________________ test_appointment_form_end_before_start ____________________
+
+    def test_appointment_form_end_before_start():
+        """AppointmentForm.clean adds error when endTime is before startTime."""
+        # Minimal objects for required ModelChoiceFields; use existing objects or create placeholders
+>       symptom = Symptom.objects.create(name="Headache", description="Pain")
+E       NameError: name 'Symptom' is not defined
+
+results/pytest_unit_tests/forms/test_forms.py:186: NameError
+__________ test_employee_registration_form_non_doctor_with_speciality __________
+
+    def test_employee_registration_form_non_doctor_with_speciality():
+        """EmployeeRegistrationForm.clean errors when a non‑doctor provides a speciality."""
+>       speciality = Speciality.objects.create(name="Cardiology", description="Heart")
+E       NameError: name 'Speciality' is not defined
+
+results/pytest_unit_tests/forms/test_forms.py:231: NameError
+_________________ test_employee_registration_form_valid_doctor _________________
+
+    def test_employee_registration_form_valid_doctor():
+        """EmployeeRegistrationForm.clean passes for a doctor with a speciality."""
+>       speciality = Speciality.objects.create(name="Dermatology", description="Skin")
+E       NameError: name 'Speciality' is not defined
+
+results/pytest_unit_tests/forms/test_forms.py:250: NameError
+=============================== warnings summary ===============================
+results/pytest_unit_tests/models/test_models.py::test_appointment_get_populated_fields
+  /home2/arushi.tandon/pipeline/venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField Appointment.startTime received a naive datetime (2026-09-26 15:12:35.292063) while time zone support is active.
+    warnings.warn(
+
+results/pytest_unit_tests/models/test_models.py::test_appointment_get_populated_fields
+  /home2/arushi.tandon/pipeline/venv/lib/python3.10/site-packages/django/db/models/fields/__init__.py:1671: RuntimeWarning: DateTimeField Appointment.endTime received a naive datetime (2026-09-26 16:12:35.292063) while time zone support is active.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.10.12-final-0 _______________
+
+Name                              Stmts   Miss  Cover   Missing
+---------------------------------------------------------------
+virtual-clinic/server/forms.py      339     71    79%   48, 60, 156-165, 187-194, 197, 212-218, 262, 266, 289-296, 343-355, 358, 394-401, 423-430, 442, 469-470
+virtual-clinic/server/models.py     216      2    99%   110, 112
+---------------------------------------------------------------
+TOTAL                               555     73    87%
+=========================== short test summary info ============================
+FAILED results/pytest_unit_tests/models/test_models.py::test_medicaltest_get_populated_fields
+FAILED results/pytest_unit_tests/forms/test_forms.py::test_basic_form_disable_and_error_handling
+FAILED results/pytest_unit_tests/forms/test_forms.py::test_appointment_form_end_before_start
+FAILED results/pytest_unit_tests/forms/test_forms.py::test_employee_registration_form_non_doctor_with_speciality
+FAILED results/pytest_unit_tests/forms/test_forms.py::test_employee_registration_form_valid_doctor
+================== 5 failed, 25 passed, 2 warnings in 10.84s ===================

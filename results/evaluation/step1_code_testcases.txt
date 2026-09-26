@@ -1,254 +1,1715 @@
+# ============================================================
+# Files: ['models.py']
+# ============================================================
+
+**Test‑Case Suite – Virtual Clinic (models only)**  
+*Only the code shown in the prompt is considered. No view, form or URL definitions exist, therefore the suite concentrates on every model, its fields, defaults, choices, relationship constraints and helper methods.*
+
 ---  
-TC-ID          : TC-CODE-001  
-Title          : Verify `Speciality.__str__` returns the name field  
-Target         : Model – Speciality  
-Preconditions  :  
-  - A `Speciality` instance is created with `name="Cardiology"` and any description.  
-Test Steps     :  
-  1. Call `str(speciality_instance)`.  
-Expected Result: The returned string is exactly `"Cardiology"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-001  
+**Title**          : Create a `Speciality` with valid data  
+**Target**         : `Speciality` model – field `name`, `description` and `__str__`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Instantiate `Speciality(name="Cardiology", description="Heart related specialty")`.  
+2. Save the instance to the DB.  
+3. Retrieve the object.  
+4. Call `str()` on the instance.  
+**Expected Result**  
+- Object is persisted with the given `name` and `description`.  
+- `str(speciality)` returns `"Cardiology"`.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-002  
-Title          : Verify `Symptom.__str__` returns the name field  
-Target         : Model – Symptom  
-Preconditions  :  
-  - A `Symptom` instance is created with `name="Headache"` and any description.  
-Test Steps     :  
-  1. Call `str(symptom_instance)`.  
-Expected Result: The returned string is exactly `"Headache"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-002  
+**Title**          : `Speciality` max‑length enforcement on `name`  
+**Target**         : `Speciality.name` (max_length=50)  
+**Preconditions**  : None  
+**Test Steps**     
+1. Create a string of 51 characters.  
+2. Attempt to create `Speciality(name=long_string, description="x")`.  
+**Expected Result**  
+- Django raises `DataError` / `IntegrityError` on save because `name` exceeds `max_length`.  
+**Test Type**      : Negative  
+
 ---  
-TC-ID          : TC-CODE-003  
-Title          : Verify `Location.__str__` returns the address field  
-Target         : Model – Location  
-Preconditions  :  
-  - A `Location` instance is created with `address="123 Main St"` (other fields can be any valid strings).  
-Test Steps     :  
-  1. Call `str(location_instance)`.  
-Expected Result: The returned string is exactly `"123 Main St"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-003  
+**Title**          : Create a `Symptom` and verify `__str__`  
+**Target**         : `Symptom` model  
+**Preconditions**  : None  
+**Test Steps**     
+1. `sym = Symptom.objects.create(name="Fever", description="High temperature")`.  
+2. Retrieve and evaluate `str(sym)`.  
+**Expected Result**  
+- `str(sym)` equals `"Fever"`.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-004  
-Title          : Verify default country for `Location` is “India”  
-Target         : Model – Location  
-Preconditions  :  
-  - A `Location` instance is created **without** specifying the `country` field.  
-Test Steps     :  
-  1. Retrieve `location_instance.country`.  
-Expected Result: The value is `"India"`.  
-Test Type      : Boundary  
+**TC-ID**          : TC-CODE-004  
+**Title**          : `Symptom` max‑length enforcement on `description`  
+**Target**         : `Symptom.description` (max_length=100)  
+**Preconditions**  : None  
+**Test Steps**     
+1. Build a 101‑character string.  
+2. Attempt to save a `Symptom` with that description.  
+**Expected Result**  
+- Save fails with a length‑validation error.  
+**Test Type**      : Negative  
+
 ---  
-TC-ID          : TC-CODE-005  
-Title          : Verify `Hospital.__str__` returns the name field  
-Target         : Model – Hospital  
-Preconditions  :  
-  - A `Location` instance exists.  
-  - A `Hospital` instance is created with `name="City Hospital"` and the above location.  
-Test Steps     :  
-  1. Call `str(hospital_instance)`.  
-Expected Result: The returned string is exactly `"City Hospital"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-005  
+**Title**          : Create a `Location` with all required fields  
+**Target**         : `Location` model – all fields and `__str__`  
+**Preconditions**  : None  
+**Test Steps**     
+1. `loc = Location.objects.create(city="Bengaluru", zip="560001", state="Karnataka", country="India", address="123 Main St")`.  
+2. Retrieve and check each field matches the input.  
+3. Verify `str(loc)` returns `"123 Main St"`.  
+**Expected Result**  
+- All fields persisted correctly; `__str__` returns address.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-006  
-Title          : Verify `Profile.to_gender` returns correct gender label  
-Target         : Model – Profile (static method)  
-Preconditions  : None  
-Test Steps     :  
-  1. Call `Profile.to_gender('M')`.  
-  2. Call `Profile.to_gender('F')`.  
-  3. Call `Profile.to_gender('X')`.  
-Expected Result:  
-  - Step 1 returns `"Male"`.  
-  - Step 2 returns `"Female"`.  
-  - Step 3 returns `"None"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-006  
+**Title**          : `Location` default country value  
+**Target**         : `Location.country` (default="India")  
+**Preconditions**  : None  
+**Test Steps**     
+1. Create `Location` without specifying `country`.  
+2. Save and retrieve the instance.  
+**Expected Result**  
+- `country` field equals `"India"`.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-007  
-Title          : Verify `Profile.__str__` concatenates first and last name (including blanks)  
-Target         : Model – Profile  
-Preconditions  :  
-  - A `Profile` instance with `firstname="John"` and `lastname="Doe"` exists.  
-Test Steps     :  
-  1. Call `str(profile_instance)`.  
-Expected Result: The string `"John Doe"` is returned.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-007  
+**Title**          : `Location` field length limits (city, zip, state, address)  
+**Target**         : `Location` fields (`max_length=50`)  
+**Preconditions**  : None  
+**Test Steps**     
+1. Attempt to save a `Location` where any of the fields exceeds 50 characters.  
+**Expected Result**  
+- Save raises a validation error for the offending field.  
+**Test Type**      : Negative  
+
 ---  
-TC-ID          : TC-CODE-008  
-Title          : Verify `Profile.get_populated_fields` includes only non‑default fields  
-Target         : Model – Profile  
-Preconditions  :  
-  - A `Profile` instance is created with:  
-    * `firstname="Alice"`  
-    * `lastname="Smith"`  
-    * `sex="F"`  
-    * `birthday=date(1990,5,20)`  
-    * `phone="1234567890"`  
-    * `allergies="Peanuts"`  
-    * `prefHospital` set to a valid `Hospital` object  
-    * `primaryCareDoctor` set to a valid `Account` object  
-    * `speciality` set to a valid `Speciality` object  
-Test Steps     :  
-  1. Call `profile_instance.get_populated_fields()`.  
-Expected Result: The returned dictionary contains **all** keys listed above with their exact values.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-008  
+**Title**          : Create a `Hospital` with linked `Location` (OneToOne)  
+**Target**         : `Hospital` model – foreign key relationship and `__str__`  
+**Preconditions**  : A valid `Location` instance exists.  
+**Test Steps**     
+1. `hospital = Hospital.objects.create(name="City Hospital", phone="9876543210", location=loc)`.  
+2. Retrieve and assert `hospital.location` is the previously created `Location`.  
+3. Verify `str(hospital)` returns `"City Hospital"`.  
+**Expected Result**  
+- Hospital correctly linked to its `Location`; `__str__` works.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-009  
-Title          : Verify `Profile.get_populated_fields` omits fields with default/blank values  
-Target         : Model – Profile  
-Preconditions  :  
-  - A `Profile` instance is created with only `firstname="Bob"`; all other fields left as defaults (`None` or default date).  
-Test Steps     :  
-  1. Call `profile_instance.get_populated_fields()`.  
-Expected Result: The returned dictionary contains only the key `'firstname'` with value `"Bob"`; no other keys are present.  
-Test Type      : Negative / Boundary  
+**TC-ID**          : TC-CODE-009  
+**Title**          : `Hospital.phone` length enforcement (max_length=10)  
+**Target**         : `Hospital.phone`  
+**Preconditions**  : A valid `Location`.  
+**Test Steps**     
+1. Attempt to create a `Hospital` with a phone number longer than 10 characters.  
+**Expected Result**  
+- Validation error on `phone` length.  
+**Test Type**      : Negative  
+
 ---  
-TC-ID          : TC-CODE-010  
-Title          : Verify `Account.to_name` maps integer role to string name  
-Target         : Model – Account (static method)  
-Preconditions  : None  
-Test Steps     :  
-  1. Call `Account.to_name(20)`.  
-  2. Call `Account.to_name(99)` (non‑existent).  
-Expected Result:  
-  - Step 1 returns `"Doctor"`.  
-  - Step 2 returns `"None"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-010  
+**Title**          : `Profile` default birthday (year 1000) handling in `get_populated_fields`  
+**Target**         : `Profile.get_populated_fields`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Create a `Profile` without specifying `birthday`.  
+2. Call `profile.get_populated_fields()`.  
+**Expected Result**  
+- The returned dictionary **does not** contain a `birthday` key because the default year is 1000.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-011  
-Title          : Verify `Account.to_value` maps string role to integer value (case‑insensitive)  
-Target         : Model – Account (static method)  
-Preconditions  : None  
-Test Steps     :  
-  1. Call `Account.to_value('doctor')`.  
-  2. Call `Account.to_value('ADMIN')`.  
-  3. Call `Account.to_value('unknown_role')`.  
-Expected Result:  
-  - Step 1 returns `20`.  
-  - Step 2 returns `30`.  
-  - Step 3 returns `0`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-011  
+**Title**          : `Profile` field inclusion logic in `get_populated_fields` (non‑null values)  
+**Target**         : `Profile.get_populated_fields`  
+**Preconditions**  : A `Hospital` and an `Account` (as doctor) exist.  
+**Test Steps**     
+1. Create a `Profile` filling all optional fields (`firstname`, `lastname`, `sex='M'`, `birthday` = today, `phone='1234567890'`, `allergies='Peanuts'`, `prefHospital=hos`, `primaryCareDoctor=doc`, `speciality=spec`).  
+2. Invoke `get_populated_fields()`.  
+**Expected Result**  
+- Dictionary contains keys for every field populated above, with exact values.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-012  
-Title          : Verify `Account.__str__` prefixes “Dr.” for doctor role  
-Target         : Model – Account  
-Preconditions  :  
-  - A `Profile` instance with `firstname="Emma"` and `lastname="Brown"` exists.  
-  - A `User` instance exists (can be Django’s built‑in user).  
-  - An `Account` instance is created with `role=Account.ACCOUNT_DOCTOR`, linking the above profile and user.  
-Test Steps     :  
-  1. Call `str(account_instance)`.  
-Expected Result: The string returned is `"Dr. Emma Brown"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-012  
+**Title**          : `Profile` handling of empty optional fields in `get_populated_fields`  
+**Target**         : `Profile.get_populated_fields`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Create a `Profile` leaving all optional fields blank/null.  
+2. Call `get_populated_fields()`.  
+**Expected Result**  
+- Returned dict is empty (`{}`) because none of the fields meet the “is not None” or non‑default birthday condition.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-013  
-Title          : Verify `Account.__str__` for non‑doctor roles does not add prefix  
-Target         : Model – Account  
-Preconditions  :  
-  - Same as TC‑012 but `role=Account.ACCOUNT_PATIENT`.  
-Test Steps     :  
-  1. Call `str(account_instance)`.  
-Expected Result: The string returned is `"Emma Brown"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-013  
+**Title**          : `Profile.__str__` concatenates first and last name (including blank values)  
+**Target**         : `Profile.__str__`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Create a `Profile` with `firstname="John"` and `lastname="Doe"`.  
+2. Evaluate `str(profile)`.  
+3. Create another `Profile` with both names blank.  
+4. Evaluate `str(profile2)`.  
+**Expected Result**  
+- First case returns `"John Doe"`.  
+- Second case returns `" "` (single space) – reflects concatenation of empty strings.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-014  
-Title          : Verify `Action.to_name` returns correct description for known action code  
-Target         : Model – Action (static method)  
-Preconditions  : None  
-Test Steps     :  
-  1. Call `Action.to_name(Action.ACTION_APPOINTMENT)`.  
-Expected Result: Returns `"Appointment"`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-014  
+**Title**          : `Profile.to_gender` returns correct label for valid key  
+**Target**         : `Profile.to_gender` static method  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `Profile.to_gender('M')`.  
+2. Call `Profile.to_gender('F')`.  
+**Expected Result**  
+- Returns `"Male"` for `'M'` and `"Female"` for `'F'`.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-015  
-Title          : Verify `Action.to_name` returns “None” for unknown action code  
-Target         : Model – Action (static method)  
-Preconditions  : None  
-Test Steps     :  
-  1. Call `Action.to_name(999)`.  
-Expected Result: Returns `"None"`.  
-Test Type      : Negative  
+**TC-ID**          : TC-CODE-015  
+**Title**          : `Profile.to_gender` returns `"None"` for unknown key  
+**Target**         : `Profile.to_gender`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `Profile.to_gender('X')`.  
+**Expected Result**  
+- Returns `"None"`.  
+**Test Type**      : Negative  
+
 ---  
-TC-ID          : TC-CODE-016  
-Title          : Verify `Action.to_value` maps action description to integer (case‑insensitive)  
-Target         : Model – Action (static method)  
-Preconditions  : None  
-Test Steps     :  
-  1. Call `Action.to_value('prescription')`.  
-  2. Call `Action.to_value('MeDiCaL InFo')`.  
-  3. Call `Action.to_value('nonexistent')`.  
-Expected Result:  
-  - Step 1 returns `6`.  
-  - Step 2 returns `8`.  
-  - Step 3 returns `0`.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-016  
+**Title**          : `Account.to_name` maps role integer to string  
+**Target**         : `Account.to_name`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `Account.to_name(Account.ACCOUNT_DOCTOR)`.  
+2. Call `Account.to_name(999)`.  
+**Expected Result**  
+- First call returns `"Doctor"`.  
+- Second call returns `"None"`.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-017  
-Title          : Verify default values for `Appointment` fields (`status`, `appointment_type`)  
-Target         : Model – Appointment  
-Preconditions  :  
-  - Valid `Account` objects for doctor and patient.  
-  - A `Symptom` and `Hospital` instance exist.  
-  - An `Appointment` is created **without** specifying `status` or `appointment_type`.  
-Test Steps     :  
-  1. Retrieve `appointment_instance.status`.  
-  2. Retrieve `appointment_instance.appointment_type`.  
-Expected Result:  
-  - `status` equals `"Active"`.  
-  - `appointment_type` equals `"Offline"`.  
-Test Type      : Boundary  
+**TC-ID**          : TC-CODE-017  
+**Title**          : `Account.to_value` maps role name (case‑insensitive) to integer  
+**Target**         : `Account.to_value`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `Account.to_value('doctor')`.  
+2. Call `Account.to_value('ADMIN')`.  
+3. Call `Account.to_value('unknownrole')`.  
+**Expected Result**  
+- Returns `20` for `'doctor'`, `30` for `'ADMIN'`, and `0` for unknown role.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-018  
-Title          : Verify `Appointment.get_populated_fields` returns all defined fields  
-Target         : Model – Appointment  
-Preconditions  :  
-  - Fully populated `Appointment` instance (doctor, patient, symptom, description, hospital, appointment_type, startTime, endTime).  
-Test Steps     :  
-  1. Call `appointment_instance.get_populated_fields()`.  
-Expected Result: Dictionary contains keys: `doctor`, `patient`, `symptom`, `description`, `hospital`, `appointment_type`, `startTime`, `endTime` with values matching the instance.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-018  
+**Title**          : `Account.__str__` for doctor role includes “Dr.” prefix  
+**Target**         : `Account.__str__`  
+**Preconditions**  : A `Profile` with name “Alice Smith” exists.  
+**Test Steps**     
+1. Create `Account` with `role=Account.ACCOUNT_DOCTOR` linking to the profile.  
+2. Evaluate `str(account)`.  
+**Expected Result**  
+- Returns `"Dr. Alice Smith"`.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-019  
-Title          : Verify default boolean flags for `Message` (`sender_deleted`, `target_deleted`) are False  
-Target         : Model – Message  
-Preconditions  :  
-  - Two `Account` objects (sender, target) exist.  
-  - A `Message` is created with only required fields (`header`, `body`).  
-Test Steps     :  
-  1. Retrieve `message_instance.sender_deleted`.  
-  2. Retrieve `message_instance.target_deleted`.  
-Expected Result: Both fields are `False`.  
-Test Type      : Boundary  
+**TC-ID**          : TC-CODE-019  
+**Title**          : `Account.__str__` for non‑doctor role returns plain name  
+**Target**         : `Account.__str__`  
+**Preconditions**  : Same profile as above.  
+**Test Steps**     
+1. Create `Account` with `role=Account.ACCOUNT_PATIENT`.  
+2. Evaluate `str(account)`.  
+**Expected Result**  
+- Returns `"Alice Smith"` (no “Dr.” prefix).  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-020  
-Title          : Verify `Notification` defaults – unread and timestamps handling  
-Target         : Model – Notification  
-Preconditions  :  
-  - An `Account` exists.  
-  - A `Notification` is created with only `account` and `message`.  
-Test Steps     :  
-  1. Verify `notification_instance.read` is `False`.  
-  2. Verify `notification_instance.read_timestamp` is `None`.  
-  3. Verify `notification_instance.sent_timestamp` is automatically set (non‑null).  
-Expected Result: Steps 1‑3 are all true.  
-Test Type      : Functional / Boundary  
+**TC-ID**          : TC-CODE-020  
+**Title**          : `Action.to_name` maps integer to action name  
+**Target**         : `Action.to_name`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `Action.to_name(Action.ACTION_MEDTEST)`.  
+2. Call `Action.to_name(999)`.  
+**Expected Result**  
+- First returns `"Medical Test"`; second returns `"None"`.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-021  
-Title          : Verify `Prescription.get_populated_fields` returns all fields correctly  
-Target         : Model – Prescription  
-Preconditions  :  
-  - Valid `Account` objects for patient and doctor.  
-  - A `Prescription` instance is created with all fields populated (`date`, `medication`, `strength`, `instruction`, `refill`, `active`).  
-Test Steps     :  
-  1. Call `prescription_instance.get_populated_fields()`.  
-Expected Result: Dictionary contains exactly the keys `patient`, `doctor`, `date`, `medication`, `strength`, `instruction`, `refill`, `active` with values matching the instance.  
-Test Type      : Functional  
+**TC-ID**          : TC-CODE-021  
+**Title**          : `Action.to_value` maps action name (case‑insensitive) to integer  
+**Target**         : `Action.to_value`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `Action.to_value('appointment')`.  
+2. Call `Action.to_value('MESSAGE')`.  
+3. Call `Action.to_value('invalid')`.  
+**Expected Result**  
+- Returns `4`, `7`, and `0` respectively.  
+**Test Type**      : Functional  
+
 ---  
-TC-ID          : TC-CODE-022  
-Title          : Verify `MedicalInfo.to_blood` maps blood type code to readable string  
-Target         : Model – MedicalInfo (static method)  
-Preconditions  : None  
-Test Steps     :  
-  1. Call `MedicalInfo.to_blood('A+')`.  
-  2. Call `MedicalInfo.to_blood('O-')`.  
-  3. Call `MedicalInfo.to_blood('X')`.
+**TC-ID**          : TC-CODE-022  
+**Title**          : Create an `Action` and verify auto‑timestamp and relation  
+**Target**         : `Action` model – fields `timePerformed`, `account`  
+**Preconditions**  : An `Account` instance exists.  
+**Test Steps**     
+1. Record current datetime `t0`.  
+2. Create `Action.objects.create(type=Action.ACTION_ACCOUNT, description='test', account=acct)`.  
+3. Retrieve the object and compare `timePerformed` with `t0`.  
+**Expected Result**  
+- `timePerformed` is set automatically and is ≥ `t0`.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-023  
+**Title**          : `Appointment` default values for `status` and `appointment_type`  
+**Target**         : `Appointment` model – defaults  
+**Preconditions**  : Valid `Account` objects for doctor & patient, a `Symptom`, a `Hospital`.  
+**Test Steps**     
+1. Create an `Appointment` without specifying `status` or `appointment_type`.  
+2. Retrieve the object.  
+**Expected Result**  
+- `status` equals `"Active"` and `appointment_type` equals `"Offline"`.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-024  
+**Title**          : `Appointment.get_populated_fields` returns all fields correctly  
+**Target**         : `Appointment.get_populated_fields`  
+**Preconditions**  : Fully populated `Appointment` instance.  
+**Test Steps**     
+1. Call `appointment.get_populated_fields()`.  
+**Expected Result**  
+- Dictionary contains keys: `doctor`, `patient`, `symptom`, `description`, `hospital`, `appointment_type`, `startTime`, `endTime` with exact stored values.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-025  
+**Title**          : `Message` creation and default delete flags  
+**Target**         : `Message` model – `sender_deleted`, `target_deleted` defaults  
+**Preconditions**  : Two `Account` objects (sender, target).  
+**Test Steps**     
+1. Create a `Message` with required fields only.  
+2. Retrieve and inspect `sender_deleted` and `target_deleted`.  
+**Expected Result**  
+- Both flags are `False` by default.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-026  
+**Title**          : `Message` timestamp auto‑set on creation  
+**Target**         : `Message.timestamp`  
+**Preconditions**  : Sender & target accounts.  
+**Test Steps**     
+1. Record `t0`.  
+2. Save a new `Message`.  
+3. Verify `message.timestamp` ≥ `t0`.  
+**Expected Result**  
+- Timestamp correctly auto‑populated.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-027  
+**Title**          : `Notification` default `read` flag and auto timestamps  
+**Target**         : `Notification` model – `read`, `sent_timestamp`, `read_timestamp`  
+**Preconditions**  : An `Account`.  
+**Test Steps**     
+1. Create a `Notification` (only required fields).  
+2. Retrieve and check `read` is `False`.  
+3. Verify `sent_timestamp` is set; `read_timestamp` is `None`.  
+**Expected Result**  
+- Defaults behave as described.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-028  
+**Title**          : Mark a `Notification` as read and set `read_timestamp`  
+**Target**         : `Notification` fields `read` and `read_timestamp`  
+**Preconditions**  : Existing unread `Notification`.  
+**Test Steps**     
+1. Set `notification.read = True` and `notification.read_timestamp = timezone.now()`.  
+2. Save and retrieve the object.  
+**Expected Result**  
+- `read` is `True` and `read_timestamp` holds a datetime value.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-029  
+**Title**          : `Prescription` creation with all required fields  
+**Target**         : `Prescription` model – all fields and `get_populated_fields`  
+**Preconditions**  : Doctor and patient `Account`s exist.  
+**Test Steps**     
+1. Create a `Prescription` with valid data (date=today, medication, strength, instruction, refill=2, active=True).  
+2. Call `prescription.get_populated_fields()`.  
+**Expected Result**  
+- Dictionary contains all fields with exact values; object persisted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-030  
+**Title**          : `Prescription` field validation – negative refill value  
+**Target**         : `Prescription.refill` (IntegerField)  
+**Preconditions**  : Doctor & patient accounts.  
+**Test Steps**     
+1. Attempt to create a `Prescription` with `refill=-1`.  
+**Expected Result**  
+- Save succeeds (no built‑in non‑negative validator) – test confirms absence of validation; however business logic may reject negative values elsewhere.  
+**Test Type**      : Boundary  
+
+---  
+**TC-ID**          : TC-CODE-031  
+**Title**          : `MedicalInfo.to_blood` returns correct label for valid key  
+**Target**         : `MedicalInfo.to_blood` static method  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `MedicalInfo.to_blood('A+')`.  
+2. Call `MedicalInfo.to_blood('O-')`.  
+**Expected Result**  
+- Returns `"A+ Type"` and `"O- Type"` respectively.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-032  
+**Title**          : `MedicalInfo.to_blood` returns `"None"` for unknown key  
+**Target**         : `MedicalInfo.to_blood`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Call `MedicalInfo.to_blood('XYZ')`.  
+**Expected Result**  
+- Returns `"None"`.  
+**Test Type**      : Negative  
+
+---  
+**TC-ID**          : TC-CODE-033  
+**Title**          : Create a `MedicalInfo` with valid blood type choice  
+**Target**         : `MedicalInfo` model – `bloodType` choice constraint  
+**Preconditions**  : An `Account`.  
+**Test Steps**     
+1. Create `MedicalInfo.objects.create(account=acct, bloodType='AB+', allergy='None', alzheimer=False, asthma=False, diabetes=False, stroke=False, comments='')`.  
+2. Retrieve and verify `bloodType` stored as `'AB+'`.  
+**Expected Result**  
+- Record saved; choice enforced.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-034  
+**Title**          : `MedicalInfo` invalid blood type raises error  
+**Target**         : `MedicalInfo.bloodType` (choices)  
+**Preconditions**  : An `Account`.  
+**Test Steps**     
+1. Attempt to create `MedicalInfo` with `bloodType='X+'`.  
+**Expected Result**  
+- ValidationError on save due to invalid choice.  
+**Test Type**      : Negative  
+
+---  
+**TC-ID**          : TC-CODE-035  
+**Title**          : `MedicalInfo.get_populated_fields` returns correct dictionary  
+**Target**         : `MedicalInfo.get_populated_fields`  
+**Preconditions**  : Fully populated `MedicalInfo`.  
+**Test Steps**     
+1. Call the method.  
+**Expected Result**  
+- Dictionary includes `account` (primary key), `bloodType`, `allergy`, boolean flags, and `comments` exactly as stored.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-036  
+**Title**          : `MedicalTest` default values for `private` and `completed` flags  
+**Target**         : `MedicalTest.private`, `MedicalTest.completed`  
+**Preconditions**  : Hospital, doctor & patient accounts.  
+**Test Steps**     
+1. Create a `MedicalTest` with `private` omitted and `completed=True`.  
+2. Retrieve and verify `private` equals `True` (default).  
+**Expected Result**  
+- `private` defaults to `True`; `completed` reflects supplied value.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-037  
+**Title**          : `MedicalTest` file fields accept `None` (blank) values  
+**Target**         : `MedicalTest.image1` … `image5` (FileField, `blank=True, null=True`)  
+**Preconditions**  : Hospital, doctor, patient accounts.  
+**Test Steps**     
+1. Create a `MedicalTest` without any image fields.  
+2. Retrieve and confirm each image attribute is `None`.  
+**Expected Result**  
+- All image fields are `None`.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-038  
+**Title**          : `MedicalTest.get_populated_fields` returns all fields including files  
+**Target**         : `MedicalTest.get_populated_fields`  
+**Preconditions**  : A `MedicalTest` with at least one image uploaded.  
+**Test Steps**     
+1. Call the method.  
+**Expected Result**  
+- Dictionary contains keys `image1` … `image5` with either `File` objects or `None`.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-039  
+**Title**          : `Statistics` creation and field retrieval  
+**Target**         : `Statistics` model – `startDate`, `endDate`, `get_populated_fields`  
+**Preconditions**  : None  
+**Test Steps**     
+1. Create `Statistics.objects.create(startDate='2023-01-01', endDate='2023-12-31')`.  
+2. Call `statistics.get_populated_fields()`.  
+**Expected Result**  
+- Dictionary returns the exact start and end dates.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-040  
+**Title**          : `Statistics` endDate earlier than startDate (no model constraint)  
+**Target**         : `Statistics` fields  
+**Preconditions**  : None  
+**Test Steps**     
+1. Attempt to create `Statistics(startDate='2023-12-31', endDate='2023-01-01')`.  
+**Expected Result**  
+- Save succeeds because the model does not enforce ordering; test documents missing business rule.  
+**Test Type**      : Boundary  
+
+---  
+**TC-ID**          : TC-CODE-041  
+**Title**          : Verify cascade delete from `Hospital` to linked `Location` (OneToOne)  
+**Target**         : `Hospital.location` `on_delete=models.CASCADE`  
+**Preconditions**  : A `Hospital` linked to a `Location`.  
+**Test Steps**     
+1. Delete the `Hospital` instance.  
+2. Query for the former `Location`.  
+**Expected Result**  
+- The `Location` is also deleted (cascade).  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-042  
+**Title**          : Verify cascade delete from `Account` to related `Profile` (OneToOne)  
+**Target**         : `Account.profile` `on_delete=models.CASCADE`  
+**Preconditions**  : An `Account` with a linked `Profile`.  
+**Test Steps**     
+1. Delete the `Account`.  
+2. Query for the `Profile`.  
+**Expected Result**  
+- The `Profile` is removed automatically.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-043  
+**Title**          : Verify cascade delete from `Account` to `Action` (ForeignKey)  
+**Target**         : `Action.account` `on_delete=models.CASCADE`  
+**Preconditions**  : An `Account` with at least one `Action`.  
+**Test Steps**     
+1. Delete the `Account`.  
+2. Query for associated `Action` objects.  
+**Expected Result**  
+- All related `Action` rows are deleted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-044  
+**Title**          : Verify cascade delete from `Account` to `Message` (both sender and target)  
+**Target**         : `Message.sender` & `Message.target` `on_delete=models.CASCADE`  
+**Preconditions**  : Two accounts, one message between them.  
+**Test Steps**     
+1. Delete the sender account.  
+2. Verify the message is removed.  
+3. Re‑create message, delete the target account, verify removal.  
+**Expected Result**  
+- Message is deleted when either related account is removed.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-045  
+**Title**          : Verify cascade delete from `Account` to `Notification`  
+**Target**         : `Notification.account` `on_delete=models.CASCADE`  
+**Preconditions**  : An `Account` with notifications.  
+**Test Steps**     
+1. Delete the account.  
+2. Confirm notifications no longer exist.  
+**Expected Result**  
+- Notifications are cascaded away.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-046  
+**Title**          : Verify cascade delete from `Account` to `Prescription` (patient & doctor sides)  
+**Target**         : `Prescription.patient` & `Prescription.doctor` `on_delete=models.CASCADE`  
+**Preconditions**  : Doctor and patient accounts, a prescription linking them.  
+**Test Steps**     
+1. Delete the doctor account; verify prescription removed.  
+2. Re‑create prescription, delete patient account; verify removal.  
+**Expected Result**  
+- Prescription is removed when either linked account is deleted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-047  
+**Title**          : Verify cascade delete from `Account` to `MedicalInfo`  
+**Target**         : `MedicalInfo.account` `on_delete=models.CASCADE`  
+**Preconditions**  : An `Account` with a `MedicalInfo` record.  
+**Test Steps**     
+1. Delete the account.  
+2. Query for the `MedicalInfo`.  
+**Expected Result**  
+- `MedicalInfo` is deleted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-048  
+**Title**          : Verify cascade delete from `Account` to `MedicalTest` (both doctor and patient)  
+**Target**         : `MedicalTest.doctor`, `MedicalTest.patient` `on_delete=models.CASCADE`  
+**Preconditions**  : Doctor, patient accounts, a medical test.  
+**Test Steps**     
+1. Delete doctor; ensure test removed.  
+2. Re‑create, delete patient; ensure test removed.  
+**Expected Result**  
+- MedicalTest rows are removed when either linked account is deleted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-049  
+**Title**          : Verify cascade delete from `Hospital` to `MedicalTest` (ForeignKey)  
+**Target**         : `MedicalTest.hospital` `on_delete=models.CASCADE`  
+**Preconditions**  : Hospital, doctor, patient, a medical test linked to the hospital.  
+**Test Steps**     
+1. Delete the hospital.  
+2. Query for the medical test.  
+**Expected Result**  
+- MedicalTest is deleted due to cascade.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-050  
+**Title**          : Verify cascade delete from `Hospital` to `Appointment` (ForeignKey)  
+**Target**         : `Appointment.hospital` `on_delete=models.CASCADE`  
+**Preconditions**  : Hospital, doctor, patient, symptom, an appointment.  
+**Test Steps**     
+1. Delete the hospital.  
+2. Verify the appointment no longer exists.  
+**Expected Result**  
+- Appointment is removed via cascade.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-051  
+**Title**          : Verify cascade delete from `Symptom` to `Appointment` (ForeignKey)  
+**Target**         : `Appointment.symptom` `on_delete=models.CASCADE`  
+**Preconditions**  : Symptom, doctor, patient, hospital, appointment.  
+**Test Steps**     
+1. Delete the symptom.  
+2. Confirm associated appointment is deleted.  
+**Expected Result**  
+- Appointment removed due to cascade.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-052  
+**Title**          : Verify cascade delete from `Account` (doctor) to `Appointment.doctor` (ForeignKey)  
+**Target**         : `Appointment.doctor` `on_delete=models.CASCADE`  
+**Preconditions**  : Doctor account, patient account, symptom, hospital, appointment.  
+**Test Steps**     
+1. Delete the doctor account.  
+2. Verify appointment is removed.  
+**Expected Result**  
+- Appointment is deleted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-053  
+**Title**          : Verify cascade delete from `Account` (patient) to `Appointment.patient` (ForeignKey)  
+**Target**         : `Appointment.patient` `on_delete=models.CASCADE`  
+**Preconditions**  : Same as previous, but delete patient.  
+**Test Steps**     
+1. Delete the patient account.  
+2. Verify appointment removal.  
+**Expected Result**  
+- Appointment is deleted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-054  
+**Title**          : Verify cascade delete from `Account` to `Message.sender` and `Message.target` (both FK)  
+**Target**         : `Message.sender`, `Message.target` `on_delete=models.CASCADE`  
+**Preconditions**  : Two accounts with a message.  
+**Test Steps**     
+1. Delete sender account → message disappears.  
+2. Re‑create, delete target account → message disappears.  
+**Expected Result**  
+- Message removed in either case.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-055  
+**Title**          : Verify cascade delete from `Account` to `Notification.account` (ForeignKey)  
+**Target**         : `Notification.account` `on_delete=models.CASCADE`  
+**Preconditions**  : Account with a notification.  
+**Test Steps**     
+1. Delete the account.  
+2. Confirm notification removal.  
+**Expected Result**  
+- Notification is deleted.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-056  
+**Title**          : Verify that `Location` admin `list_display` contains `city` and `country` (admin class presence)  
+**Target**         : `Location.Admin` meta‑class (legacy admin)  
+**Preconditions**  : None (admin registration assumed).  
+**Test Steps**     
+1. Inspect `Location.Admin.list_display`.  
+**Expected Result**  
+- Tuple `('city','country')` is present.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-057  
+**Title**          : Verify that `Hospital` admin `list_display` contains expected fields  
+**Target**         : `Hospital.Admin`  
+**Preconditions**  : None.  
+**Test Steps**     
+1. Inspect `Hospital.Admin.list_display`.  
+**Expected Result**  
+- Tuple `('name','phone','location')` is defined.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-058  
+**Title**          : Verify that `Account` admin `list_display` contains expected fields  
+**Target**         : `Account.Admin`  
+**Preconditions**  : None.  
+**Test Steps**     
+1. Inspect `Account.Admin.list_display`.  
+**Expected Result**  
+- Tuple `('role','profile','user','archive')` is defined.  
+**Test Type**      : Functional  
+
+---  
+**TC-ID**          : TC-CODE-059  
+**Title**          : Confirm there are **no** view functions, form classes, or URL patterns in the supplied code  
+**Target**         : Project codebase (views/forms/urls)  
+**Preconditions**  : Access to the repository containing only the `models.py` shown.  
+**Test Steps**     
+1. Search the project for `def ` in any `views.py` file.  
+2. Search for subclasses of `forms.Form` or `forms.ModelForm`.  
+3. Search for `urlpatterns` in any `urls.py`.  
+**Expected Result**  
+- No view functions, form classes, or URL definitions are found; test suite therefore focuses exclusively on models.  
+**Test Type**      : Verification  
+
+---  
+*End of test‑case suite.*
+
+# ============================================================
+# Files: forms.py
+# ============================================================
+
+**Test Case Suite – Virtual Clinic Forms (Code part 1)**  
+*All test cases are derived **solely** from the supplied `forms.py`. No assumptions are made about any other part of the application (models, views, URLs, templates, etc.).*  
+
+---  
+**TC-ID**          : TC‑CODE‑060  
+**Title**          : `setup_field` adds Bootstrap class to a field widget  
+**Target**         : `setup_field` helper function (used by all forms)  
+**Preconditions**  : – None – a Django `Form` class with at least one field defined.  
+**Test Steps**     
+1. Define a simple `Form` with a `CharField` called `test`.  
+2. Call `setup_field(Form.base_fields['test'])`.  
+3. Inspect `Form.base_fields['test'].widget.attrs`.  
+**Expected Result** : The attribute dictionary contains `'class': 'form-control'`.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑061  
+**Title**          : `setup_field` sets placeholder when supplied  
+**Target**         : `setup_field` helper function  
+**Preconditions**  : – Same as TC‑060.  
+**Test Steps**     
+1. Define a `Form` with a `CharField` named `test`.  
+2. Call `setup_field(Form.base_fields['test'], placeholder='Enter test')`.  
+3. Inspect the widget’s `attrs`.  
+**Expected Result** : The attrs contain both `'class': 'form-control'` **and** `'placeholder': 'Enter test'`.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑062  
+**Title**          : `setup_field` leaves placeholder unchanged when `None` is passed  
+**Target**         : `setup_field` helper function  
+**Preconditions**  : – Same as TC‑060.  
+**Test Steps**     
+1. Define a `Form` with a `CharField` named `test`.  
+2. Call `setup_field(Form.base_fields['test'], placeholder=None)`.  
+3. Inspect the widget’s `attrs`.  
+**Expected Result** : Only `'class': 'form-control'` is present; no `'placeholder'` key.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑063  
+**Title**          : `validate_username_available` rejects an existing username (case‑insensitive)  
+**Target**         : `validate_username_available` validator (used by `AccountRegisterForm.email`)  
+**Preconditions**  : – A `User` exists with username **“JohnDoe”**.  
+**Test Steps**     
+1. Call `validate_username_available('johndoe')`.  
+**Expected Result** : Raises `forms.ValidationError` with message *“This email is already registered”*.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑064  
+**Title**          : `validate_username_available` accepts a free username  
+**Target**         : `validate_username_available` validator  
+**Preconditions**  : – No `User` has username **“newuser@example.com”**.  
+**Test Steps**     
+1. Call `validate_username_available('newuser@example.com')`.  
+**Expected Result** : No exception is raised (validation passes).  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑065  
+**Title**          : `validate_username_exists` rejects a non‑existent username  
+**Target**         : `validate_username_exists` validator (used by `LoginForm.email`)  
+**Preconditions**  : – No `User` has username **“ghost@example.com”**.  
+**Test Steps**     
+1. Call `validate_username_exists('ghost@example.com')`.  
+**Expected Result** : Raises `forms.ValidationError` with message *“This email does not exist”*.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑066  
+**Title**          : `validate_username_exists` accepts an existing username (case‑insensitive)  
+**Target**         : `validate_username_exists` validator  
+**Preconditions**  : – A `User` exists with username **“alice@example.com”**.  
+**Test Steps**     
+1. Call `validate_username_exists('ALICE@EXAMPLE.COM')`.  
+**Expected Result** : No exception is raised.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑067  
+**Title**          : `validate_birthday` rejects a date older than 200 years  
+**Target**         : `validate_birthday` validator (used by `ProfileForm.birthday`)  
+**Preconditions**  : – Today’s date is 2026‑09‑26 (as per test environment).  
+**Test Steps**     
+1. Compute a date: `date(1820, 1, 1)` ( > 200 years ago).  
+2. Call `validate_birthday(date(1820, 1, 1))`.  
+**Expected Result** : Raises `forms.ValidationError` with message *“Please choose a later date”*.  
+**Test Type**      : Negative / Boundary  
+---  
+**TC-ID**          : TC‑CODE‑068  
+**Title**          : `validate_birthday` rejects a future date  
+**Target**         : `validate_birthday` validator  
+**Preconditions**  : – Today is 2026‑09‑26.  
+**Test Steps**     
+1. Call `validate_birthday(date(2027, 1, 1))`.  
+**Expected Result** : Raises `forms.ValidationError` with message *“Please choose an earlier date”*.  
+**Test Type**      : Negative / Boundary  
+---  
+**TC-ID**          : TC‑CODE‑069  
+**Title**          : `validate_birthday` accepts a realistic past date (within 200 years)  
+**Target**         : `validate_birthday` validator  
+**Preconditions**  : – Today is 2026‑09‑26.  
+**Test Steps**     
+1. Call `validate_birthday(date(1990, 5, 15))`.  
+**Expected Result** : No exception is raised.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑070  
+**Title**          : `BasicForm.disable_field` adds disabled attribute to a field widget  
+**Target**         : `BasicForm.disable_field` method  
+**Preconditions**  : – An instance of any subclass of `BasicForm` (e.g., `LoginForm`).  
+**Test Steps**     
+1. Instantiate `LoginForm()`.  
+2. Call `form.disable_field('email')`.  
+3. Inspect `form.fields['email'].widget.attrs`.  
+**Expected Result** : The attrs contain `'disabled': ''`.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑071  
+**Title**          : `BasicForm.mark_error` registers an error and removes cleaned data for the field  
+**Target**         : `BasicForm.mark_error` method  
+**Preconditions**  : – An instantiated `LoginForm` with valid data for `email` and `password`.  
+**Test Steps**     
+1. Call `form.is_valid()` to populate `cleaned_data`.  
+2. Call `form.mark_error('password', 'Test error')`.  
+3. Check `form._errors` and `form.cleaned_data`.  
+**Expected Result** : `_errors` contains `'password': ['Test error']`; `cleaned_data` no longer contains the key `'password'`.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑072  
+**Title**          : `BasicForm.clear_errors` resets the error dictionary  
+**Target**         : `BasicForm.clear_errors` method  
+**Preconditions**  : – An instantiated `LoginForm` that already has at least one error.  
+**Test Steps**     
+1. Ensure `form._errors` is non‑empty (e.g., call `form.add_error('email', 'x')`).  
+2. Call `form.clear_errors()`.  
+3. Inspect `form._errors`.  
+**Expected Result** : `_errors` is an empty dict `{}`.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑073  
+**Title**          : `LoginForm` fails authentication when password is incorrect  
+**Target**         : `LoginForm.clean` method  
+**Preconditions**  : – A `User` exists with username **“bob@example.com”** and password **“Secret123”**.  
+**Test Steps**     
+1. Instantiate `LoginForm` with data: `{'email': 'bob@example.com', 'password': 'WrongPass'}`.  
+2. Call `form.is_valid()`.  
+3. Inspect `form._errors`.  
+**Expected Result** : Form is **invalid**; `_errors` contains `'password': ['Incorrect password']`.  
+**Test Type**      : Negative / Authentication  
+---  
+**TC-ID**          : TC‑CODE‑074  
+**Title**          : `LoginForm` passes authentication with correct credentials  
+**Target**         : `LoginForm.clean` method  
+**Preconditions**  : – A `User` exists with username **“bob@example.com”**, password **“Secret123”**.  
+**Test Steps**     
+1. Instantiate `LoginForm` with data: `{'email': 'bob@example.com', 'password': 'Secret123'}`.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **valid**; no errors are present.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑075  
+**Title**          : `AccountRegisterForm` rejects mismatching passwords  
+**Target**         : `AccountRegisterForm.clean` method  
+**Preconditions**  : – None (no DB state required).  
+**Test Steps**     
+1. Instantiate `AccountRegisterForm` with data where `password_first='abc'` and `password_second='xyz'`.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **invalid**; `_errors` contains `'password_second': ['Passwords do not match']`.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑076  
+**Title**          : `AccountRegisterForm` accepts matching passwords  
+**Target**         : `AccountRegisterForm.clean` method  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `AccountRegisterForm` with data where `password_first='samepwd'` and `password_second='samepwd'` (other required fields filled).  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **valid**; no password‑related errors.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑077  
+**Title**          : `PasswordForm` flags mismatching new passwords  
+**Target**         : `PasswordForm.clean` method  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `PasswordForm` with data: `password_current='old', password_first='new1', password_second='new2'`.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **invalid**; `_errors` contains `'password_second': ['Passwords do not match']`.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑078  
+**Title**          : `PasswordForm` flags identical current and new password  
+**Target**         : `PasswordForm.clean` method  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `PasswordForm` with data: `password_current='Same123', password_first='Same123', password_second='Same123'`.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **invalid**; `_errors` contains `'password_current': ['Your current and new passwords must be different']`.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑079  
+**Title**          : `PasswordForm` accepts correct new‑password change (matching & different)  
+**Target**         : `PasswordForm.clean` method  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `PasswordForm` with data: `password_current='oldPwd', password_first='NewPwd', password_second='NewPwd'`.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **valid**; no errors.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑080  
+**Title**          : `ProfileForm` correctly assigns cleaned data to a `Profile` instance  
+**Target**         : `ProfileForm.assign` method  
+**Preconditions**  : – A `Profile` model instance exists (`profile = Profile()`).  
+**Test Steps**     
+1. Create a `ProfileForm` with **all** fields populated (e.g., `firstname='John', lastname='Doe', sex='M', birthday='1990-01-01', phone='1234567890', allergies='None', prefHospital=<Hospital>, primaryCareDoctor=<Doctor Account>, speciality=<Speciality>`).  
+2. Call `form.is_valid()` (ensure it passes).  
+3. Call `form.assign(profile)`.  
+4. Verify each attribute on `profile` equals the corresponding cleaned data.  
+**Expected Result** : All listed attributes on `profile` match the form data; no exception is raised.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑081  
+**Title**          : `ProfileForm` leaves optional fields as `None` when not provided  
+**Target**         : `ProfileForm.assign` method  
+**Preconditions**  : – A `Profile` instance (`profile = Profile()`).  
+**Test Steps**     
+1. Instantiate `ProfileForm` providing only required fields (`firstname`, `lastname`). Omit optional fields (`sex`, `birthday`, `phone`, `allergies`, `prefHospital`, `primaryCareDoctor`, `speciality`).  
+2. Call `form.is_valid()`.  
+3. Call `form.assign(profile)`.  
+4. Inspect optional attributes on `profile`.  
+**Expected Result** : Optional attributes are set to `None` (or remain unchanged if already `None`).  
+**Test Type**      : Functional / Boundary  
+---  
+**TC-ID**          : TC‑CODE‑082  
+**Title**          : `AppointmentForm` flags end time earlier than start time  
+**Target**         : `AppointmentForm.clean` method  
+**Preconditions**  : – Instances for required model choices exist (`Symptom`, `Hospital`, `Account` doctor/patient).  
+**Test Steps**     
+1. Instantiate `AppointmentForm` with `startTime='2026-10-01 10:00'`, `endTime='2026-10-01 09:00'` (other required fields filled).  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **invalid**; `_errors` contains `'endTime': ['The appointment end time must come after the start time']`.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑083  
+**Title**          : `AppointmentForm` accepts a valid start‑/end‑time range  
+**Target**         : `AppointmentForm.clean` method  
+**Preconditions**  : – Same as TC‑082.  
+**Test Steps**     
+1. Instantiate `AppointmentForm` with `startTime='2026-10-01 09:00'`, `endTime='2026-10-01 10:00'` (other required fields filled).  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **valid**; no errors concerning time order.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑084  
+**Title**          : `AppointmentForm.assign` correctly transfers cleaned data to an existing `Appointment` object  
+**Target**         : `AppointmentForm.assign` method  
+**Preconditions**  : – A saved `Appointment` instance (`appt = Appointment()`).  
+**Test Steps**     
+1. Populate an `AppointmentForm` with valid data for all fields.  
+2. Call `form.is_valid()`.  
+3. Call `form.assign(appt)`.  
+4. Verify each attribute (`description`, `symptom`, `hospital`, `doctor`, `patient`, `appointment_type`, `startTime`, `endTime`) on `appt` matches `form.cleaned_data`.  
+**Expected Result** : All attributes are updated accordingly; no exception.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑085  
+**Title**          : `AppointmentForm.generate` creates a new `Appointment` with identical data  
+**Target**         : `AppointmentForm.generate` method  
+**Preconditions**  : – None beyond model imports.  
+**Test Steps**     
+1. Instantiate `AppointmentForm` with a full set of valid data.  
+2. Call `form.is_valid()`.  
+3. Call `generated = form.generate()`.  
+4. Compare each field of `generated` with `form.cleaned_data`.  
+**Expected Result** : `generated` is an unsaved `Appointment` instance whose fields equal the cleaned data.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑086  
+**Title**          : `SpecialityForm` fields have correct max‑length and placeholder  
+**Target**         : `SpecialityForm` definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `SpecialityForm`.  
+2. Inspect `form.fields['name'].max_length` and widget attrs.  
+3. Inspect `form.fields['description'].max_length` (if set) and widget attrs.  
+**Expected Result** :  
+- `name` field: `max_length == 50` and widget attrs contain `'class': 'form-control'`, `'placeholder': 'Enter speciality name here'`.  
+- `description` field: default max_length (no explicit limit) and widget attrs contain `'class': 'form-control'`, `'placeholder': 'Enter speciality description here'`.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑087  
+**Title**          : `SymptomForm` fields have correct max‑length and placeholder  
+**Target**         : `SymptomForm` definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `SymptomForm`.  
+2. Verify `name.max_length == 50` and widget attrs include the placeholder “Enter symptom name here”.  
+3. Verify `description` widget attrs include the placeholder “Enter symptom description here”.  
+**Expected Result** : All attributes match the code’s `setup_field` calls.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑088  
+**Title**          : `ProfileForm` `sex` field uses `Profile.GENDER` choices  
+**Target**         : `ProfileForm.sex` field definition  
+**Preconditions**  : – The `Profile` model defines `GENDER` choices (e.g., `[('M','Male'),('F','Female')]`).  
+**Test Steps**     
+1. Instantiate `ProfileForm`.  
+2. Inspect `form.fields['sex'].choices`.  
+**Expected Result** : The choices exactly match `Profile.GENDER`.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑089  
+**Title**          : `ProfileForm` `prefHospital` field limits choices to all `Hospital` objects  
+**Target**         : `ProfileForm.prefHospital` field definition  
+**Preconditions**  : – At least two `Hospital` records exist.  
+**Test Steps**     
+1. Instantiate `ProfileForm`.  
+2. Verify `form.fields['prefHospital'].queryset` contains **all** `Hospital` objects (`Hospital.objects.all()`).  
+**Expected Result** : The queryset equals the complete set of hospitals; no filtering.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑090  
+**Title**          : `ProfileForm` `primaryCareDoctor` field limits to accounts with role `ACCOUNT_DOCTOR`  
+**Target**         : `ProfileForm.primaryCareDoctor` field definition  
+**Preconditions**  : – Multiple `Account` objects exist, some with `role=Account.ACCOUNT_DOCTOR`, others with different roles.  
+**Test Steps**     
+1. Instantiate `ProfileForm`.  
+2. Verify that the queryset includes only accounts where `role == Account.ACCOUNT_DOCTOR`.  
+**Expected Result** : No account with a non‑doctor role appears in the choices.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑091  
+**Title**          : `AppointmentForm` `doctor` field limited to doctor accounts only  
+**Target**         : `AppointmentForm.doctor` field definition  
+**Preconditions**  : – Same as TC‑090.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Verify `form.fields['doctor'].queryset` equals `Account.objects.filter(role=Account.ACCOUNT_DOCTOR)`.  
+**Expected Result** : Queryset contains only doctor accounts.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑092  
+**Title**          : `AppointmentForm` `patient` field limited to patient accounts only  
+**Target**         : `AppointmentForm.patient` field definition  
+**Preconditions**  : – Several `Account` objects with `role=Account.ACCOUNT_PATIENT`.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Verify the queryset matches `Account.objects.filter(role=Account.ACCOUNT_PATIENT)`.  
+**Expected Result** : Only patient accounts are selectable.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑093  
+**Title**          : `AppointmentForm` `symptom` field uses all `Symptom` objects  
+**Target**         : `AppointmentForm.symptom` field definition  
+**Preconditions**  : – At least one `Symptom` instance exists.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Verify `form.fields['symptom'].queryset` equals `Symptom.objects.all()`.  
+**Expected Result** : All symptom records are available for selection.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑094  
+**Title**          : `AppointmentForm` `hospital` field uses all `Hospital` objects  
+**Target**         : `AppointmentForm.hospital` field definition  
+**Preconditions**  : – Multiple `Hospital` records exist.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Verify `form.fields['hospital'].queryset` equals `Hospital.objects.all()`.  
+**Expected Result** : Complete hospital list is presented.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑095  
+**Title**          : `AppointmentForm` `appointment_type` field choices equal `APPOINTMENT_TYPE` constant  
+**Target**         : `AppointmentForm.appointment_type` field definition  
+**Preconditions**  : – `APPOINTMENT_TYPE` is defined in `server.models`.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Compare `form.fields['appointment_type'].choices` with `APPOINTMENT_TYPE`.  
+**Expected Result** : The two sequences are identical.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑096  
+**Title**          : `AppointmentForm` `description` field enforces `max_length=50` and is required  
+**Target**         : `AppointmentForm.description` field definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Verify `form.fields['description'].required is True`.  
+3. Verify `form.fields['description'].max_length == 50`.  
+**Expected Result** : Both conditions hold.  
+**Test Type**      : Functional / Boundary  
+---  
+**TC-ID**          : TC‑CODE‑097  
+**Title**          : `PasswordForm` fields enforce `max_length=50` and use `PasswordInput` widget  
+**Target**         : `PasswordForm` field definitions (`password_current`, `password_first`, `password_second`)  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `PasswordForm`.  
+2. For each password field, check `max_length == 50` and `widget.__class__` is `forms.PasswordInput`.  
+**Expected Result** : All three password fields satisfy the constraints.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑098  
+**Title**          : `LoginForm` `email` field uses `EmailField` and validator `validate_username_exists`  
+**Target**         : `LoginForm.email` field definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `LoginForm`.  
+2. Verify `form.fields['email']` is an instance of `forms.EmailField`.  
+3. Verify its `validators` list contains `validate_username_exists`.  
+**Expected Result** : Both verifications succeed.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑099  
+**Title**          : `AccountRegisterForm` `email` field uses `validate_username_available` validator  
+**Target**         : `AccountRegisterForm.email` field definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `AccountRegisterForm`.  
+2. Verify that `validate_username_available` appears in the field’s `validators`.  
+**Expected Result** : Validator is present.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑100  
+**Title**          : `AccountRegisterForm` `firstname` and `lastname` enforce `max_length=50` and are required  
+**Target**         : `AccountRegisterForm.firstname` / `lastname` fields  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `AccountRegisterForm`.  
+2. Verify each field’s `max_length == 50` and `required is True`.  
+**Expected Result** : Both fields meet the constraints.  
+**Test Type**      : Functional / Boundary  
+---  
+**TC-ID**          : TC‑CODE‑101  
+**Title**          : `ProfileForm` `phone` field limits to 10 characters  
+**Target**         : `ProfileForm.phone` field definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `ProfileForm`.  
+2. Verify `max_length == 10`.  
+**Expected Result** : The limit is enforced.  
+**Test Type**      : Functional / Boundary  
+---  
+**TC-ID**          : TC‑CODE‑102  
+**Title**          : `ProfileForm` `allergies` field limits to 250 characters  
+**Target**         : `ProfileForm.allergies` field definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `ProfileForm`.  
+2. Verify `max_length == 250`.  
+**Expected Result** : The limit is enforced.  
+**Test Type**      : Functional / Boundary  
+---  
+**TC-ID**          : TC‑CODE‑103  
+**Title**          : `AppointmentForm` `description` field placeholder text is set correctly  
+**Target**         : `AppointmentForm.description` widget attrs  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Verify `form.fields['description'].widget.attrs['placeholder'] == 'Enter description here'`.  
+**Expected Result** : Placeholder matches the code.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑104  
+**Title**          : `AppointmentForm` `startTime` and `endTime` fields use default `DateTimeInput` (no custom widget) but have placeholders set by `setup_field`  
+**Target**         : `AppointmentForm.startTime` / `endTime` widget attrs  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `AppointmentForm`.  
+2. Verify each field’s widget attrs contain the placeholder strings defined in `setup_field`.  
+**Expected Result** :  
+- `startTime` placeholder = “Enter as YYYY‑MM‑DD HH:MM”  
+- `endTime` placeholder = “Enter as YYYY‑MM‑DD HH:MM”  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑105  
+**Title**          : `SpecialityForm` `description` field is required (default)  
+**Target**         : `SpecialityForm.description` field definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `SpecialityForm`.  
+2. Verify `form.fields['description'].required is True`.  
+**Expected Result** : Field is required.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑106  
+**Title**          : `SymptomForm` `description` field is required (default)  
+**Target**         : `SymptomForm.description` field definition  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `SymptomForm`.  
+2. Verify `form.fields['description'].required is True`.  
+**Expected Result** : Field is required.  
+**Test Type**      : Functional  
+---  
+**TC-ID**          : TC‑CODE‑107  
+**Title**          : `LoginForm` fails validation when email does not exist (validator)  
+**Target**         : `LoginForm.email` validator chain  
+**Preconditions**  : – No `User` with username **“nonexistent@example.com”** exists.  
+**Test Steps**     
+1. Instantiate `LoginForm` with data `{email: 'nonexistent@example.com', password: 'any'}`.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **invalid**; error on `email` field: “This email does not exist”.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑108  
+**Title**          : `AccountRegisterForm` fails validation when email is already registered (validator)  
+**Target**         : `AccountRegisterForm.email` validator chain  
+**Preconditions**  : – A `User` exists with username **“taken@example.com”**.  
+**Test Steps**     
+1. Instantiate `AccountRegisterForm` with data containing `email='taken@example.com'` (other required fields filled).  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **invalid**; error on `email` field: “This email is already registered”.  
+**Test Type**      : Negative / Validation  
+---  
+**TC-ID**          : TC‑CODE‑109  
+**Title**          : `LoginForm` passes validation when email exists and password correct (full positive path)  
+**Target**         : End‑to‑end validation of `LoginForm` (including both validators and `clean`)  
+**Preconditions**  : – A `User` with username **“valid@example.com”** and password **“ValidPass123”** exists.  
+**Test Steps**     
+1. Instantiate `LoginForm` with matching credentials.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **valid**; no field errors.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑110  
+**Title**          : `PasswordForm` clean does not raise errors when new passwords match and differ from current password (boundary: empty strings allowed)  
+**Target**         : `PasswordForm.clean` method  
+**Preconditions**  : – None.  
+**Test Steps**     
+1. Instantiate `PasswordForm` with data: `password_current=''`, `password_first=''`, `password_second=''`.  
+2. Call `form.is_valid()`.  
+**Expected Result** : Form is **valid** because the clean method only checks equality when values are present; empty strings are considered present, so it will flag mismatch (they are equal) and current vs new (both empty) will be flagged as same → actually will generate two errors.  
+**Correction**: To test the *absence* of errors, use distinct non‑empty values: `password_current='old'`, `password_first='new'`, `password_second='new'`.  
+**Re‑run**:  
+- With distinct values, form is **valid**.  
+**Test Type**      : Functional / Positive  
+---  
+**TC-ID**          : TC‑CODE‑111  
+**Title**          : `BasicForm.mark_error` does not raise `KeyError` when marking a non‑existent field (graceful handling)  
+**Target**         : `BasicForm.mark_error` method robustness  
+**Preconditions**  : – An instantiated `LoginForm`.  
+**Test Steps**     
+1. Call `form.mark_error('nonexistent', 'Some error')`.  
+2. Observe outcome (exception or not).  
+**Expected Result** : Raises a `KeyError` because `self._errors[field]` expects the field to exist; this is *expected* behavior per current implementation. Documented as a potential robustness issue.  
+**Test Type**      : Negative / Security (error handling)  
+---  
+**TC-ID**          : TC‑CODE‑112  
+**Title**          : `BasicForm.clear_errors` removes errors added via `add_error` or `mark_error`  
+**Target**         : `BasicForm.clear_errors` method  
+**Preconditions**  : – An instantiated `LoginForm` with at least one error (e.g., after a failed `is_valid`).  
+**Test Steps**     
+1. Verify `_errors` is non‑empty.  
+2. Call `form.clear_errors()`.  
+3. Verify `_errors` is now empty.  
+**Expected Result** : Errors are cleared without raising.  
+**Test Type**      : Functional  
+---  
+
+*End of test suite.*  
+
+All test cases above are derived directly from the provided source code and cover every form field, each validator, the custom `clean` logic, helper methods, and the interactions with model querysets as defined in this file. No assumptions beyond what is present in the code have been made.
+
+[LLM call failed after all retries]
+
+# ============================================================
+# Files: ['urls.py', 'views_home.py', 'views_profile.py']
+# ============================================================
+
+[LLM call failed after all retries]
+
+# ============================================================
+# Files: ['views_prescription.py', 'views_medtest.py', 'views_medicalinfo.py']
+# ============================================================
+
+## QA Review – “Virtual Clinic” – Prescription & Medical‑Test Views  
+**Prepared by:** Senior QA Engineer  
+**Date:** 2026‑09‑26  
+
+---
+
+### 1. Executive Summary
+The `views_prescription.py` and `views_medtest.py` modules implement CRUD‑style endpoints for prescriptions and medical‑test uploads. The code works functionally, but a number of **security, data‑integrity, usability, and maintainability** concerns have been identified that could lead to:
+
+| Category | Risk Level | Impact |
+|----------|------------|--------|
+| **Authorization bypass / data leakage** | High | Users can view, modify or “delete” records they do not own (e.g., a chemist can list every prescription). |
+| **Mass Assignment / mutable POST hack** | Medium | Directly mutating `request.POST` may unintentionally allow clients to inject fields that are not intended to be set by the UI (e.g., changing `doctor` or `patient`). |
+| **Timezone‑naïve dates** | Medium | Using `datetime.now()` / `datetime.today()` creates naïve datetime objects; they will be stored in UTC or local DB time depending on DB settings, causing inconsistent reporting. |
+| **Missing validation on file uploads** | Medium | No size/type checks for `MedTestForm`; large or malicious files could be accepted. |
+| **Error handling / exception swallowing** | Low | Broad `except Exception:` masks real errors and makes debugging harder. |
+| **Potential CSRF exposure in delete flow** | Low | Deleting a prescription is done via a POST form, but the view does not explicitly enforce CSRF protection (relies on Django’s middleware). If the middleware is ever disabled, the endpoint is vulnerable. |
+| **Inconsistent UX for form errors** | Low | The code manually clears `_errors` instead of letting Django handle them, which may hide validation messages from the user. |
+| **Hard‑coded redirects** | Low | `HttpResponseRedirect('/prescription/list/')` and similar strings are brittle; using `reverse()` would be safer. |
+
+Below is a detailed breakdown of each view, the associated risks, and a **test matrix** that you can use to verify that the defects are fixed.
+
+---
+
+## 2. Detailed Code Review
+
+### 2.1 `views_prescription.py`
+
+| Line / Block | Observation | Severity |
+|--------------|-------------|----------|
+| **Authentication check** (`views.authentication_check(request, [Account.ACCOUNT_DOCTOR])`) | Works for *create*, but *list* and *update* use different role sets. The function’s contract is not visible, but it appears to allow **any** of the supplied roles. | Medium |
+| **Mutable POST hack** (`request.POST._mutable = True; request.POST.update(default)`) | Directly mutating the request body is an anti‑pattern. If a malicious client sends a `doctor` field, the update will *overwrite* the auto‑populated value, potentially allowing a doctor to prescribe on behalf of another doctor. | High |
+| **Default date handling** (`datetime.now().strftime("%Y-%m-%d")`) | Naïve datetime; no timezone awareness. | Medium |
+| **Form creation** (`form = PrescriptionForm(request.POST)`) | Good, but after a successful POST the code re‑creates a **clean** form with `PrescriptionForm(default)`. This discards any error messages that may have been useful for debugging. | Low |
+| **Logging** (`logger.log(Action.ACTION_PRESCRIPTION,'Prescription Created', request.user.account)`) | OK – consistent audit trail. |
+| **Delete (list_view)** – `if 'delete' in request.POST and 'pk' in request.POST:` | No **ownership check**. A patient, doctor, or chemist can delete any prescription simply by posting a `pk`. The view also does not verify that the prescription belongs to the user’s organization (hospital). | High |
+| **Query set for chemist** – `Prescription.objects.all()` | Exposes **all** prescriptions to the chemist role. Unless that is an intentional business rule, it is a data‑leak. | High |
+| **Update view** – `authentication_check(request, None, ['pk'])` | Passing `None` for allowed roles – likely means “any authenticated user”. There is **no role restriction**; any logged‑in user can attempt an update if they know a valid `pk`. | High |
+| **GET‑based pk** (`pk = request.GET['pk']`) | Relying on a query‑string parameter makes the URL easy to guess. No additional validation (e.g., numeric, belongs‑to‑user) before DB lookup. | Medium |
+| **Form assignment** (`form.assign(prescription)`) | Assuming `assign` copies cleaned data onto the model. No explicit whitelist, so hidden fields could be updated. | Medium |
+| **Error handling** – `except Exception:` – generic. | Swallows DB errors, making troubleshooting impossible for the support team. | Low |
+
+#### Recommendations for Prescription Views
+1. **Never mutate `request.POST`.** Instead, pass an explicit `initial` dict to the form or set the fields on the model after `form.is_valid()`.
+2. **Enforce ownership**:
+   - In `list_view` delete flow, confirm `prescription.doctor == request.user.account` (or patient‑owner for patients) before toggling `active`.
+   - In `update_view`, verify that the user has the right to edit the record (doctor can edit own prescriptions; patient may have read‑only rights).
+3. **Use timezone‑aware dates** (`django.utils.timezone.now()`).
+4. **Replace hard‑coded URLs with `reverse('prescription:list')`**.
+5. **Restrict chemist view** – either provide a filtered list (e.g., prescriptions belonging to the chemist’s pharmacy) or add a dedicated permission.
+6. **Improve exception handling** – catch `Prescription.DoesNotExist` specifically and surface a user‑friendly message; log unexpected errors.
+7. **CSRF** – confirm that the `CsrfViewMiddleware` is enabled for all POST endpoints (default in Django, but double‑check settings).
+
+---
+
+### 2.2 `views_medtest.py`
+
+| Line / Block | Observation | Severity |
+|--------------|-------------|----------|
+| **Authentication** – `[Account.ACCOUNT_DOCTOR, Account.ACCOUNT_LAB]` | Acceptable – only doctors and lab staff may upload. |
+| **Mutable POST** – same pattern as prescription (`request.POST._mutable = True`). | Same security concerns – a client could inject `doctor`, `hospital`, or even `patient` fields. | High |
+| **File handling** – `form = MedTestForm(request.POST, request.FILES)` | No explicit validation of file type/size in the view (likely done in the form, but we cannot see it). If the form does not enforce it, large PDFs or scripts could be saved. | Medium |
+| **Date default** – same naive datetime problem. | Medium |
+| **Post‑save flow** – `form = MedTestForm(default)` and then `form._errors = {}`. | Manually clearing errors is unnecessary; Django will render a fresh form if you instantiate a new one without passing `request.POST`. | Low |
+| **Redirect** – none; the view stays on the upload page after success (good for bulk uploads). |
+| **List view** – not fully shown (cut off). Assume similar pattern to prescription list. | Ensure the list view also respects role‑based filtering. | — |
+
+#### Recommendations for MedTest Views
+1. **Remove POST mutability** – use `initial` data for the form, or set model fields after validation.
+2. **Add explicit file validation** (size limit, MIME type whitelist) in `MedTestForm.clean_file()` or in the view before `form.is_valid()`.
+3. **Timezone‑aware dates** – `timezone.now()`.
+4. **Consistent error handling** – log unexpected exceptions; surface a generic “Unable to upload” message.
+5. **Permission check for list view** – if patients are allowed to view only *their* tests, filter accordingly.
+
+---
+
+## 3. Test Matrix
+
+Below is a **ready‑to‑execute test suite** (manual + automated) covering functional, security, and regression aspects. The matrix is grouped by feature and includes **positive** (happy path) and **negative** (edge/attack) scenarios.
+
+| Test ID | Feature | Description | Steps | Expected Result | Priority |
+|---------|---------|-------------|-------|-----------------|----------|
+| **PRES‑01** | Create Prescription – happy path | Doctor creates a prescription for a patient. | 1. Login as a doctor. 2. Navigate to `/prescription/create/`. 3. Fill all fields (patient, medication, etc.). 4. Submit. | Prescription saved; redirect to list; success alert appears. | P1 |
+| **PRES‑02** | Create Prescription – doctor field tampering | Attempt to set `doctor` to another doctor via POST. | 1. Intercept the POST request (e.g., using Burp Suite). 2. Add `doctor=<other_doctor_id>` to the body. 3. Submit. | Server must ignore the supplied `doctor` (use `request.user.account`). If mutable POST is present, test will expose the vulnerability. | P1 |
+| **PRES‑03** | Create Prescription – patient field tampering (as doctor) | Try to assign a prescription to a patient that the doctor does *not* have in his list (if such a rule exists). | Same as above but change `patient`. | Prescription should be saved **only** if the patient belongs to the same hospital or organization; otherwise reject with validation error. | P2 |
+| **PRES‑04** | Create Prescription – missing required fields | Submit form with empty `medication`. | 1. Remove medication value. 2. Submit. | Form shows field error; no DB write; error alert displayed. | P1 |
+| **PRES‑05** | Create Prescription – date handling (timezone) | Verify that the stored date respects the configured timezone. | 1. Set server timezone to UTC. 2. Create a prescription at 23:30 local time (e.g., Asia/Kolkata). 3. Inspect DB value. | Stored date should be UTC‑converted (or use `timezone.now()`); not the raw local string. | P2 |
+| **PRES‑06** | List Prescription – role filtering (doctor) | Doctor should see only his own prescriptions. | 1. Login as Doctor A, create a prescription for Patient X. 2. Login as Doctor B, go to `/prescription/list/`. | Doctor B’s list does **not** contain Doctor A’s prescription. | P1 |
+| **PRES‑07** | List Prescription – chemist data leakage | Verify chemist cannot see unrelated prescriptions. | 1. Login as Chemist. 2. Ensure there are prescriptions belonging to multiple doctors. | Chemist sees only prescriptions allowed by business rules (e.g., those with `active=True` and linked to his pharmacy). If the current code is unchanged, the chemist will see *all* – test will fail. | P1 |
+| **PRES‑08** | Delete Prescription – unauthorized delete | Patient attempts to delete a prescription belonging to another patient. | 1. Login as Patient A. 2. POST to `/prescription/list/` with `delete` and `pk` of Patient B’s prescription. | Operation should be blocked; alert “Unable to delete the prescription.” logged. | P1 |
+| **PRES‑09** | Delete Prescription – CSRF test | Attempt cross‑site request forgery to delete a prescription. | 1. Craft an HTML form on a malicious site that POSTs `delete=1&pk=123`. 2. Visit site while logged in as doctor. | Request should be rejected (403) if CSRF middleware is active. | P2 |
+| **PRES‑10** | Update Prescription – ownership check | Doctor tries to update a prescription that belongs to another doctor. | 1. Login as Doctor A. 2. Access `/prescription/update/?pk=<DoctorB_prescription>`. | Access denied (redirect to error/denied) or “does not exist”. | P1 |
+| **PRES‑11** | Update Prescription – field tampering | During update, modify hidden fields (e.g., `patient`) via POST. | 1. Intercept POST and change `patient` id. 2. Submit. | Server must ignore changed hidden fields and keep original values (or raise validation error). | P2 |
+| **MED‑01** | Upload Medical Test – happy path | Lab staff uploads a PDF test result. | 1. Login as Lab user. 2. Fill form (doctor, hospital, date, file). 3. Submit. | Record created; file stored; success alert displayed. | P1 |
+| **MED‑02** | Upload Medical Test – file type validation | Try to upload an executable (`.exe`). | 1. Choose an `.exe` file. 2. Submit. | Form should reject with “Invalid file type”. If no validation, test fails. | P1 |
+| **MED‑03** | Upload Medical Test – file size limit | Upload a 200 MB file (assuming limit 10 MB). | 1. Select large file. 2. Submit. | Form rejects with “File too large”. | P2 |
+| **MED‑04** | Upload Medical Test – date default | Submit without providing a date. | 1. Leave date blank. 2. Submit. | The saved record’s date equals server’s current date (timezone‑aware). | P2 |
+| **MED‑05** | Upload Medical Test – mutable POST tampering | Change `doctor` field in POST to another doctor’s ID. | Same technique as PRES‑02. | Server must ignore supplied doctor; assign logged‑in user’s doctor ID. | P1 |
+| **MED‑06** | List Medical Tests – role filtering | Patient should see only their own test results. | 1. Login as Patient A. 2. Navigate to `/medtest/list/`. | List contains only tests where `patient == Patient A`. | P1 |
+| **MED‑07** | List Medical Tests – pagination & ordering | Verify that results are ordered by `date` descending (or as defined). | 1. Create 3 tests with different dates. 2. View list. | Tests appear in correct order; pagination works for >X items. | P2 |
+| **GEN‑01** | Audit Logging – verify entries | After each create/update/delete, confirm an entry in the `Action` log. | 1. Perform each operation. 2. Query `Action` table. | One row per action with correct `action_type`, description, and `account_id`. | P2 |
+| **GEN‑02** | Session handling – alert messages | Verify that success/failure alerts survive a redirect and are cleared after display. | 1. Perform a successful create. 2. Ensure `alert_success` appears. 3. Refresh page – alert should disappear. | Alerts shown once and then cleared from session. | P2 |
+| **GEN‑03** | URL integrity – reverse lookup | Ensure no hard‑coded URLs cause 404 after URL name changes. | 1. Rename `prescription:list` URL name in `urls.py`. 2. Run test. | View redirects still succeed because they use `reverse`. | P3 (regression) |
+| **GEN‑04** | Exception handling – DB error simulation | Force a DB error (e.g., drop the `prescription` table) and verify that the user receives a generic error page, not a stack trace. | 1. Temporarily rename table. 2. Trigger create. | User sees “Unable to process request” message; error logged server‑side. | P2 |
+| **PERF‑01** | Load test – list view | Simulate 200 concurrent users hitting `/prescription/list/`. | 1. Use Locust or JMeter. | Response time < 1 s, no DB deadlocks. | P3 |
+
+---
+
+## 4. Security Checklist
+
+| Item | Status (Current) | Recommendation |
+|------|------------------|----------------|
+| **Authentication enforced on every view** | ✔ (via `authentication_check`) | Verify that `authentication_check` also checks session expiration and account status. |
+| **Authorization (role‑based) enforcement** | Partial – chemist and delete flows lack fine‑grained checks. | Implement per‑object permission checks (`prescription.doctor == request.user.account` etc.). |
+| **CSRF protection** | Implicit (Django middleware). | Add explicit `{% csrf_token %}` in templates; ensure middleware is **not** disabled in any environment. |
+| **Input validation / mass assignment** | Weak – mutable POST hack. | Remove request.POST mutation; use form `initial` and clean data before assigning to model. |
+| **File upload validation** | Unknown (depends on form). | Add server‑side checks for MIME type, file extension, and size. Store uploads outside of static root, use `FileField.upload_to` with a random UUID. |
+| **Error handling** | Generic `except Exception`. | Catch specific exceptions; log stack trace; return user‑friendly messages. |
+| **Logging/auditing** | Present for create/update/delete. | Ensure logger sanitises sensitive data (no PII in log messages). |
+| **Session fixation / fixation** | Not visible. | Regenerate session ID after login; set `SESSION_COOKIE_HTTPONLY=True`, `SECURE_COOKIE` in production. |
+| **Data leakage via over‑broad queries** | Chemist sees all prescriptions; patients may see all medical tests. | Scope queries to the user’s organization or use Django `permissions` framework. |
+| **Hard‑coded redirects** | Yes (`/prescription/list/`). | Use `reverse('prescription:list')`. |
+
+---
+
+## 5. Suggested Refactor (Pseudo‑code)
+
+Below is a **concise example** of how the prescription `create_view` could be rewritten to address the top concerns:
+
+```python
+# views_prescription.py (refactored snippet)
+
+from django.utils import timezone
+from django.urls import reverse
+from django.contrib import messages
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def create_view(request):
+    # Only doctors may create prescriptions
+    if not request.user.account.is_doctor:
+        return HttpResponseRedirect(reverse('error:denied'))
+
+    # Build initial data – never mutate request.POST
+    initial = {
+        'doctor': request.user.account.pk,
+        'date': timezone.now().date().isoformat(),
+    }
+
+    if request.method == 'POST':
+        form = PrescriptionForm(request.POST, initial=initial)
+        if form.is_valid():
+            # Force doctor field to the logged‑in user regardless of POST data
+            prescription = form.save(commit=False)
+            prescription.doctor = request.user.account
+            prescription.save()
+            logger.log(Action.ACTION_PRESCRIPTION,
+                       'Prescription Created',
+                       request.user.account)
+            messages.success(request, "Successfully added the prescription.")
+            return HttpResponseRedirect(reverse('prescription:list'))
+    else:
+        form = PrescriptionForm(initial=initial)
+
+    # Disable doctor field for display purposes only
+    form.disable_field('doctor')
+    return render(request,
+                  'virtualclinic/prescription/create.html',
+                  {'form': form, 'form_button': "Add Prescription"})
+```
+
+*Key changes*:
+
+* No mutation of `request.POST`.  
+* `initial` data passed to the form.  
+* Explicit role check with `is_doctor` property.  
+* `messages` framework used for alerts (cleans session handling).  
+* `reverse()` for redirects.  
+
+Similar patterns can be applied to `list_view`, `update_view`, and the medical‑test views.
+
+---
+
+## 6. Test Execution Plan
+
+1. **Unit Test Development**  
+   - Write Django `TestCase` classes for each view covering the matrix above.  
+   - Use `Client` to simulate POST/GET with manipulated payloads.  
+2. **Static Code Analysis**  
+   - Run `bandit`, `pylint`, and `django‑security‑check` to catch mutable‑POST, hard‑coded URLs, and missing CSRF.  
+3. **Dynamic Security Scan**  
+   - Run OWASP ZAP / Burp Suite spider against the dev environment; focus on parameter tampering and CSRF.  
+4. **Performance Benchmark**  
+   - Execute Locust scripts for `list_view` with 200 concurrent users; capture response times and DB query counts (`django-debug-toolbar` in a test environment).  
+5. **Regression Verification**  
+   - After applying fixes, re‑run the full suite; ensure **zero** failures for high‑priority tests.  
+
+---
+
+## 7. Conclusion
+
+The current implementation provides the core functionality but **fails to enforce proper per‑object authorization**, **exposes a mass‑assignment vector** through mutable `request.POST`, and **lacks timezone‑aware handling**. Addressing the highlighted issues will:
+
+* Prevent accidental or malicious data leakage (especially for chemist and patient roles).  
+* Harden the application against tampering attacks.  
+* Improve maintainability (remove hard‑coded URLs, rely on Django’s built‑in mechanisms).  
+
+By executing the test matrix and applying the refactor recommendations, the Virtual Clinic application will meet the security and quality standards expected for a healthcare system handling PHI (Protected Health Information).  
+
+--- 
+
+**Next Steps for the Development Team**
+
+1. Prioritize fixing the **authorization checks** for delete and update operations.  
+2. Refactor all POST‑mutating code to use `initial` data and explicit field assignments.  
+3. Add file‑type/size validation to `MedTestForm`.  
+4. Replace hard‑coded redirects with `reverse`.  
+5. Deploy the updated test suite and run it against the CI pipeline.  
+
+Feel free to reach out for any clarification or assistance in writing the automated tests.
+
+# ============================================================
+# Files: ['views_appointment.py', 'views_message.py', 'views_api.py']
+# ============================================================
+
+[LLM call failed after all retries]
+
+# ============================================================
+# Files: ['views_admin.py']
+# ============================================================
+
+Below is a **QA‑focused review** of the `views_admin.py` snippet you shared, followed by a **comprehensive test plan** (unit‑ and integration‑style) and a few **refactoring recommendations** that will make the code easier to test, more robust, and safer.
+
+---
+
+## 1️⃣ QUICK CODE SURVEY & RED‑FLAGS  
+
+| Area | Observation | Why it matters for QA |
+|------|-------------|-----------------------|
+| **Authentication** | All admin‑only views call `views.authentication_check(request, [Account.ACCOUNT_ADMIN])`. | Good – protects the endpoints. Make sure the helper returns an **HttpResponse** (e.g., redirect to login) on failure; otherwise the view will continue. |
+| **Exception handling** | `except Exception:` is used in every `get(pk=...)` block. | Over‑broad – masks DB‑layer errors (e.g., `DoesNotExist`, `MultipleObjectsReturned`, `DatabaseError`). Tests should verify the *right* error is handled and the user sees a helpful message. |
+| **Missing response on error** | In `parse_speciality_delete` and `parse_symptom_delete` the `except` block only sets `template_data['alert_danger']` **and returns nothing**. | Django will fall through and return `None`, which triggers a **500 Internal Server Error**. QA must catch this as a critical defect. |
+| **Logging** | `user_archive` has its logger line commented out (`#logger.log(...)`). | Inconsistent audit trail. The test suite should confirm that admin actions are logged for *all* mutating operations. |
+| **Message wording** | `template_data['alert_danger'] = "Unable to delete the user. Please try again later"` (used in `restore_user`). | Copy‑paste error – the message refers to *deleting* when the operation is *restoring*. End‑users will be confused; a UI/UX test should flag it. |
+| **Redirect URLs** | Hard‑coded strings like `'/admin/speciality/'`. | If URL patterns change, views break silently. Use `reverse('admin:speciality')` (or the name you gave the URL) – this also simplifies testing. |
+| **CSRF protection** | Not visible in the snippet, but the views expect POST. | Ensure the corresponding templates include `{% csrf_token %}`; otherwise the POST will be rejected. |
+| **Model‑level constraints** | Deleting a `Speciality` or `Symptom` may violate foreign‑key constraints (e.g., appointments referencing them). | The view currently catches *any* exception and hides the real cause. Tests need to verify the cascade or protect behaviour and that the user sees a meaningful message. |
+| **Archive flag** | `user.archive = True` (soft delete) vs. actual `delete()`. | Business rule – confirm that archived users cannot log in and that `view_archived_users` only shows archived accounts. |
+| **Import statements** | Unused imports: `sqlite3`, `sys`, `re`, `writer`, `QUOTE_MINIMAL`. | Clean‑up reduces noise and speeds up import time. Also, unused imports can hide missing dependencies in CI. |
+| **Return type consistency** | Some branches return `HttpResponseRedirect`, others return nothing (see above). | Tests should assert that **every** execution path returns a proper `HttpResponse`. |
+
+---
+
+## 2️⃣ TEST PLAN  
+
+Below is a **layered testing strategy** that a senior QA engineer would drive. Feel free to cherry‑pick or adapt to your CI/CD pipeline (pytest‑django, unittest, etc.).
+
+### 2.1 Unit Tests – isolated view logic  
+
+| Test # | Target Function | Scenario | Expected Outcome |
+|--------|----------------|----------|-------------------|
+| **U‑01** | `parse_speciality_delete` – happy path | POST with `delete` and a valid `pk` belonging to an existing `Speciality`. | `Speciality` object is removed, logger receives a `ACTION_ADMIN` entry, response is `HttpResponseRedirect` to `/admin/speciality/`. |
+| **U‑02** | `parse_speciality_delete` – non‑existent PK | POST with `pk` that does **not** exist. | `template_data['alert_danger']` set, **response is a redirect** (or render) – **no 500**. |
+| **U‑03** | `parse_speciality_delete` – DB error (simulate `IntegrityError`) | Mock `Speciality.objects.get` to raise `IntegrityError`. | Same as U‑02 – graceful error message, no crash. |
+| **U‑04** | `parse_speciality_delete` – missing POST keys | POST without `delete` or `pk`. | View returns **None** (no redirect) – **FAIL** – test flags as bug (should return a proper response). |
+| **U‑05** | `parse_symptom_delete` – analogous cases to U‑01‑U‑04. |
+| **U‑06** | `user_archive` – archive a user | POST with valid `pk`. | `Account.archive` becomes `True`, user can no longer authenticate (test via `client.login`), logger **optional** (currently commented – test should detect missing log). |
+| **U‑07** | `user_archive` – DB exception (e.g., `DatabaseError`). | Mock `Account.objects.get` to raise `DatabaseError`. | `alert_danger` set, **no crash**. |
+| **U‑08** | `view_archived_users` – returns only archived accounts | Populate mixed `Account` objects (archived = True/False). | Rendered context `query` contains **only** archived ones. |
+| **U‑09** | `restore_user` – success path | POST with `restore` and valid `pk`. | `archive` set to `False`, logger called, redirect to `/admin/users`. |
+| **U‑10** | `restore_user` – typo in alert message (should be “restore” not “delete”). | Verify that `template_data['alert_danger']` contains “delete” only when appropriate. |
+| **U‑11** | `users_view` (not shown but referenced) – ensure it respects authentication. | Call view with a non‑admin user. | Authentication check returns a redirect (or 403). |
+| **U‑12** | **Permission matrix** – all admin‑only views return 302/403 for non‑admin. | Iterate over each view with a regular user. | Same as above. |
+
+#### Sample pytest‑style snippet (U‑01)
+
+```python
+import pytest
+from django.urls import reverse
+from django.test import Client
+from server.models import Account, Speciality, Action
+from unittest.mock import patch
+
+@pytest.fixture
+def admin_client(db):
+    admin = Account.objects.create_user(
+        username='admin', password='pw', role=Account.ACCOUNT_ADMIN
+    )
+    client = Client()
+    client.login(username='admin', password='pw')
+    return client
+
+@pytest.fixture
+def speciality(db):
+    return Speciality.objects.create(name='Dermatology')
+
+def test_parse_speciality_delete_success(admin_client, speciality):
+    pk = speciality.pk
+    response = admin_client.post(
+        '/admin/speciality/delete/',  # adjust to actual URL
+        data={'delete': '1', 'pk': pk}
+    )
+    # 1️⃣ Redirect
+    assert response.status_code == 302
+    assert response.url == reverse('admin:speciality')
+    # 2️⃣ Object gone
+    with pytest.raises(Speciality.DoesNotExist):
+        Speciality.objects.get(pk=pk)
+    # 3️⃣ Log entry created
+    assert Action.objects.filter(
+        action=Action.ACTION_ADMIN,
+        description='Speciality cancelled',
+        performed_by__username='admin'
+    ).exists()
+```
+
+*Repeat similar patterns for the error‑handling tests, mocking `Speciality.objects.get` with `side_effect=Exception('boom')` to assert that the view does **not** raise.*
+
+### 2.2 Integration / End‑to‑End Tests  
+
+| Test # | Goal | Steps | Success Criteria |
+|--------|------|-------|-------------------|
+| **E‑01** | Full admin workflow: create → delete → restore a user | 1. Admin logs in 2. Create a test user via the UI (or API) 3. Archive the user 4. Verify login fails 5. View archived list 6. Restore 7. Verify login succeeds again | All UI screens show appropriate alerts, redirects happen, DB reflects expected states. |
+| **E‑02** | CSRF protection | Submit a POST to any admin delete endpoint **without** a CSRF token (using `curl` or a script). | Django returns 403 Forbidden. |
+| **E‑03** | Foreign‑key protection | Create a `Symptom` that is referenced by an `Appointment`. Attempt to delete via admin UI. | Deletion is blocked, error alert shown, DB unchanged. |
+| **E‑04** | URL stability | Change the URL pattern name for the speciality list (`admin:speciality`). Run the full suite – tests should still pass (thanks to `reverse`). | Confirms that hard‑coded strings are replaced. |
+| **E‑05** | Logging audit trail | After each mutating admin action, query the `Action` table to assert a row exists with correct `performed_by`. | Guarantees accountability. |
+| **E‑06** | Performance regression – bulk archive list | Populate 10 000 accounts, half archived. Measure response time of `view_archived_users`. | Must stay under an acceptable threshold (e.g., < 500 ms). |
+| **E‑07** | Accessibility & UI wording | Run an automated UI audit (axe‑core, Lighthouse) on the admin pages. Verify that alert messages are readable and the typo (“Unable to delete the user” on restore) is flagged. | No WCAG violations, correct copy. |
+
+### 2.3 Security / Pen‑Testing Checks  
+
+| Check | Reason | How to verify |
+|-------|--------|----------------|
+| **Privilege escalation** | Ensure a non‑admin cannot reach these views via crafted URLs. | Try accessing each endpoint with a normal user; expect 302/403. |
+| **Mass Assignment** | Verify that only the intended fields are written (e.g., `archive` flag). | Submit extra fields (e.g., `is_staff=True`) and confirm they are ignored. |
+| **SQL Injection** | Though Django ORM escapes params, test with malicious `pk` values (`'1; DROP TABLE account;'`). | No error, object lookup fails gracefully. |
+| **Information leakage** | The generic “Unable to delete the user. Please try again later” is fine; avoid stack traces. | Trigger an exception and confirm no traceback is shown to the client. |
+| **Logging of sensitive data** | Ensure logger does **not** write passwords or PII. | Review log output after actions. |
+
+---
+
+## 3️⃣ REFACTORING RECOMMENDATIONS (to make QA easier)
+
+1. **Return a proper response on every branch**  
+   ```python
+   except Speciality.DoesNotExist:
+       template_data['alert_danger'] = "Speciality not found."
+       return render(request, 'virtualclinic/admin/speciality.html', template_data)
+   ```
+
+2. **Narrow exception handling** – catch only what you expect:  
+   ```python
+   from django.core.exceptions import ObjectDoesNotExist
+   try:
+       speciality = Speciality.objects.get(pk=pk)
+   except ObjectDoesNotExist:
+       …
+   ```
+
+3. **Use `reverse` for redirects** – eliminates hard‑coded strings.  
+   ```python
+   from django.urls import reverse
+   return HttpResponseRedirect(reverse('admin:speciality'))
+   ```
+
+4. **Log every mutating action** – uncomment or add the logger line in `user_archive`.  
+   ```python
+   logger.log(Action.ACTION_ADMIN, 'Admin archived a user', request.user.account)
+   ```
+
+5. **Extract common patterns** into a helper:  
+   ```python
+   def _handle_pk_lookup(request, model, pk_name='pk'):
+       pk = request.POST.get(pk_name)
+       try:
+           return model.objects.get(pk=pk)
+       except model.DoesNotExist:
+           return None
+   ```
+   This reduces duplicated try/except blocks and makes mocking easier.
+
+6. **Consistent messaging** – centralize alert strings in a constants module or use Django’s `messages` framework.
+
+7. **Remove dead imports** – keep the file tidy (`sqlite3`, `sys`, `re`, `writer`, `QUOTE_MINIMAL`).
+
+8. **Add type hints** – improves readability and static analysis (e.g., `def parse_symptom_delete(request: HttpRequest) -> HttpResponse:`).
+
+9. **Add docstrings** describing each view’s purpose, expected POST keys, and side‑effects.
+
+---
+
+## 4️⃣ QUICK START GUIDE FOR THE QA TEAM  
+
+1. **Set up test fixtures** – create at least one admin and one regular user.  
+2. **Run unit tests** – `pytest -q server/tests/test_views_admin.py` (or `python manage.py test`).  
+3. **Execute integration suite** – spin up a temporary test server (`manage.py runserver` with `--settings=project.test_settings`) and run Selenium/Playwright scripts.  
+4. **Generate a coverage report** – aim for **≥ 90 %** line coverage on `views_admin.py`.  
+5. **Perform a security scan** – use `bandit` and `OWASP ZAP` against the admin endpoints.  
+6. **Log any failures** in your tracking tool with the tag `QA-AdminViews`.  
+
+---
+
+### TL;DR Checklist for a QA Engineer
+
+- [ ] Verify **every** code path returns an `HttpResponse`.  
+- [ ] Replace generic `except Exception:` with specific catches.  
+- [ ] Add missing logger calls (archive, restore).  
+- [ ] Fix copy‑paste typo in restore alert.  
+- [ ] Replace hard‑coded URLs with `reverse`.  
+- [ ] Write unit tests for happy / error scenarios (U‑01…U‑12).  
+- [ ] Write end‑to‑end admin workflow tests (E‑01…E‑07).  
+- [ ] Run CSRF, permission, and SQL‑i tests.  
+- [ ] Clean up unused imports and add type hints.  
+
+Implementing the above will give you **high confidence** that the admin views behave correctly, are secure, and remain maintainable as the Virtual Clinic evolves. Happy testing! 🚀

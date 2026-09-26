@@ -172,8 +172,9 @@ def call_llm(prompt: str) -> str:
                     "Content-Type":  "application/json",
                 },
                 json={
-                    "model":    LLM_MODEL,
-                    "messages": [{"role": "user", "content": prompt}],
+                    "model":     LLM_MODEL,
+                    "messages":  [{"role": "user", "content": prompt}],
+                    "max_tokens": 20000,
                 },
                 timeout=300,
             )
