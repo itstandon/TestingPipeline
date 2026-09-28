@@ -30,14 +30,9 @@ Environment variables (or .env in project root)
     DB_NAME           Database name              (default: virtual_clinic)
     SRS_COLLECTION    SRS sections collection    (default: srs_sections)
     TC_COLLECTION     Test cases collection      (default: test_cases)
-    LLM_API_KEY       API key (Groq / OpenAI-compatible) for the primary model
-    LLM_MODEL         Primary model name         (default: openai/gpt-oss-120b)
-    LLM_BASE_URL      Primary model API base URL (default: https://api.groq.com/openai/v1)
-    OLMO_API_KEY      API key for the open-source OLMo run (any non-empty
-                       placeholder works for a local Ollama server)
-    OLMO_MODEL        Open-source model name     (default: olmo-3.1-32b)
-    OLMO_BASE_URL     Open-source model API base URL
-                       (default: http://localhost:11434/v1)
+    LLM_API_KEY       API key (Groq / OpenAI-compatible)
+    LLM_MODEL         Model name                 (default: openai/gpt-oss-120b)
+    LLM_BASE_URL      API base URL               (default: https://api.groq.com/openai/v1)
     PROMPT_PATH       Prompt template path       (default: prompts/generate_testcases.txt)
     OUTPUT_DIR        Output directory           (default: results/test_cases)
     LLM_MAX_RETRIES   Retries on 429             (default: 5)
@@ -84,30 +79,6 @@ OUTPUT_DIR     = os.getenv("OUTPUT_DIR",     "results/test_cases")
 
 MAX_RETRIES    = int(os.getenv("LLM_MAX_RETRIES",    "5"))
 BACKOFF_BASE   = float(os.getenv("LLM_BACKOFF_BASE", "5"))
-
-# ── Open-source model run (OLMo 3.1 32B) ──────────────────────────────
-# Runs *alongside* the primary LLM_MODEL above and writes its output
-# under an "open-source" sub-folder instead of overwriting the primary
-# run. Point OLMO_BASE_URL at wherever you're actually serving the
-# model — e.g. a local Ollama instance exposing its OpenAI-compatible
-# endpoint (OLMO_BASE_URL=http://localhost:11434/v1, OLMO_API_KEY can
-# be any non-empty placeholder string since Ollama ignores it), or a
-# hosted OpenAI-compatible provider that serves OLMo. The exact model
-# tag/name (OLMO_MODEL) depends on how that provider names it.
-OLMO_API_KEY   = os.getenv("OLMO_API_KEY",   "")
-OLMO_MODEL     = os.getenv("OLMO_MODEL",     "olmo-3.1-32b")
-OLMO_BASE_URL  = os.getenv("OLMO_BASE_URL",  "http://localhost:11434/v1")
-
-# One entry per model to generate test cases with. `subdir` nests that
-# model's output under results/test_cases/<label>/<subdir>/ ; None
-# keeps the original top-level location (so existing runs/paths for
-# the primary model are unaffected).
-GENERATION_TARGETS = [
-    # Commented out so existing test cases for the primary model aren't
-    # regenerated. Uncomment to run both models again.
-    # {"model": LLM_MODEL,  "api_key": LLM_API_KEY,  "base_url": LLM_BASE_URL,  "subdir": None},
-    {"model": OLMO_MODEL, "api_key": OLMO_API_KEY, "base_url": OLMO_BASE_URL, "subdir": "open-source"},
-]
 
 
 # ──────────────────────────────────────────────
@@ -170,35 +141,26 @@ def build_prompt(template: str, sections: list[dict]) -> str:
 # LLM CALL
 # ──────────────────────────────────────────────
 
-def call_llm(prompt: str, model: str = LLM_MODEL, api_key: str = LLM_API_KEY,
-             base_url: str = LLM_BASE_URL) -> str:
-    """Call any OpenAI-compatible /chat/completions endpoint.
-
-    Defaults to the primary LLM_MODEL/LLM_API_KEY/LLM_BASE_URL, but a
-    different (model, api_key, base_url) triple — e.g. the OLMo
-    open-source run — can be passed in explicitly, which is how
-    GENERATION_TARGETS drives multiple models through this one
-    function.
-    """
-    if not api_key:
-        print(f"  [LLM] No API key set for model '{model}' — returning stub response.")
+def call_llm(prompt: str) -> str:
+    if not LLM_API_KEY:
+        print("  [LLM] LLM_API_KEY not set — returning stub response.")
         return (
-            f"API key is not configured for model '{model}'.\n"
-            "Set the matching *_API_KEY variable in your .env file to generate real test cases.\n\n"
+            "LLM_API_KEY is not configured.\n"
+            "Set it in your .env file to generate real test cases.\n\n"
             "---\n"
             "TC-ID          : TC-STUB-001\n"
             "Title          : Stub — API key missing\n"
             "Requirement    : N/A\n"
-            f"Preconditions  : Set the API key for {model} in .env\n"
+            "Preconditions  : Set LLM_API_KEY in .env\n"
             "Test Steps     :\n"
-            "  1. Add the relevant *_API_KEY=<your_key> to .env\n"
+            "  1. Add LLM_API_KEY=<your_key> to .env\n"
             "  2. Re-run generate_testcases.py\n"
             "Expected Result: Real test cases are generated\n"
             "Test Type      : Functional\n"
             "---\n"
         )
 
-    url = base_url.rstrip("/") + "/chat/completions"
+    url = LLM_BASE_URL.rstrip("/") + "/chat/completions"
     last_error = ""
 
     for attempt in range(1, MAX_RETRIES + 1):
@@ -206,11 +168,11 @@ def call_llm(prompt: str, model: str = LLM_MODEL, api_key: str = LLM_API_KEY,
             resp = requests.post(
                 url,
                 headers={
-                    "Authorization": f"Bearer {api_key}",
+                    "Authorization": f"Bearer {LLM_API_KEY}",
                     "Content-Type":  "application/json",
                 },
                 json={
-                    "model":     model,
+                    "model":     LLM_MODEL,
                     "messages":  [{"role": "user", "content": prompt}],
                     "max_tokens": 20000,
                 },
@@ -221,7 +183,7 @@ def call_llm(prompt: str, model: str = LLM_MODEL, api_key: str = LLM_API_KEY,
                 retry_after = resp.headers.get("Retry-After")
                 wait = float(retry_after) if retry_after else BACKOFF_BASE * (2 ** (attempt - 1))
                 wait += random.uniform(0, 1)
-                print(f"  [LLM] Rate-limited on {model} (attempt {attempt}/{MAX_RETRIES}); "
+                print(f"  [LLM] Rate-limited (attempt {attempt}/{MAX_RETRIES}); "
                       f"retrying in {wait:.1f}s ...")
                 time.sleep(wait)
                 last_error = "429 Too Many Requests"
@@ -233,12 +195,12 @@ def call_llm(prompt: str, model: str = LLM_MODEL, api_key: str = LLM_API_KEY,
         except requests.RequestException as exc:
             last_error = str(exc)
             wait = BACKOFF_BASE * (2 ** (attempt - 1)) + random.uniform(0, 1)
-            print(f"  [LLM] Error on {model} (attempt {attempt}/{MAX_RETRIES}): {exc}; "
+            print(f"  [LLM] Error (attempt {attempt}/{MAX_RETRIES}): {exc}; "
                   f"retrying in {wait:.1f}s ...")
             time.sleep(wait)
 
-    print(f"  [LLM] All {MAX_RETRIES} attempts failed for {model} ({last_error}). Returning error stub.")
-    return f"[ERROR] LLM call failed for {model} after {MAX_RETRIES} retries: {last_error}"
+    print(f"  [LLM] All {MAX_RETRIES} attempts failed ({last_error}). Returning error stub.")
+    return f"[ERROR] LLM call failed after {MAX_RETRIES} retries: {last_error}"
 
 
 # ──────────────────────────────────────────────
@@ -246,17 +208,9 @@ def call_llm(prompt: str, model: str = LLM_MODEL, api_key: str = LLM_API_KEY,
 # ──────────────────────────────────────────────
 
 def save_results(label: str, sections: list[dict], prompt: str, result: str,
-                 tc_col, out_dir: str, model: str, subdir: str | None = None) -> None:
-    """Save one model's test cases to disk and MongoDB under a given label.
-
-    subdir, when given (e.g. "open-source" for the OLMo run), nests the
-    output at <out_dir>/<label>/<subdir>/ instead of <out_dir>/<label>/,
-    so multiple models generating for the same section/label don't
-    overwrite each other.
-    """
+                 tc_col, out_dir: str) -> None:
+    """Save test cases to disk and MongoDB under a given label."""
     run_dir = Path(out_dir) / label
-    if subdir:
-        run_dir = run_dir / subdir
     run_dir.mkdir(parents=True, exist_ok=True)
 
     tc_file = run_dir / "test_cases.txt"
@@ -266,21 +220,18 @@ def save_results(label: str, sections: list[dict], prompt: str, result: str,
     meta = {
         "label":           label,
         "sections":        [{"number": s["number"], "title": s["title"]} for s in sections],
-        "model":           model,
+        "model":           LLM_MODEL,
         "prompt_sent":     prompt,
         "generated_at":    datetime.now(timezone.utc).isoformat(),
     }
     (run_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
-    # Keyed by (label, model) so the primary and open-source runs for
-    # the same section/label each get their own Mongo document instead
-    # of one overwriting the other.
     tc_col.replace_one(
-        {"label": label, "model": model},
+        {"label": label},
         {
             "label":           label,
-            "model":           model,
             "sections":        meta["sections"],
+            "model":           LLM_MODEL,
             "prompt_sent":     prompt,
             "test_cases_text": result,
             "generated_at":    meta["generated_at"],
@@ -327,12 +278,8 @@ def main():
             sys.exit(1)
         print(f"[generate] Entire document — {len(sections)} sections in one prompt.")
         prompt = build_prompt(template, sections)
-        for target in GENERATION_TARGETS:
-            print(f"  [generate] Model: {target['model']}"
-                  + (f" (-> {target['subdir']}/)" if target["subdir"] else ""))
-            result = call_llm(prompt, target["model"], target["api_key"], target["base_url"])
-            save_results("full_document", sections, prompt, result, tc_col, args.output_dir,
-                         model=target["model"], subdir=target["subdir"])
+        result = call_llm(prompt)
+        save_results("full_document", sections, prompt, result, tc_col, args.output_dir)
 
     elif args.sections:
         # ── Specific sections combined into one prompt ─────────────────
@@ -343,13 +290,9 @@ def main():
         print(f"[generate] {len(sections)} section(s) combined into one prompt: "
               f"{[s['number'] for s in sections]}")
         prompt = build_prompt(template, sections)
+        result = call_llm(prompt)
         label = "sections_" + "_".join(s["number"].replace(".", "_") for s in sections)
-        for target in GENERATION_TARGETS:
-            print(f"  [generate] Model: {target['model']}"
-                  + (f" (-> {target['subdir']}/)" if target["subdir"] else ""))
-            result = call_llm(prompt, target["model"], target["api_key"], target["base_url"])
-            save_results(label, sections, prompt, result, tc_col, args.output_dir,
-                         model=target["model"], subdir=target["subdir"])
+        save_results(label, sections, prompt, result, tc_col, args.output_dir)
 
     else:
         # ── Default: one prompt per section ───────────────────────────
@@ -361,13 +304,9 @@ def main():
         for sec in sections:
             print(f"\n[generate] Section {sec['number']} — {sec['title']}")
             prompt = build_prompt(template, [sec])
+            result = call_llm(prompt)
             label = sec["number"].replace(".", "_")
-            for target in GENERATION_TARGETS:
-                print(f"  [generate] Model: {target['model']}"
-                      + (f" (-> {target['subdir']}/)" if target["subdir"] else ""))
-                result = call_llm(prompt, target["model"], target["api_key"], target["base_url"])
-                save_results(label, [sec], prompt, result, tc_col, args.output_dir,
-                             model=target["model"], subdir=target["subdir"])
+            save_results(label, [sec], prompt, result, tc_col, args.output_dir)
 
     print(f"\n[generate] Done. Results in '{args.output_dir}/' "
           f"and MongoDB collection '{TC_COLLECTION}'.")

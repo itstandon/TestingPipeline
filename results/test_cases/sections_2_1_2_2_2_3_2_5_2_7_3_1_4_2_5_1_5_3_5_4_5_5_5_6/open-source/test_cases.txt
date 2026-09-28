@@ -1,0 +1,339 @@
+---
+TC-ID          : TC-PatientRegistration-001
+Title          : Patient Registration with Valid Details
+Workflow       : UC-05/UC-01
+Requirements   : Req-5/1, Req-16/c
+Preconditions  :
+  - Admin has pre-populated specialities in the system.
+  - System is up and running with default admin logged in.
+  - Network connectivity is stable.
+Test Steps     :
+  1. Navigate to the Patient Registration page.
+  2. Enter valid personal details (Name, Age, Gender, Address with PinCode within the service area).
+  3. Provide medical history details as prompted.
+  4. Select a valid speciality from the dropdown list.
+  5. Submit the registration form.
+Expected Result: Patient account is created successfully. Patient is logged into the system. A confirmation message is displayed. Patient profile details are stored and editable in the system.
+Test Type      : Functional
+
+---
+TC-ID          : TC-PatientRegistration-002
+Title          : Patient Registration with Invalid PinCode
+Workflow       : UC-05/UC-01
+Requirements   : BR-1, Req-5/1
+Preconditions  :
+  - System is up and running with default admin logged in.
+  - Patient attempts to register with an address having a PinCode outside the specified service zone (e.g., PinCode outside Padmavathi Hospital's 25 sqkm radius).
+Test Steps     :
+  1. Navigate to the Patient Registration page.
+  2. Enter valid personal and medical details.
+  3. Enter an invalid PinCode (outside the service zone).
+  4. Submit the registration form.
+Expected Result: System displays an error message "Registration not allowed. Patient must reside within the service area." Registration process is halted without creating a user account.
+Test Type      : Negative
+
+---
+TC-ID          : TC-ConsultationRequest-001
+Title          : Patient Creates Appointment Request with Valid Details
+Workflow       : UC-06/UC-08
+Requirements   : Req-6/1, Req-16/b
+Preconditions  :
+  - System is up and running.
+  - Doctor of the selected speciality is available (not checked explicitly in workflow but assumed as per system design).
+  - Patient is already registered and logged in.
+  - Appointment slots are available for the requested date/time.
+Test Steps     :
+  1. Patient logs into the system.
+  2. Navigates to the 'Create Appointment' page.
+  3. Selects a valid date and time for the appointment.
+  4. Selects symptoms from the master symptom list and uploads relevant reports (if any).
+  5. Submits the appointment request.
+  6. System creates an entry in the Patient Appointment File.
+Expected Result: Appointment request is successfully created. A confirmation message is displayed. The appointment appears in the Patient's Appointments tab.
+Test Type      : Functional
+
+---
+TC-ID          : TC-ConsultationRequest-002
+Title          : Patient Creates Offline Consultation Request with Valid Details
+Workflow       : UC-06/UC-08
+Requirements   : Req-6/1
+Preconditions  :
+  - System is up and running.
+  - Patient is already registered and logged in.
+Test Steps     :
+  1. Patient logs into the system.
+  2. Navigates to the 'Submit Online Consultation Request' page.
+  3. Enters valid symptoms from the master list.
+  4. Uploads relevant reports (max 5 files, <=1MB each).
+  5. Selects 'Offline' as the mode of consultation.
+  6. Submits the consultation request.
+Expected Result: Consultation request is successfully created and appears in the pending requests list for prioritization by doctors. Response time is <= 2 seconds.
+Test Type      : Functional
+
+---
+TC-ID          : TC-DoctorConsultation-001
+Title          : Doctor Provides Consultation and Prescribes Medicines for Valid Request
+Workflow       : UC-09
+Requirements   : Req-8, Req-15
+Preconditions  :
+  - System is up and running.
+  - Doctor is logged in with valid credentials and mapped to the correct speciality.
+  - A valid consultation request from a patient is pending in the prioritized queue.
+Test Steps     :
+  1. Doctor logs into the system.
+  2. Views the list of pending consultation requests.
+  3. Selects a request from a patient with valid symptoms and details.
+  4. Provides diagnosis based on symptoms and medical knowledge.
+  5. Prescribes one or more medicines from the master list.
+  6. Sends the prescription to the patient, nearest chemist, and nearest lab (workflow handled by system).
+Expected Result: Prescription is generated successfully with diagnosis and medicines. Prescription is routed to the patient, appropriate chemist (based on PinCode), and lab (based on PinCode). Response time is <= 2 seconds.
+Test Type      : Functional
+
+---
+TC-ID          : TC-ChemistDelivery-001
+Title          : Chemist Delivers Prescribed Medicines to Patient
+Workflow       : UC-09/UC-09/UC-13
+Requirements   : Req-9, BR-9
+Preconditions  :
+  - Chemist is logged into the system.
+  - A valid prescription is assigned to the chemist based on patient's PinCode (workflow routing).
+  - Medicines are available for offline delivery.
+Test Steps     :
+  1. Chemist logs into the system.
+  2. Navigates to the open prescriptions assigned to them.
+  3. Selects a pending prescription for delivery.
+  4. Marks the prescription as 'Medicines Delivered' and records offline delivery details.
+  5. Confirms delivery and collects payment from patient offline.
+Expected Result: Prescription status is updated to 'Delivered' in the system. Chemist can view this update. Patient receives medicines offline. System records delivery without affecting patient confidentiality.
+Test Type      : Functional
+
+---
+TC-ID          : TC-LabTests-001
+Title          : Lab Performs Tests and Updates Report
+Workflow       : UC-09/UC-10
+Requirements   : Req-10, BR-10
+Preconditions  :
+  - Lab Incharge is logged into the system.
+  - A valid lab request prescription is assigned to the lab based on patient's PinCode (workflow routing).
+  - Specimen collection is offline.
+Test Steps     :
+  1. Lab Incharge logs into the system.
+  2. Views pending lab requests assigned to their lab.
+  3. Selects a lab request for a patient within the service area.
+  4. Marks the request as 'Specimen Collected' offline.
+  5. Performs lab tests offline.
+  6. Updates the lab report in the system with a status flag indicating completion.
+  7. Sends the lab report offline to the patient.
+Expected Result: Lab report status is updated to 'Report Generated' in the system. Patient receives the report offline. Lab personnel can view the updated status.
+Test Type      : Functional
+
+---
+TC-ID          : TC-PatientViewPrescription-001
+Title          : Patient Views Generated Prescription and Invoice
+Workflow       : UC-11
+Requirements   : Req-11, BR-8
+Preconditions  :
+  - Patient is logged into the system.
+  - A valid prescription exists in the system linked to the patient's consultation request.
+Test Steps     :
+  1. Patient logs into the system.
+  2. Navigates to the 'Prescription & Reports' section.
+  3. Selects the relevant consultation request to view the prescription.
+  4. Downloads or prints the prescription and invoice.
+Expected Result: Prescription and invoice are displayed correctly with all details (diagnosis, medicines, lab tests if any). Patient can print/view the documents without error. Response time is <= 4 seconds.
+Test Type      : Functional
+
+---
+TC-ID          : TC-PatientViewHistory-001
+Title          : Patient Views Consultation History from Last 3 Years
+Workflow       : UC-11
+Requirements   : Req-11, BR-7
+Preconditions  :
+  - Patient is logged into the system.
+  - Patient has had one or more consultation requests in the last 3 years.
+Test Steps     :
+  1. Patient logs into the system.
+  2. Navigates to the 'Consultation History' page.
+  3. Requests to view history from the last 3 years.
+Expected Result: System displays a chronological list of past consultations including diagnosis, prescribed medicines, lab reports (if any), and invoices. Data is accurate and complete within the last 3 years. Response time is <= 4 seconds.
+Test Type      : Functional
+
+---
+TC-ID          : TC-PerformancePatientRegistration-001
+Title          : Performance Test: Patient Registration Under High Load (10,000 Concurrent Users)
+Workflow       : UC-05/UC-01
+Requirements   : Req-5.1, Req-5.4
+Preconditions  :
+  - Performance testing environment is set up with 10,000 concurrent virtual users.
+  - System is configured with expected traffic.
+Test Steps     :
+  1. Simulate 10,000 concurrent users attempting to register as patients.
+  2. Monitor system response times for registration process.
+  3. Record metrics for response time, throughput, and error rates.
+Expected Result: Average response time for patient registration <= 4 seconds. System remains responsive without crashes or timeouts. At least 9,500 users should successfully register within the defined time frame.
+Test Type      : Performance
+
+---
+TC-ID          : TC-PerformanceConsultation-001
+Title          : Performance Test: Patient Creates Consultation Request Under Peak Load
+Workflow       : UC-06/UC-08
+Requirements   : Req-5.1
+Preconditions  :
+  - Performance testing environment is set up with peak concurrent user load (e.g., 5,000 users).
+  - System is preloaded with test data (doctors, specialities, symptoms).
+Test Steps     :
+  1. Simulate peak load of 5,000 concurrent users submitting consultation requests.
+  2. Monitor response times for consultation request submission.
+  3. Ensure response time remains <= 2 seconds for critical functionality.
+Expected Result: 100% of requests processed within 2 seconds. System stability maintained. No degradation in performance metrics under peak load.
+Test Type      : Performance
+
+---
+TC-ID          : TC-SecurityPrescriptionAccess-001
+Title          : Security Test: Chemist/ Lab Access Restricted Data
+Workflow       : UC-09/UC-13/UC-10
+Requirements   : Req-5.3, BR-3, BR-9, BR-10
+Preconditions  :
+  - Chemist and Lab accounts are set up with default credentials.
+  - Patient account is created with a valid consultation request.
+Test Steps     :
+  1. Log in as a Chemist using default credentials.
+  2. Navigate to the prescription management area.
+  3. Attempt to view the patient's personal details (e.g., address, contact number).
+  4. Verify that only required fields (prescription details) are visible; personal details are masked or unavailable.
+  5. Repeat steps 1-4 for a Lab Incharge account.
+Expected Result: Chemist and Lab personnel can only view and update prescription and lab request details. Patient's confidential information remains hidden or inaccessible to these user roles.
+Test Type      : Security
+
+---
+TC-ID          : TC-BoundaryPinCodeRange-001
+Title          : Boundary Test: Patient Registration with PinCode Outside Service Zone
+Workflow       : UC-05/UC-01
+Requirements   : BR-1
+Preconditions  :
+  - System has predefined service PinCode range (e.g., 575001 to 575250).
+  - Test user attempts to register with a PinCode outside this range.
+Test Steps     :
+  1. Navigate to Patient Registration page.
+  2. Enter all valid details but set PinCode to one outside the service zone (e.g., 570000 or 576000).
+  3. Submit the registration form.
+Expected Result: System displays an error message "Registration not permitted. Patient must be within the service area (PinCode: XXXXX - XXXXX)." Registration is rejected without account creation.
+Test Type      : Boundary
+
+---
+TC-ID          : TC-BackupRestoreDummySystem-001
+Title          : Recovery Test: Full Backup Restoration on Dummy System
+Workflow       :
+Requirements   : Req-5.5
+Preconditions  :
+  - A full nightly backup from previous day has been taken.
+  - A dummy production system is available with identical configuration.
+Test Steps     :
+  1. Restore the latest backup onto the dummy production system.
+  2. Verify that all critical components (users, doctors, chemists, labs, patients, prescriptions) are restored correctly.
+  3. Run automated integrity checks to ensure data consistency (e.g., doctor count matches, patient count matches, prescription links are intact).
+  4. Purge the dummy system database after verification.
+Expected Result: System restores successfully without data loss or corruption. Integrity checks pass. Rollback capability to previous month verified.
+Test Type      : Integration
+
+---
+TC-ID          : TC-MachineLearningPrediction-001
+Title          : ML Algorithm Prediction Accuracy Test (Happy Path)
+Workflow       : UC-07/UC-08
+Requirements   : Req-15, Req-14
+Preconditions  :
+  - System has been trained on initial training data set.
+  - A new consultation request is created with clear, valid symptoms matching a known disease.
+Test Steps     :
+  1. Patient submits a consultation request with standard symptoms of a common illness (e.g., flu: fever, cough, body ache).
+  2. System runs the ML algorithm batch job (Req-7).
+  3. Doctor views the prioritized request.
+  4. Verify that the system predicts the disease accurately (matches expected diagnosis).
+  5. Observe that the prediction assists the doctor but the final responsibility remains with the doctor.
+Expected Result: ML algorithm predicts the disease correctly with high confidence (e.g., >80% accuracy based on training). Doctor sees the prediction as an assist but can override it. Prediction accuracy is logged for future learning (Req-14).
+Test Type      : Functional
+
+---
+TC-ID          : TC-MachineLearningPrediction-002
+Title          : ML Algorithm Handling Edge Cases
+Workflow       : UC-07/UC-08
+Requirements   : Req-15, Req-14
+Preconditions  :
+  - System has been trained on initial data.
+  - Patient submits a consultation request with ambiguous or rare symptoms that do not fit neatly into training data.
+Test Steps     :
+  1. Patient submits a consultation request with rare or conflicting symptoms (e.g., mild fever but no other typical symptoms for any major illness).
+  2. System runs the ML algorithm batch job.
+  3. Doctor views the prioritized request.
+  4. Verify that the system flags it as 'Unclear' or 'Requires Manual Diagnosis' rather than guessing a disease.
+  5. Doctor should be able to proceed with manual diagnosis without interference.
+Expected Result: For ambiguous/rare symptoms, ML algorithm correctly identifies uncertainty or suggests manual review. Doctor is not forced to accept an incorrect prediction. System behavior is predictable and doesn't mislead the doctor.
+Test Type      : Functional
+
+---
+TC-ID          : TC-HousekeepingQuarterly-001
+Title          : Quarterly Housekeeping: Archiving Inactive Patients
+Workflow       : UC-12
+Requirements   : Req-12
+Preconditions  :
+  - System has been running for more than 3 years.
+  - There are patients with no consultation requests in the last 3 years.
+Test Steps     :
+  1. Run the quarterly housekeeping script at the end of a quarter.
+  2. Verify that patient profiles inactive for >3 years are archived to the secondary database.
+  3. Check that these patients are no longer visible in the main system.
+  4. Validate that active patients (with recent consultations) remain unaffected.
+Expected Result: Inactive patient data is successfully archived. System performance improves as per design (handled in background). Active patient data is preserved and accessible.
+Test Type      : Functional
+
+---
+TC-ID          : TC-SystemAvailability-001
+Title          : High Availability Test: Simulated Outage Window
+Workflow       :
+Requirements   : Req-5.1, Req-5.2
+Preconditions  :
+  - System is set up in a test environment simulating real-world conditions.
+  - Scheduled outage window: 10 minutes every 2nd Sunday night (12:00 AM – 12:10 AM).
+Test Steps     :
+  1. Simulate a controlled 10-minute outage during the scheduled window.
+  2. Attempt to log in as a patient, doctor, chemist, or lab user during the outage.
+  3. Monitor system response: verify it is unavailable for all users during the outage.
+  4. After outage: Verify system comes back up automatically.
+  5. Check if all services (registration, consultation, prescription, reports) are fully functional post-restart.
+Expected Result: System becomes unavailable for all users exactly during the 10-minute window. After outage, system restarts and recovers fully with no data loss or service disruption. Availability remains at 99.999%.
+Test Type      : Performance / Availability
+
+---
+TC-ID          : TC-PaymentGatewayIntegration-001
+Title          : Integration Test: Payment Gateway Interaction for Appointments
+Workflow       : UC-06/UC-08 (Appointment Mode)
+Requirements   : Req-16
+Preconditions  :
+  - Payment gateway interface is mocked or integrated for testing.
+  - Patient selects 'Appointment' mode with payment preference set to 'Credit/Debit Card via Gateway'.
+  3. System is configured to communicate with the payment gateway API (mocked for test).
+Test Steps     :
+  1. Patient creates an appointment consultation request and proceeds to payment.
+  2. System redirects to payment gateway interface (mocked).
+  3. Simulate successful payment (mock response from gateway).
+  4. System should receive payment confirmation and update appointment status to 'Paid'.
+  5. Patient should see confirmation of appointment and payment.
+Expected Result: Successful transaction with the payment gateway. Appointment status is updated to 'Paid' in the system. Patient receives a confirmation message. System records payment details securely.
+Test Type      : Integration
+
+---
+TC-ID          : TC-UsabilityFontSize-001
+Title          : Usability Test: Large Font Size on Patient Screens
+Workflow       : UC-05/UC-06/UC-08/UC-11
+Requirements   : Req-5.4, Section 3.1
+Preconditions  :
+  - User is an elderly patient profile created with small screen size simulation.
+  - System is configured for usability (large fonts as per design).
+Test Steps     :
+  1. Log in as a patient (elderly persona).
+  2. Navigate through registration, consultation request, appointment booking, and prescription viewing screens.
+  3. Verify that all text elements (labels, instructions, dropdowns, buttons) are legible with large font sizes.
+  4. Measure/observe that no text requires zooming in or scrolling excessively.
+  5. Ensure navigation is simple and intuitive (e.g., 5-minute completion time for a basic consultation request).
+Expected Result: All text is clearly readable with large fonts. Navigation is straightforward without complex menus. A user can complete a consultation request in less than 5 minutes. No usability issues identified.
+Test Type      : Usability
